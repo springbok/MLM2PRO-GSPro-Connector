@@ -5,9 +5,9 @@ import logging
 class Settings:
 
     def __init__(self):
-        self.__load_settings()
+        self.__load()
 
-    def __load_settings(self):
+    def __load(self):
         path = os.path.join(os.getcwd(), 'settings.json')
         logging.info(f"Loading settings from {path}")
         if os.path.isfile(path):

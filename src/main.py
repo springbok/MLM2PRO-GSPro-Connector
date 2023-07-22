@@ -26,7 +26,9 @@ def main():
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
         settings = Settings()
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading OCR components...')
-        screenshot = Screenshot()
+        screenshot = Screenshot(settings)
+        UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
+        screenshot.load_rois()
     except Exception as e:
         message = f'Failed to initialise: {format(e)}'
         UI.display_message(Color.RED, "CONNECTOR ||", message)

@@ -1,5 +1,3 @@
-import README as README
-
 setup(
     name="mlm2pro-gspro-connector",
     version="1.0.0",
@@ -18,8 +16,6 @@ setup(
     ],
     packages=["src"],
     include_package_data=True,
-    install_requires=[
-
-    ],
+    install_requires=['cv2', 'numpy', 'tesserocr', 'win32gui', 'win32ui', 'matplotlib', 'pyplot'],
     entry_points={"console_scripts": ["realpython=src.__main__:main"]},
 )
