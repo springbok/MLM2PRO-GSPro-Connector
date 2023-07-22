@@ -5,7 +5,7 @@ import logging
 class Rois:
 
     def __init__(self):
-        self.values = None
+        self.values = {}
         self.__load()
         self.keys = ["Ball Speed", "Spin Rate", "Spin Axis", "Launch Direction (HLA)", "Launch Angle (VLA)", "Club Speed"]
 
