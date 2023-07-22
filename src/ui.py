@@ -15,7 +15,7 @@ class UI:
     def display_message(color, prefix, message):
         print(f"{color}{prefix}{Color.RESET}", message)
         if color == Color.RED:
-            logging.error(message)
+            logging.exception(message)
         else:
             logging.info(message)
 

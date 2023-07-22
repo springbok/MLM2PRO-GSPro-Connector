@@ -1,7 +1,7 @@
 import logging
 import os
-
 from src.menu import Menu
+from src.screenshot import Screenshot
 from src.settings import Settings
 from src.ui import Color, UI
 
@@ -14,14 +14,19 @@ def setup_logging():
         datefmt="%Y-%m-%d:%H:%M:%S",
         level=logging.DEBUG,
         filename=path,
-        encoding='utf-8'
+        encoding='utf-8',
+        force = True
     )
 
 def main():
     # Init
+    UI.display_message(Color.GREEN, "CONNECTOR ||", 'Initialising...')
     setup_logging()
     try:
+        UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
         settings = Settings()
+        UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading OCR components...')
+        screenshot = Screenshot()
     except Exception as e:
         message = f'Failed to initialise: {format(e)}'
         UI.display_message(Color.RED, "CONNECTOR ||", message)
