@@ -1,6 +1,5 @@
 from src.ui import Color, UI
 
-
 class Menu:
     def __init__(self):
         self.menu_options = {
@@ -20,7 +19,7 @@ class Menu:
         try:
             option = input('Enter your choice: ').upper()
         except:
-            UI.display_message(Color.RED, "MENU ||", 'Wrong input. Please enter a valid option, press M top display menu')
+            UI.display_message(Color.RED, "", 'Wrong input. Please enter a valid option, press M top display menu')
         if option == 'Q':
             # shutdown_main()
             exit()
@@ -34,4 +33,4 @@ class Menu:
             #    print_colored_prefix(Color.RED, "Image Processing ||", "An error occurred: {}".format(e))
         else:
             soptions = ', '.join(map(str, list(self.menu_options.keys())))
-            UI.display_message(Color.RED, "MENU ||", "Invalid option. Please enter a valid option: " + soptions)
+            UI.display_message(Color.RED, "", "Invalid option. Please enter a valid option: " + soptions)

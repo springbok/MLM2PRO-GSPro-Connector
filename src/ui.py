@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 @dataclass
@@ -13,6 +14,11 @@ class UI:
     @staticmethod
     def display_message(color, prefix, message):
         print(f"{color}{prefix}{Color.RESET}", message)
+        if color == Color.RED:
+            logging.error(message)
+        else:
+            logging.info(message)
+
 
 
 
