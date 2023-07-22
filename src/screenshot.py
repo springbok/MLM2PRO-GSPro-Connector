@@ -7,7 +7,7 @@ import tesserocr
 import win32gui
 import win32ui
 from matplotlib import pyplot as plt
-from rois import Rois
+from src.rois import Rois
 from src.ui import Color, UI
 
 

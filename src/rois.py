@@ -13,7 +13,7 @@ class Rois:
         path = os.path.join(os.getcwd(), 'rois.json')
         logging.info(f"Loading rois from {path}")
         if os.path.isfile(path):
-            with open(os.path.join(os.getcwd(), 'settings.json'), "r") as file:
+            with open(os.path.join(os.getcwd(), '../settings.json'), "r") as file:
                 lines = file.readlines()
                 self.values = json.loads(lines)
             logging.info(f"RIOS: {self.values}")
