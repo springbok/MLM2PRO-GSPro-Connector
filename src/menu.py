@@ -9,22 +9,22 @@ class Menu:
             'Q': 'Exit',
         }
 
-    def __display_menu(self):
+    def display(self):
         for key in self.menu_options.keys():
             print(key, '--', self.menu_options[key])
 
     def run(self):
-        self.__display_menu()
+        soptions = ', '.join(map(str, list(self.menu_options.keys())))
         option = ''
         try:
-            option = input('Enter your choice: ').upper()
+            option = input(f'Enter one of these choices ({soptions}): ').upper()
         except:
             UI.display_message(Color.RED, "", 'Wrong input. Please enter a valid option, press M top display menu')
         if option == 'Q':
             # shutdown_main()
             exit()
         elif option == 'M':
-            self.__display_menu()
+            self.display()
         elif option == 'R':
             i=1
             #try:
@@ -32,5 +32,4 @@ class Menu:
             #except Exception as e:
             #    print_colored_prefix(Color.RED, "Image Processing ||", "An error occurred: {}".format(e))
         else:
-            soptions = ', '.join(map(str, list(self.menu_options.keys())))
             UI.display_message(Color.RED, "", "Invalid option. Please enter a valid option: " + soptions)
