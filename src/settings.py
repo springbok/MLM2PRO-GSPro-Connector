@@ -20,7 +20,7 @@ class Settings:
     "TARGET_HEIGHT": 752, 
     "METRIC": "Yards", 
     "DEBUG": "True", 
-    "SCREENSHOT_INTERVAL": 2500 
+    "SCREENSHOT_INTERVAL": 10000 
 }""", multiline=True)
         self.__create()
         self.__load()

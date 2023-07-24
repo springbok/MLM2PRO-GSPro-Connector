@@ -13,7 +13,7 @@ from src.ui import Color, UI
 
 class Screenshot:
 
-    def __init__(self, settings):
+    def __init__(self, settings, app_paths):
         tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
         tessdata_path = os.path.join(tesseract_path, 'tessdata')
         tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
@@ -21,7 +21,7 @@ class Screenshot:
         tesserocr.tesseract_cmd = tessdata_path
         ctypes.cdll.LoadLibrary(tesseract_library)
         self.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
-        self.rois = Rois()
+        self.rois = Rois(app_paths)
         self.settings = settings
         self.previous_screenshot = []
         self.screenshot = []
