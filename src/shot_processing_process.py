@@ -15,5 +15,7 @@ class ShotProcessingProcess(Process):
 
     def run(self):
         logging.debug('Start process to check for a new shot and process it')
+        # Check if we have a previous shot in the queue, get last one added
+
         time.sleep(2)
         exit(0)

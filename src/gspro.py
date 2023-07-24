@@ -1,4 +1,11 @@
+from dataclasses import dataclass
 
-def gspro(f, executor):
-    print(f'gspro: {f.result()}')
 
+@dataclass
+class BallData:
+    Speed: float
+    SpinAxis: float
+    TotalSpin: float
+    HLA: float
+    VLA: float
+    ClubSpeed: float

@@ -6,24 +6,32 @@ import numpy as np
 import tesserocr
 import win32gui
 import win32ui
+from PIL import Image
 from matplotlib import pyplot as plt
+
+from src.gspro import BallData
 from src.rois import Rois
 from src.ui import Color, UI
 
 
 class Screenshot:
 
-    def __init__(self, settings, app_paths):
+    # Use class attribute for OCR as we will only use on instance
+    tesserocr_api = None
+
+    @staticmethod
+    def initialise_ocr():
         tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
         tessdata_path = os.path.join(tesseract_path, 'tessdata')
         tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
-        # Set the Tesseract OCR path for tesserocr
         tesserocr.tesseract_cmd = tessdata_path
         ctypes.cdll.LoadLibrary(tesseract_library)
-        self.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
+        Screenshot.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
+
+    def __init__(self, settings, app_paths):
         self.rois = Rois(app_paths)
         self.settings = settings
-        self.previous_screenshot = []
+        self.ball_data = BallData()
         self.screenshot = []
         self.diff = False
 
@@ -86,18 +94,38 @@ class Screenshot:
         self.screenshot = np.ascontiguousarray(self.screenshot)[..., :-1]
 
         if not result:
-            self.previous_screenshot = []
             win32gui.DeleteObject(bitmap.GetHandle())
             save_dc.DeleteDC()
             mfc_dc.DeleteDC()
             win32gui.ReleaseDC(hwnd, hwnd_dc)
             raise RuntimeError(f"Unable to acquire screenshot! Result: {result}")
 
-        # Is this a new image
-        if len(self.previous_screenshot) > 0:
-            self.diff = cv2.subtract(self.screenshot, self.previous_screenshot)
-        else:
-            self.diff = True
+    def __recognize_roi(self, roi):
+        # crop the roi from screenshot
+        cropped_img = self.screenshot[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
+        # use tesseract to recognize the text
+        Screenshot.tesserocr_api.SetImage(Image.fromarray(cropped_img))
+        result = Screenshot.tesserocr_api.GetUTF8Text()
+        cleaned_result = ''.join(c for c in result if c.isdigit() or c == '.' or c == '-' or c == '_' or c == '~')
+        return cleaned_result.strip()
 
-        if self.diff:
-            self.previous_screenshot = self.screenshot
+    def capture_and_process_screenshot(self, previous_shot):
+        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
+        diff = False
+        for key in self.rois.keys:
+            # Use ROI to get value from screenshot
+            result = self.__recognize_roi(self.screenshot, self.rois.values[key])
+            # Put the value for the current ROI into the ball data object
+            setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
+            # Check values are not 0
+            if key in self.rois.must_not_be_zero and result <= 0:
+                raise ValueError(f"Value for '{key}' is 0")
+            # See if values are different from previous shot
+            if not diff and result != getattr(self.rois.ball_data_mapping[key], previous_shot):
+                diff = True
+        # Set diff attribute if value are different
+        self.diff = diff
+
+
+
+

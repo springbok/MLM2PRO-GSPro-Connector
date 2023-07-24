@@ -12,6 +12,15 @@ class Rois:
         self.values = {}
         self.__load()
         self.keys = ["Ball Speed", "Spin Rate", "Spin Axis", "Launch Direction (HLA)", "Launch Angle (VLA)", "Club Speed"]
+        self.ball_data_mapping = {
+            "Ball Speed": "Speed",
+            "Spin Rate": "TotalSpin",
+            "Spin Axis": "SpinAxis",
+            "Launch Direction (HLA)": "HLA",
+            "Launch Angle (VLA)": "VLA",
+            "Club Speed": "ClubSpeed"
+        }
+        self.must_not_be_zero = ["Ball Speed", "Spin Rate", "Launch Angle (VLA)", "Club Speed"]
 
     def __load(self):
         logging.info(f"Loading rois from {self.path}")
