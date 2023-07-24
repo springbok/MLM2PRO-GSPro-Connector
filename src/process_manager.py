@@ -7,6 +7,7 @@ class ProcessManager:
         self.max_processes = max_processes
         self.processes = []
 
+
     def add(self, process):
         self.__clean()
         if len(self.processes) < self.max_processes:

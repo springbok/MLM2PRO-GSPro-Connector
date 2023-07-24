@@ -1,8 +1,9 @@
+import ctypes
 import logging
+import multiprocessing
 import os
 from src.appdata import AppDataPaths
 from src.menu import Menu
-from src.multiprocess_lifo_queue import MultiprocessLifoQueueManager
 from src.non_blocking_input import NonBlockingInput
 from src.process_manager import ProcessManager
 from src.screenshot import Screenshot
@@ -11,10 +12,10 @@ from src.shot_processing_process import ShotProcessingProcess
 from src.ui import Color, UI
 from datetime import datetime
 
-def check_and_process_shot(queue, settings, app_paths, process_manager):
+def check_and_process_shot(previous_shot, settings, app_paths, process_manager):
     logging.debug("Check & process new shot")
     # Create a new multiprocess process to check & process new shot
-    process = ShotProcessingProcess(queue, settings, app_paths)
+    process = ShotProcessingProcess(previous_shot, settings, app_paths)
     # Add it to the process manager, it adds it to the current list of processes and start the process
     process_manager.add(process)
 
@@ -51,11 +52,8 @@ def main(app_paths=None):
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
         Screenshot(settings).load_rois(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
-        # Create shared LIFO queue for processes, note we needed to wrap the LifoQueue to
-        # allow us to use it with multiprocessing
-        manager = MultiprocessLifoQueueManager()
-        manager.start()
-        queue = manager.LifoQueue()
+        # Create a variable that can be shared between all processes to keep track of the last shot
+        previous_shot = multiprocessing.Value(ctypes.c_wchar_p, '')
         # Create process manager specify the max processes allowed to run at the same time
         process_manager = ProcessManager(2)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
@@ -80,7 +78,7 @@ def main(app_paths=None):
                 delta = delta.total_seconds()*1000
                 if delta > settings.SCREENSHOT_INTERVAL and not done_processing:
                     # Start process and reset timer, we are using a non blocking timing method
-                    check_and_process_shot(queue, settings, app_paths, process_manager)
+                    check_and_process_shot(previous_shot, settings, app_paths, process_manager)
                     start_time = datetime.now()
                 if non_block_input.input_queued():
                     input_str = non_block_input.input_get()
