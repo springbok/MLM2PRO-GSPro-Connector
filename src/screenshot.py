@@ -9,15 +9,14 @@ import win32gui
 import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
-
-from src.gspro import BallData
+from src.gspro_process import BallData
 from src.rois import Rois
 from src.ui import Color, UI
 
 
 class Screenshot:
 
-    # Use class attribute for OCR as we will only use on instance
+    # Use class attribute & method for OCR as we will only init it one instance
     tesserocr_api = None
 
     @staticmethod
@@ -29,12 +28,18 @@ class Screenshot:
         ctypes.cdll.LoadLibrary(tesseract_library)
         Screenshot.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
 
+    @staticmethod
+    def shutdown_ocr(self):
+        if not Screenshot.tesserocr_api is None:
+            Screenshot.tesserocr_api.End()
+
     def __init__(self, settings, app_paths):
         self.rois = Rois(app_paths)
         self.settings = settings
         self.ball_data = BallData()
         self.screenshot = []
         self.diff = False
+        self.message = None
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:

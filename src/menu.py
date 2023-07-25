@@ -6,7 +6,8 @@ class Menu:
         self.menu_options = {
             'M': 'Display Menu',
             'R': 'Reset ROI',
-            'C': 'Reset GSPRO connection',
+            'S': 'Restart Connector',
+            'G': 'Reset GSPro Connection',
             'Q': 'Exit',
         }
 
@@ -14,10 +15,12 @@ class Menu:
         for key in self.menu_options.keys():
             print(key, '--', self.menu_options[key])
 
-    def process(self, option):
+    def process(self, option, process_manager):
         soptions = ', '.join(map(str, list(self.menu_options.keys())))
         if option == 'M':
             self.display()
+        elif option == 'S':
+            process_manager.restart()
         elif option == 'R':
             i=1
             #try:

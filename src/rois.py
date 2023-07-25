@@ -12,8 +12,10 @@ class Rois:
         self.values = {}
         self.__load()
         self.keys = ["Ball Speed", "Spin Rate", "Spin Axis", "Launch Direction (HLA)", "Launch Angle (VLA)", "Club Speed"]
+        # Mapping between the keys for the ROI's entered by the user and the attributes
+        # of our BallData class allowing us to dynamically assign values to the ball data object
         self.ball_data_mapping = {
-            "Ball Speed": "Speed",
+            "Ball Speed": "speed",
             "Spin Rate": "TotalSpin",
             "Spin Axis": "SpinAxis",
             "Launch Direction (HLA)": "HLA",
