@@ -8,6 +8,7 @@ class Menu:
             'R': 'Reset ROI',
             'S': 'Restart Connector',
             'G': 'Reset GSPro Connection',
+            'D': 'Toggle Debug Log',
             'Q': 'Exit',
         }
 

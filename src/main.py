@@ -8,10 +8,10 @@ from src.screenshot import Screenshot
 from src.settings import Settings
 from src.ui import Color, UI
 
-def setup_logging(settings, app_paths):
+def setup_logging(app_paths):
     level = logging.DEBUG
-    if settings.DEBUG == "False":
-        level = logging.CRITICAL + 1
+    #if settings.DEBUG == "False":
+    #    level = logging.CRITICAL + 1
     path = app_paths.get_log_file_path()
     if os.path.isfile(path):
         os.unlink(path)
@@ -32,10 +32,10 @@ def main(app_paths=None):
         # Setup appdata dirs & files
         app_paths = AppDataPaths()
         app_paths.setup()
+        UI.display_message(Color.GREEN, "CONNECTOR ||", 'Setting up logging...')
+        setup_logging(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
         settings = Settings(app_paths)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", 'Setting up logging...')
-        setup_logging(settings, app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading OCR components...')
         Screenshot.initialise_ocr()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
@@ -57,6 +57,8 @@ def main(app_paths=None):
             non_block_input = NonBlockingInput(exit_condition='q')
             done_processing = False
             input_str = ""
+            # Start process schedule
+            process_manager.reset_scheduled_time()
             while not done_processing:
                 # Process screenshots
                 process_manager.run()

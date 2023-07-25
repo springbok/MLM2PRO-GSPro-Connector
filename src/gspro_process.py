@@ -1,6 +1,3 @@
-import json
-import logging
-from dataclasses import dataclass
 from multiprocessing import Process
 
 from src.process_message import ProcessMessage
@@ -26,6 +23,7 @@ class GSProProcess(Process):
         self.error_count = error_count
 
     def run(self):
-        msg = ProcessMessage(error=False, message=f"Process {self.name}: runnins")
-        self.messaging_queue.put(json.dumps(msg.__dict__))
+        msg = ProcessMessage(error=False, message=f"Process {self.name}: running")
+        self.messaging_queue.put(repr(msg))
+        self.shot_queue.get()
         exit(0)

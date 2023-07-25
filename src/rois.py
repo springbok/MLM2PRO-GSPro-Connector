@@ -27,7 +27,7 @@ class Rois:
     def __load(self):
         logging.info(f"Loading rois from {self.path}")
         if os.path.isfile(self.path):
-            with open(os.path.join(os.getcwd(), '../settings.json'), "r") as file:
+            with open(self.path, "r") as file:
                 lines = file.readlines()
                 self.values = json.loads(lines)
             logging.info(f"RIOS: {self.values}")

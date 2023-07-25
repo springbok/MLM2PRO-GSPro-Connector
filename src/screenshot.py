@@ -29,7 +29,7 @@ class Screenshot:
         Screenshot.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
 
     @staticmethod
-    def shutdown_ocr(self):
+    def shutdown_ocr():
         if not Screenshot.tesserocr_api is None:
             Screenshot.tesserocr_api.End()
 

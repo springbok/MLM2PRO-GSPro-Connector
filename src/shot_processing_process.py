@@ -9,7 +9,6 @@ class ShotProcessingProcess(Process):
 
     def __init__(self, previous_shot, settings, apps_paths, shot_queue, messaging_queue, error_count):
         Process.__init__(self)
-        logging.debug('Start shot processing')
         self.app_paths = apps_paths
         self.settings = settings
         self.previous_shot = previous_shot
@@ -19,7 +18,8 @@ class ShotProcessingProcess(Process):
 
     def run(self):
         msg = ProcessMessage(error=False, message=f"Process {self.name}: runnins")
-        self.messaging_queue.put(json.dumps(msg.__dict__))
+        self.messaging_queue.put(repr(msg))
+        self.shot_queue.put(1)
         return
 
         screenshot = Screenshot()
@@ -31,7 +31,7 @@ class ShotProcessingProcess(Process):
             self.previous_shot = json.dumps(screenshot.ball_data.__dict__)
         except Exception as e:
             # On error increase error count and add error message to the process message queue
-            self.error_count = self.error_count + 1
+            self.error_count = self.error_count.value + 1
             msg = ProcessMessage(error=True, message=f"Process {self.name}: Error: {e}")
             self.messaging_queue.put(json.dumps(msg.__dict__))
         finally:

@@ -20,28 +20,28 @@ class Settings:
     "TARGET_HEIGHT": 752, 
     "METRIC": "Yards", 
     "DEBUG": "True", 
-    "SCREENSHOT_INTERVAL": 10000 
+    "SCREENSHOT_INTERVAL": 500 
 }""", multiline=True)
         self.__create()
         self.__load()
 
     def __load(self):
-        logging.info(f"Loading settings from {self.path}")
+        logging.debug(f"Loading settings from {self.path}")
         if os.path.isfile(self.path):
-            with open(os.path.join(os.getcwd(), 'settings.json'), "r") as file:
+            with open(self.path, "r") as file:
                 lines = file.readlines()
                 cleaned_lines = [line.split("//")[0].strip() for line in lines if not line.strip().startswith("//")]
                 cleaned_json = "\n".join(cleaned_lines)
                 settings = json.loads(cleaned_json)
         else:
             raise RuntimeError(f"Could not open settings file: {self.path}")
-        logging.info(f"Setting: {settings}")
+        logging.debug(f"Setting: {settings}")
         # Create dynamic attributes
         for key in settings:
             setattr(self, key, settings[key])
 
     def __create(self):
         if not os.path.isfile(self.path):
-            logging.info(f"Settings file does not exist creating: {self.path}")
+            logging.debug(f"Settings file does not exist creating: {self.path}")
             with open(self.path, "w") as file:
                 file.write(json.dumps(self.settings_json, indent=4))
