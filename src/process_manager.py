@@ -41,7 +41,7 @@ class ProcessManager:
                 UI.display_message(Color.RED, "CONNECTOR ||", "More than 5 errors detected, stopping processing. Fix issues and then restart the connector.")
                 self.error_count_message_displayed = True
             # Display any process messages
-            self.__display_ui_messages()
+            self.__process_message_queue()
             # Reschedule
             self.reset_scheduled_time()
 
@@ -49,21 +49,23 @@ class ProcessManager:
         self.error_count_message_displayed = False
         self.error_count.value = 0
 
-    def __display_ui_messages(self):
+    def __process_message_queue(self):
         if not self.messaging_queue.empty():
             while not self.messaging_queue.empty():
                 msg = self.messaging_queue.get()
                 msg = eval(msg)
-                color = Color.GREEN
-                if msg.error:
-                    color = Color.RED
-                UI.display_message(Color.GREEN, "CONNECTOR ||", msg.message)
+                if msg.ui:
+                    color = Color.GREEN
+                    if msg.error:
+                        color = Color.RED
+                    UI.display_message(Color.GREEN, "CONNECTOR ||", msg.message)
+                if msg.logging:
+                    logging.debug(msg.message)
 
     def __start_screenshot_process(self):
         # Clear any completed process objects
         self.__clean()
         # Create a new process object & start it
-        logging.debug(f"len(self.processes): {len(self.processes)} self.max_processes: {self.max_processes}")
         if len(self.processes) < self.max_processes:
             process = ShotProcessingProcess(self.previous_shot, self.settings, self.app_paths, self.shot_queue, self.messaging_queue, self.error_count)
             self.processes.append(process)
