@@ -10,11 +10,11 @@ from src.screenshot import Screenshot
 
 class ShotProcessingProcess(Process):
 
-    def __init__(self, previous_shot, settings, apps_paths, shot_queue, messaging_queue, error_count):
+    def __init__(self, last_shot, settings, apps_paths, shot_queue, messaging_queue, error_count):
         Process.__init__(self)
         self.app_paths = apps_paths
         self.settings = settings
-        self.previous_shot = previous_shot
+        self.last_shot = last_shot
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
         self.error_count = error_count
@@ -29,9 +29,9 @@ class ShotProcessingProcess(Process):
         try:
             logging.debug('Start process to check for a new shot and process it')
             # Get screenshot and check if it is different from last shot
-            screenshot.capture_and_process_screenshot(self.previous_shot)
+            screenshot.capture_and_process_screenshot(self.last_shot)
             # Check if it's a new shot, if so update last shot
-            self.previous_shot = json.dumps(screenshot.ball_data.__dict__)
+            self.last_shot.value = repr(screenshot.ball_data)
         except Exception as e:
             # On error increase error count and add error message to the process message queue
             self.error_count = self.error_count.value + 1

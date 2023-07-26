@@ -115,11 +115,11 @@ class Screenshot:
         cleaned_result = ''.join(c for c in result if c.isdigit() or c == '.' or c == '-' or c == '_' or c == '~')
         return cleaned_result.strip()
 
-    def capture_and_process_screenshot(self, previous_shot):
+    def capture_and_process_screenshot(self, last_shot):
         # Check if we have a previous shot
-        previous_shot_object = None
-        if len(previous_shot) > 0:
-            previous_shot_object = json.loads(previous_shot)
+        last_shot_object = None
+        if len(last_shot) > 0:
+            last_shot_object = json.loads(last_shot)
         else:
             diff = True
         self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
@@ -133,8 +133,8 @@ class Screenshot:
             if key in self.rois.must_not_be_zero and result <= 0:
                 raise ValueError(f"Value for '{key}' is 0")
             # See if values are different from previous shot
-            if not diff and not previous_shot_object is None:
-                if result != getattr(self.rois.ball_data_mapping[key], previous_shot):
+            if not diff and not last_shot_object is None:
+                if result != getattr(self.rois.ball_data_mapping[key], last_shot):
                     diff = True
 
         # Set diff attribute if value are different

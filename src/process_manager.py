@@ -16,7 +16,7 @@ class ProcessManager:
         self.settings = settings
         self.max_processes = max_processes
         # Create a variables that can be shared between all processes
-        self.previous_shot = multiprocessing.Value(ctypes.c_wchar_p, '')
+        self.last_shot = multiprocessing.Value(ctypes.c_wchar_p, '')
         self.error_count = multiprocessing.Value(ctypes.c_int, 0)
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
@@ -67,7 +67,7 @@ class ProcessManager:
         self.__clean()
         # Create a new process object & start it
         if len(self.processes) < self.max_processes:
-            process = ShotProcessingProcess(self.previous_shot, self.settings, self.app_paths, self.shot_queue, self.messaging_queue, self.error_count)
+            process = ShotProcessingProcess(self.last_shot, self.settings, self.app_paths, self.shot_queue, self.messaging_queue, self.error_count)
             self.processes.append(process)
             process.start()
         else:
