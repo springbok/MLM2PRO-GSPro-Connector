@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from multiprocessing import Process
 from src.process_message import ProcessMessage
 
@@ -17,15 +18,29 @@ class BallData:
 
 class GSProProcess(Process):
 
-    def __init__(self, settings, shot_queue, messaging_queue, error_count):
+    def __init__(self, settings, shot_queue, messaging_queue, error_count, stop_processing):
         Process.__init__(self)
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
         self.settings = settings
         self.error_count = error_count
+        self.scheduled_time = None
+        self.__reset_scheduled_time()
+        self.stop_processing = stop_processing
 
     def run(self):
-        msg = ProcessMessage(error=False, message=f"Process {self.name}: running", logging=False, ui=True)
-        self.messaging_queue.put(repr(msg))
-        self.shot_queue.get()
+        while self.stop_processing == 0:
+            # Start new process checking scheduled_time
+            if datetime.now() > self.scheduled_time:
+                msg = ProcessMessage(error=False, message=f"Process {self.name}: running", logging=True, ui=True)
+                self.messaging_queue.put(repr(msg))
+                # Reschedule
+                self.__reset_scheduled_time()
+        self.__shutdown()
         exit(0)
+
+    def __shutdown(self):
+        i=1
+
+    def __reset_scheduled_time(self):
+        self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))

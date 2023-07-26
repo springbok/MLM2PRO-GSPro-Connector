@@ -16,23 +16,6 @@ from src.ui import Color, UI
 
 class Screenshot:
 
-    # Use class attribute & method for OCR as we will only init it one instance
-    tesserocr_api = None
-
-    @staticmethod
-    def initialise_ocr():
-        tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
-        tessdata_path = os.path.join(tesseract_path, 'tessdata')
-        tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
-        tesserocr.tesseract_cmd = tessdata_path
-        ctypes.cdll.LoadLibrary(tesseract_library)
-        Screenshot.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
-
-    @staticmethod
-    def shutdown_ocr():
-        if not Screenshot.tesserocr_api is None:
-            Screenshot.tesserocr_api.End()
-
     def __init__(self, settings, app_paths):
         self.rois = Rois(app_paths)
         self.settings = settings
@@ -40,6 +23,16 @@ class Screenshot:
         self.screenshot = []
         self.diff = False
         self.message = None
+        tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
+        tessdata_path = os.path.join(tesseract_path, 'tessdata')
+        tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
+        tesserocr.tesseract_cmd = tessdata_path
+        ctypes.cdll.LoadLibrary(tesseract_library)
+        self.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
+
+    def shutdown_ocr(self):
+        if not self.tesserocr_api is None:
+            self.tesserocr_api.End()
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:
@@ -110,20 +103,19 @@ class Screenshot:
         # crop the roi from screenshot
         cropped_img = self.screenshot[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
         # use tesseract to recognize the text
-        Screenshot.tesserocr_api.SetImage(Image.fromarray(cropped_img))
-        result = Screenshot.tesserocr_api.GetUTF8Text()
+        self.tesserocr_api.SetImage(Image.fromarray(cropped_img))
+        result = self.tesserocr_api.GetUTF8Text()
         cleaned_result = ''.join(c for c in result if c.isdigit() or c == '.' or c == '-' or c == '_' or c == '~')
         return cleaned_result.strip()
 
     def capture_and_process_screenshot(self, last_shot):
         # Check if we have a previous shot
         last_shot_object = None
-        if len(last_shot) > 0:
-            last_shot_object = json.loads(last_shot)
-        else:
+        if last_shot is None:
             diff = True
+        else:
+            diff = False
         self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
-        diff = False
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
             result = self.__recognize_roi(self.screenshot, self.rois.values[key])

@@ -36,8 +36,6 @@ def main(app_paths=None):
         setup_logging(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
         settings = Settings(app_paths)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading OCR components...')
-        Screenshot.initialise_ocr()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
         #Screenshot(settings, app_paths).load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
@@ -77,5 +75,3 @@ def main(app_paths=None):
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Shutting down connector...")
             # Stop processes cleanly
             process_manager.shutdown()
-            # Shutdown OCR
-            Screenshot.shutdown_ocr()
