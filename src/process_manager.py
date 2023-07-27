@@ -18,6 +18,7 @@ class ProcessManager:
         # Create a variables that can be shared between all processes
         self.last_shot = multiprocessing.Value(ctypes.c_wchar_p, '')
         self.error_count = multiprocessing.Value(ctypes.c_int, 0)
+        self.run_process = multiprocessing.Value(ctypes.c_int, 0)
         self.stop_processing = multiprocessing.Value(ctypes.c_int, 0)
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
@@ -54,10 +55,10 @@ class ProcessManager:
         free_process = False
         for process in self.processes:
             # Check for available process
-            if not process['process'].is_alive():
+            if not process.is_alive():
                 free_process = True
-                # Start screenshot process
-                process['start'].value = 1
+                # Start screenshot process with specified pid
+                self.run_process.value = process.pid
         if not free_process:
             # Could not any free processes to handle request
             logging.debug('All processes busy unable to handle screenshot request, reschedule')
@@ -81,16 +82,12 @@ class ProcessManager:
     def __add_screenshot_processes(self):
         # Create a new process object & start it
         for x in range(0, self.max_processes):
-            process = {}
-            # Multiprocess variable to tell the process to start running this gives us control from
-            # this manager of when a process starts
-            process['start'] = multiprocessing.Value(ctypes.c_int, 0)
-            process['process'] = ShotProcessingProcess(self.last_shot, self.settings,
+            process = ShotProcessingProcess(self.last_shot, self.settings,
                                                        self.app_paths, self.shot_queue,
                                                        self.messaging_queue, self.error_count,
-                                                       self.stop_processing, process['start'])
+                                                       self.run_process, self.stop_processing)
             self.processes.append(process)
-            process['process'].start()
+            process.start()
 
     def __add_gspro_process(self):
         # Multiprocess variable to tell the process to start running this gives us control from
@@ -104,9 +101,8 @@ class ProcessManager:
         self.stop_processing.value = 1
         # Wait for all processes to finish
         for process in self.processes:
-            process['start'].value = 0
-            process['process'].join()
-            del process['process']
+            process.join()
+            del process
         if not self.gspro_process is None:
             self.gspro_process.join()
             del self.gspro_process
