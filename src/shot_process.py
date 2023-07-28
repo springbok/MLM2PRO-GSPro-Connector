@@ -15,7 +15,7 @@ class ShotProcess(Thread):
     def __init__(self, last_shot, settings,
                  apps_paths, shot_queue,
                  messaging_queue, error_count,
-                 tesserocr_queue):
+                 tesserocr_queue, lock):
         Thread.__init__(self, daemon=True)
         self.app_paths = apps_paths
         self.settings = settings
@@ -26,6 +26,7 @@ class ShotProcess(Thread):
         self._busy = Event()
         self._shutdown = Event()
         self._execute = Event()
+        self.lock = lock
         self.tesserocr_queue = tesserocr_queue
         self.screenshot = Screenshot(self.settings, self.app_paths)
 
@@ -37,18 +38,23 @@ class ShotProcess(Thread):
                 try:
                     self._busy.set()
                     self._execute.clear()
-                    msg = ProcessMessage(error=False, message=f"Process {self.name}: running", logging=True, ui=False)
-                    self.messaging_queue.put(repr(msg))
                     # Obtain an api from pool of api's
                     api = self.tesserocr_queue.get()
-                    self.screenshot.capture_and_process_screenshot(self.last_shot, api)
-                    if self.screenshot.diff:
-                        msg = ProcessMessage(error=False, message=f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.__dict__)}", logging=True, ui=True)
-                        self.messaging_queue.put(repr(msg))
-                        self.last_shot = self.screenshot.ball_data.__copy__()
+                    with self.lock:
+                        logging.info(
+                            f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.__dict__)}")
+                        if not self.last_shot is None:
+                            logging.info(f"Process {self.name} last shot: {json.dumps(self.last_shot.__dict__)}")
+                        self.screenshot.capture_and_process_screenshot(self.last_shot, api)
+                        if self.screenshot.diff:
+                            msg = ProcessMessage(error=False, message=f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.__dict__)}", logging=True, ui=True)
+                            self.messaging_queue.put(repr(msg))
+                            self.last_shot = self.screenshot.ball_data.__copy__()
+                            logging.info(f"Process {self.name} ***** new last shot: {json.dumps(self.last_shot.__dict__)}")
                 except Exception as e:
                     # On error increase error count and add error message to the process message queue
-                    self.error_count = self.error_count + 1
+                    with self.lock:
+                        self.error_count = self.error_count + 1
                     logging.info(f"error count: {self.error_count}")
                     msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {e}", logging=True, ui=True)
                     self.messaging_queue.put(repr(msg))

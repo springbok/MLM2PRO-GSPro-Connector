@@ -1,5 +1,6 @@
 import logging
 import os
+import threading
 from queue import Queue
 
 import tesserocr
@@ -13,7 +14,7 @@ from datetime import datetime, timedelta
 
 class ProcessManager:
 
-    def __init__(self, settings, app_paths, max_processes=1):
+    def __init__(self, settings, app_paths, max_processes=2):
         self.app_paths = app_paths
         self.settings = settings
         self.max_processes = max_processes
@@ -32,6 +33,7 @@ class ProcessManager:
         self.gspro_process = None
         self.processes_paused = False
         self.scheduled_time = None
+        self.lock = threading.Lock()
         self.reset_scheduled_time()
         self.__initialise_tesserocr_queue()
         self.__create_screenshot_processes()
@@ -99,7 +101,7 @@ class ProcessManager:
                 self.last_shot, self.settings,
                 self.app_paths, self.shot_queue,
                 self.messaging_queue, self.error_count,
-                self.tesserocr_queue)
+                self.tesserocr_queue, self.lock)
             self.processes.append(process)
             process.start()
 
