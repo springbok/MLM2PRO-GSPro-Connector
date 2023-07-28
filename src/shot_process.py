@@ -25,6 +25,7 @@ class ShotProcess(Thread):
         self._shutdown = Event()
         self._execute = Event()
         self.tesserocr_queue = tesserocr_queue
+        self.screenshot = Screenshot(self.settings, self.app_paths)
 
     def run(self):
         # Execute if we are not to shutdown, we are not already busy, and we have been told to execute
@@ -41,9 +42,8 @@ class ShotProcess(Thread):
                     if len(self.last_shot) > 0:
                         last_shot = eval(self.last_shot)
                     # Obtain an api from pool of api's
-                    #api = self.tesserocr_queue.get()
-                    #screenshot = Screenshot(self.settings, self.app_paths, api)
-                    #self.screenshot.capture_and_process_screenshot(last_shot)
+                    api = self.tesserocr_queue.get()
+                    self.screenshot.capture_and_process_screenshot(last_shot, api)
                     # Check if it's a new shot, if so update last shot
                     #if self.screenshot.diff:
                     #    self.last_shot = repr(self.screenshot.ball_data)

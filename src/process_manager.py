@@ -62,7 +62,7 @@ class ProcessManager:
         )
         for x in range(0, self.max_processes):
             tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
-            #self.tesserocr_queue.put(tesserocr_api)
+            self.tesserocr_queue.put(tesserocr_api)
 
     def __capture_and_process_screenshot(self):
         if not self.processes_paused:
@@ -122,9 +122,9 @@ class ProcessManager:
             self.gspro_process.shutdown()
             self.gspro_process.join()
             del self.gspro_process
-        #while not self.tesserocr_queue.empty():
-        #    api = self.tesserocr_queue.get()
-        #    api.End()
+        while not self.tesserocr_queue.empty():
+            api = self.tesserocr_queue.get()
+            api.End()
 
 
 

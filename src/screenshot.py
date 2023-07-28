@@ -13,14 +13,13 @@ from src.ui import Color, UI
 
 class Screenshot:
 
-    def __init__(self, settings, app_paths, tesserocr_api):
+    def __init__(self, settings, app_paths):
         self.rois = Rois(app_paths)
         self.settings = settings
         self.ball_data = BallData()
         self.screenshot = []
         self.diff = False
         self.message = None
-        self.tesserocr_api = tesserocr_api
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:
@@ -87,16 +86,16 @@ class Screenshot:
             win32gui.ReleaseDC(hwnd, hwnd_dc)
             raise RuntimeError(f"Unable to acquire screenshot! Result: {result}")
 
-    def __recognize_roi(self, roi):
+    def __recognize_roi(self, roi, api):
         # crop the roi from screenshot
         cropped_img = self.screenshot[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
         # use tesseract to recognize the text
-        self.tesserocr_api.SetImage(Image.fromarray(cropped_img))
-        result = self.tesserocr_api.GetUTF8Text()
+        api.SetImage(Image.fromarray(cropped_img))
+        result = api.GetUTF8Text()
         cleaned_result = ''.join(c for c in result if c.isdigit() or c == '.' or c == '-' or c == '_' or c == '~')
         return cleaned_result.strip()
 
-    def capture_and_process_screenshot(self, last_shot):
+    def capture_and_process_screenshot(self, last_shot, api):
         # Check if we have a previous shot
         last_shot_object = None
         if last_shot is None:
@@ -106,7 +105,7 @@ class Screenshot:
         self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
-            result = self.__recognize_roi(self.rois.values[key])
+            result = self.__recognize_roi(self.rois.values[key], api)
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
             # Check values are not 0
