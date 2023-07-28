@@ -1,10 +1,7 @@
 import ctypes
-import json
 import logging
-import os
 import cv2
 import numpy as np
-import tesserocr
 import win32gui
 import win32ui
 from PIL import Image
@@ -16,23 +13,14 @@ from src.ui import Color, UI
 
 class Screenshot:
 
-    def __init__(self, settings, app_paths):
+    def __init__(self, settings, app_paths, tesserocr_api):
         self.rois = Rois(app_paths)
         self.settings = settings
         self.ball_data = BallData()
         self.screenshot = []
         self.diff = False
         self.message = None
-        tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
-        tessdata_path = os.path.join(tesseract_path, 'tessdata')
-        tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
-        tesserocr.tesseract_cmd = tessdata_path
-        ctypes.cdll.LoadLibrary(tesseract_library)
-        self.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
-
-    def shutdown_ocr(self):
-        if not self.tesserocr_api is None:
-            self.tesserocr_api.End()
+        self.tesserocr_api = tesserocr_api
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:
@@ -118,7 +106,7 @@ class Screenshot:
         self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
-            result = self.__recognize_roi(self.screenshot, self.rois.values[key])
+            result = self.__recognize_roi(self.rois.values[key])
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
             # Check values are not 0

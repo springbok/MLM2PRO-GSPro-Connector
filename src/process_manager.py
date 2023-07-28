@@ -1,7 +1,12 @@
 import ctypes
 import logging
 import multiprocessing
+import os
 from multiprocessing import Queue
+import queue
+
+import tesserocr
+
 from src.gspro_process import GSProProcess
 from src.shot_processing_process import ShotProcessingProcess
 from src.ui import UI, Color
@@ -18,18 +23,22 @@ class ProcessManager:
         # Create a variables that can be shared between all processes
         self.last_shot = multiprocessing.Value(ctypes.c_wchar_p, '')
         self.error_count = multiprocessing.Value(ctypes.c_int, 0)
-        self.run_process = multiprocessing.Value(ctypes.c_int, 0)
         self.stop_processing = multiprocessing.Value(ctypes.c_int, 0)
+        self.process_busy = multiprocessing.Value(ctypes.c_wchar_p, '')
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
         # Create queue for messaging between processes and the manager, contains UI & error messages
         self.messaging_queue = Queue()
+        # Create a queue to hold tesserocr instances that can be used by processes as
+        # PyTessBaseAPI is not pickable so doesn't work with multiprocessing
+        self.tesserocr_queue = Queue()
         # Create screenshot processes
         self.processes = []
         self.gspro_process = None
         self.error_count_message_displayed = False
         self.scheduled_time = None
         self.reset_scheduled_time()
+        self.__initialise_tesserocr_queue()
         self.__add_screenshot_processes()
         self.__add_gspro_process()
 
@@ -51,14 +60,24 @@ class ProcessManager:
         self.error_count_message_displayed = False
         self.error_count.value = 0
 
+    def __initialise_tesserocr_queue(self):
+        tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
+        tessdata_path = os.path.join(tesseract_path, 'tessdata')
+        #tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
+        tesserocr.tesseract_cmd = tessdata_path
+        for x in range(0, self.max_processes):
+            tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
+        #self.tesserocr_queue.put(tesserocr_api)
+
     def __capture_and_process_screenshot(self):
         free_process = False
         for process in self.processes:
+            print(f"process.name: {process.name} self.process_busy.value: {self.process_busy.value}")
             # Check for available process
-            if not process.is_alive():
+            if process.is_alive() and not process.name in self.process_busy.value:
                 free_process = True
                 # Start screenshot process with specified pid
-                self.run_process.value = process.pid
+                self.process_busy.value = f"{self.process_busy.value} {process.name}" 
         if not free_process:
             # Could not any free processes to handle request
             logging.debug('All processes busy unable to handle screenshot request, reschedule')
@@ -82,19 +101,22 @@ class ProcessManager:
     def __add_screenshot_processes(self):
         # Create a new process object & start it
         for x in range(0, self.max_processes):
-            process = ShotProcessingProcess(self.last_shot, self.settings,
-                                                       self.app_paths, self.shot_queue,
-                                                       self.messaging_queue, self.error_count,
-                                                       self.run_process, self.stop_processing)
+            process = ShotProcessingProcess(
+                self.last_shot, self.settings,
+                self.app_paths, self.shot_queue,
+                self.messaging_queue, self.error_count,
+                self.process_busy, self.stop_processing,
+                self.tesserocr_queue)
             self.processes.append(process)
             process.start()
 
     def __add_gspro_process(self):
         # Multiprocess variable to tell the process to start running this gives us control from
         # this manager of when a process starts
-        self.gspro_process = GSProProcess(self.settings, self.shot_queue,
-                                          self.messaging_queue, self.error_count,
-                                          self.stop_processing)
+        self.gspro_process = GSProProcess(
+            self.settings, self.shot_queue,
+            self.messaging_queue, self.error_count,
+            self.stop_processing)
         self.gspro_process.start()
 
     def shutdown(self):
@@ -106,5 +128,9 @@ class ProcessManager:
         if not self.gspro_process is None:
             self.gspro_process.join()
             del self.gspro_process
+        while not self.tesserocr_queue.empty():
+            api = self.tesserocr_queue.get()
+            api.End()
+
 
 
