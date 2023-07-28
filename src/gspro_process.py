@@ -16,6 +16,11 @@ class BallData:
         self.vla = 0
         self.club_speed = 0
 
+    def __copy__(self):
+        obj = type(self).__new__(self.__class__)
+        obj.__dict__.update(self.__dict__)
+        return obj
+
 
 class GSProProcess(Thread):
 

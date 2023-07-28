@@ -1,3 +1,5 @@
+import json
+import logging
 from threading import Thread, Event
 
 from src.process_message import ProcessMessage
@@ -35,22 +37,19 @@ class ShotProcess(Thread):
                 try:
                     self._busy.set()
                     self._execute.clear()
-                    msg = ProcessMessage(error=False, message=f"----Process {self.name}: running", logging=True, ui=False)
+                    msg = ProcessMessage(error=False, message=f"Process {self.name}: running", logging=True, ui=False)
                     self.messaging_queue.put(repr(msg))
-                    # Get screenshot and check if it is different from last shot
-                    last_shot = None
-                    if len(self.last_shot) > 0:
-                        last_shot = eval(self.last_shot)
                     # Obtain an api from pool of api's
                     api = self.tesserocr_queue.get()
-                    self.screenshot.capture_and_process_screenshot(last_shot, api)
-                    # Check if it's a new shot, if so update last shot
-                    #if self.screenshot.diff:
-                    #    self.last_shot = repr(self.screenshot.ball_data)
-                    #    self.shot_queue.put(repr(self.screenshot.ball_data))
+                    self.screenshot.capture_and_process_screenshot(self.last_shot, api)
+                    if self.screenshot.diff:
+                        msg = ProcessMessage(error=False, message=f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.__dict__)}", logging=True, ui=True)
+                        self.messaging_queue.put(repr(msg))
+                        self.last_shot = self.screenshot.ball_data.__copy__()
                 except Exception as e:
                     # On error increase error count and add error message to the process message queue
                     self.error_count = self.error_count + 1
+                    logging.info(f"error count: {self.error_count}")
                     msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {e}", logging=True, ui=True)
                     self.messaging_queue.put(repr(msg))
                 finally:

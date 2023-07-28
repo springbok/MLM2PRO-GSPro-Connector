@@ -1,5 +1,4 @@
 import ctypes
-import logging
 import cv2
 import numpy as np
 import win32gui
@@ -76,8 +75,8 @@ class Screenshot:
         bmpinfo = bitmap.GetInfo()
         bmpstr = bitmap.GetBitmapBits(True)
 
-        self.screenshot = np.frombuffer(bmpstr, dtype=np.uint8).reshape((bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4))
-        self.screenshot = np.ascontiguousarray(self.screenshot)[..., :-1]
+        screenshot = np.frombuffer(bmpstr, dtype=np.uint8).reshape((bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4))
+        self.screenshot = np.ascontiguousarray(screenshot)[..., :-1]
 
         if not result:
             win32gui.DeleteObject(bitmap.GetHandle())
@@ -97,7 +96,6 @@ class Screenshot:
 
     def capture_and_process_screenshot(self, last_shot, api):
         # Check if we have a previous shot
-        last_shot_object = None
         if last_shot is None:
             diff = True
         else:
@@ -105,15 +103,15 @@ class Screenshot:
         self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
-            result = self.__recognize_roi(self.rois.values[key], api)
+            result = float(self.__recognize_roi(self.rois.values[key], api))
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
             # Check values are not 0
-            if key in self.rois.must_not_be_zero and result <= 0:
+            if self.rois.ball_data_mapping[key] in self.rois.must_not_be_zero and result == float(0):
                 raise ValueError(f"Value for '{key}' is 0")
             # See if values are different from previous shot
-            if not diff and not last_shot_object is None:
-                if result != getattr(self.rois.ball_data_mapping[key], last_shot):
+            if not diff and not last_shot is None:
+                if result != getattr(last_shot, self.rois.ball_data_mapping[key]):
                     diff = True
 
         # Set diff attribute if value are different

@@ -13,12 +13,12 @@ from datetime import datetime, timedelta
 
 class ProcessManager:
 
-    def __init__(self, settings, app_paths, max_processes=2):
+    def __init__(self, settings, app_paths, max_processes=1):
         self.app_paths = app_paths
         self.settings = settings
         self.max_processes = max_processes
         # Create a variables that can be shared between all processes
-        self.last_shot = []
+        self.last_shot = None
         self.error_count = 0
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
@@ -38,7 +38,7 @@ class ProcessManager:
         self.__create_gspro_process()
 
     def run(self):
-        if datetime.now() > self.scheduled_time:
+        if not self.processes_paused and datetime.now() > self.scheduled_time:
             if self.error_count < 5:
                 # Call a process to process a screenshot
                 self.__capture_and_process_screenshot()

@@ -16,20 +16,22 @@ class Rois:
         # of our BallData class allowing us to dynamically assign values to the ball data object
         self.ball_data_mapping = {
             "Ball Speed": "speed",
-            "Spin Rate": "TotalSpin",
-            "Spin Axis": "SpinAxis",
-            "Launch Direction (HLA)": "HLA",
-            "Launch Angle (VLA)": "VLA",
-            "Club Speed": "ClubSpeed"
+            "Spin Rate": "total_spin",
+            "Spin Axis": "spin_axis",
+            "Launch Direction (HLA)": "hla",
+            "Launch Angle (VLA)": "vla",
+            "Club Speed": "club_speed"
         }
-        self.must_not_be_zero = ["Ball Speed", "Spin Rate", "Launch Angle (VLA)", "Club Speed"]
+        self.must_not_be_zero = ["speed", "total_spin", "hla", "club_speed"]
 
     def __load(self):
         logging.info(f"Loading rois from {self.path}")
         if os.path.isfile(self.path):
             with open(self.path, "r") as file:
                 lines = file.readlines()
-                self.values = json.loads(lines)
+                cleaned_lines = [line.split("//")[0].strip() for line in lines if not line.strip().startswith("//")]
+                cleaned_json = "\n".join(cleaned_lines)
+                self.values = json.loads(cleaned_json)
             logging.info(f"RIOS: {self.values}")
 
     def write(self):

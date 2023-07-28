@@ -1,4 +1,3 @@
-from src.non_blocking_input import NonBlockingInput
 from src.ui import Color, UI
 
 class Menu:

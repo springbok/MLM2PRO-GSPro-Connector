@@ -37,7 +37,7 @@ def main(app_paths=None):
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
         settings = Settings(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
-        #Screenshot(settings, app_paths).load_rois()
+        Screenshot(settings, app_paths).load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
         # Create process manager specify the max processes allowed to run at the same time
         process_manager = ProcessManager(settings, app_paths)
