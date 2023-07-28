@@ -1,5 +1,7 @@
-from multiprocessing import Process
+from threading import Thread
+
 from src.process_message import ProcessMessage
+
 
 # All code needs to multiprocess safe, so do no use the normal logger for example
 # for logging we add a message we want to log to the shot_queue and the process manager
@@ -15,10 +17,10 @@ class BallData:
         self.club_speed = 0
 
 
-class GSProProcess(Process):
+class GSProProcess(Thread):
 
     def __init__(self, settings, shot_queue, messaging_queue, error_count, stop_processing):
-        Process.__init__(self)
+        Thread.__init__(self, daemon=True)
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
         self.settings = settings

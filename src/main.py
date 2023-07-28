@@ -58,7 +58,6 @@ def main(app_paths=None):
             # Start process schedule
             process_manager.reset_scheduled_time()
             while not done_processing:
-                # Process screenshots
                 process_manager.run()
                 if non_block_input.input_queued():
                     input_str = non_block_input.input_get()
@@ -67,6 +66,7 @@ def main(app_paths=None):
                         done_processing = True
                     else:
                         menu.process(input_str.upper(), process_manager)
+
         except Exception as e:
             message = f'Failed to initialise: {format(e)}'
             UI.display_message(Color.RED, "CONNECTOR ||", message)

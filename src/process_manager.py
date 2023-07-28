@@ -1,14 +1,11 @@
-import ctypes
 import logging
-import multiprocessing
 import os
-from multiprocessing import Queue
-import queue
+from queue import Queue
 
 import tesserocr
 
 from src.gspro_process import GSProProcess
-from src.shot_processing_process import ShotProcessingProcess
+from src.shot_process import ShotProcess
 from src.ui import UI, Color
 # Needed when we convert msg back to an object using eval
 from src.process_message import ProcessMessage
@@ -21,10 +18,8 @@ class ProcessManager:
         self.settings = settings
         self.max_processes = max_processes
         # Create a variables that can be shared between all processes
-        self.last_shot = multiprocessing.Value(ctypes.c_wchar_p, '')
-        self.error_count = multiprocessing.Value(ctypes.c_int, 0)
-        self.stop_processing = multiprocessing.Value(ctypes.c_int, 0)
-        self.process_busy = multiprocessing.Value(ctypes.c_wchar_p, '')
+        self.last_shot = []
+        self.error_count = 0
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
         # Create queue for messaging between processes and the manager, contains UI & error messages
@@ -35,52 +30,51 @@ class ProcessManager:
         # Create screenshot processes
         self.processes = []
         self.gspro_process = None
-        self.error_count_message_displayed = False
+        self.processes_paused = False
         self.scheduled_time = None
         self.reset_scheduled_time()
         self.__initialise_tesserocr_queue()
-        self.__add_screenshot_processes()
-        self.__add_gspro_process()
+        self.__create_screenshot_processes()
+        self.__create_gspro_process()
 
     def run(self):
         if datetime.now() > self.scheduled_time:
-            if self.error_count.value < 5:
+            if self.error_count < 5:
                 # Call a process to process a screenshot
                 self.__capture_and_process_screenshot()
                 # Display and/or log any process messages
                 self.__process_message_queue()
-            elif not self.error_count_message_displayed:
+            elif not self.processes_paused:
                 # More than 5 errors in processes, stop processing until restart by user
                 UI.display_message(Color.RED, "CONNECTOR ||", "More than 5 errors detected, stopping processing. Fix issues and then restart the connector.")
-                self.error_count_message_displayed = True
+                self.processes_paused = True
             # reset scheduled run time
             self.reset_scheduled_time()
 
     def restart(self):
-        self.error_count_message_displayed = False
-        self.error_count.value = 0
+        self.processes_paused = False
+        self.error_count = 0
 
     def __initialise_tesserocr_queue(self):
-        tesseract_path = os.path.join(os.getcwd(), 'Tesseract-OCR')
-        tessdata_path = os.path.join(tesseract_path, 'tessdata')
-        #tesseract_library = os.path.join(tesseract_path, 'libtesseract-5.dll')
-        tesserocr.tesseract_cmd = tessdata_path
+        tessdata_path =  self.app_paths.get_config_path(
+            name='train',
+            ext='.traineddata'
+        )
         for x in range(0, self.max_processes):
-            tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path=tesserocr.tesseract_cmd)
-        #self.tesserocr_queue.put(tesserocr_api)
+            tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
+            #self.tesserocr_queue.put(tesserocr_api)
 
     def __capture_and_process_screenshot(self):
-        free_process = False
-        for process in self.processes:
-            print(f"process.name: {process.name} self.process_busy.value: {self.process_busy.value}")
-            # Check for available process
-            if process.is_alive() and not process.name in self.process_busy.value:
-                free_process = True
-                # Start screenshot process with specified pid
-                self.process_busy.value = f"{self.process_busy.value} {process.name}" 
-        if not free_process:
-            # Could not any free processes to handle request
-            logging.debug('All processes busy unable to handle screenshot request, reschedule')
+        if not self.processes_paused:
+            free_process = False
+            for process in self.processes:
+                # Check for available process
+                if not process.busy():
+                    free_process = True
+                    process.execute()
+            if not free_process:
+                # Could not any free processes to handle request
+                logging.debug('All processes busy unable to handle screenshot request, reschedule')
 
     def reset_scheduled_time(self):
         self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))
@@ -98,39 +92,39 @@ class ProcessManager:
                 if msg.logging:
                     logging.debug(msg.message)
 
-    def __add_screenshot_processes(self):
+    def __create_screenshot_processes(self):
         # Create a new process object & start it
         for x in range(0, self.max_processes):
-            process = ShotProcessingProcess(
+            process = ShotProcess(
                 self.last_shot, self.settings,
                 self.app_paths, self.shot_queue,
                 self.messaging_queue, self.error_count,
-                self.process_busy, self.stop_processing,
                 self.tesserocr_queue)
             self.processes.append(process)
             process.start()
 
-    def __add_gspro_process(self):
+    def __create_gspro_process(self):
+        return
         # Multiprocess variable to tell the process to start running this gives us control from
         # this manager of when a process starts
         self.gspro_process = GSProProcess(
             self.settings, self.shot_queue,
-            self.messaging_queue, self.error_count,
-            self.stop_processing)
+            self.messaging_queue, self.error_count)
         self.gspro_process.start()
 
     def shutdown(self):
-        self.stop_processing.value = 1
         # Wait for all processes to finish
         for process in self.processes:
+            process.shutdown()
             process.join()
             del process
         if not self.gspro_process is None:
+            self.gspro_process.shutdown()
             self.gspro_process.join()
             del self.gspro_process
-        while not self.tesserocr_queue.empty():
-            api = self.tesserocr_queue.get()
-            api.End()
+        #while not self.tesserocr_queue.empty():
+        #    api = self.tesserocr_queue.get()
+        #    api.End()
 
 
 

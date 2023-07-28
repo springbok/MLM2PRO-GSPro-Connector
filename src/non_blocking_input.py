@@ -1,9 +1,6 @@
 import threading
 import queue
 
-from src.threads_test import Threadstest
-
-
 class NonBlockingInput:
 
     def __init__(self, exit_condition):
