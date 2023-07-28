@@ -1,6 +1,4 @@
 import logging
-import os
-import threading
 from queue import Queue
 
 import tesserocr
@@ -14,11 +12,9 @@ from datetime import datetime, timedelta
 
 class ProcessManager:
 
-    def __init__(self, settings, app_paths, max_processes=2):
+    def __init__(self, settings, app_paths):
         self.app_paths = app_paths
         self.settings = settings
-        self.max_processes = max_processes
-        # Create a variables that can be shared between all processes
         self.last_shot = None
         self.error_count = 0
         # Create a queue to store shots to be sent to GSPro
@@ -28,15 +24,13 @@ class ProcessManager:
         # Create a queue to hold tesserocr instances that can be used by processes as
         # PyTessBaseAPI is not pickable so doesn't work with multiprocessing
         self.tesserocr_queue = Queue()
-        # Create screenshot processes
-        self.processes = []
+        self.shot_process = None
         self.gspro_process = None
         self.processes_paused = False
         self.scheduled_time = None
-        self.lock = threading.Lock()
         self.reset_scheduled_time()
         self.__initialise_tesserocr_queue()
-        self.__create_screenshot_processes()
+        self.__create_screenshot_process()
         self.__create_gspro_process()
 
     def run(self):
@@ -62,21 +56,16 @@ class ProcessManager:
             name='train',
             ext='.traineddata'
         )
-        for x in range(0, self.max_processes):
-            tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
-            self.tesserocr_queue.put(tesserocr_api)
+        tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
+        self.tesserocr_queue.put(tesserocr_api)
 
     def __capture_and_process_screenshot(self):
         if not self.processes_paused:
-            free_process = False
-            for process in self.processes:
-                # Check for available process
-                if not process.busy():
-                    free_process = True
-                    process.execute()
-            if not free_process:
-                # Could not any free processes to handle request
-                logging.debug('All processes busy unable to handle screenshot request, reschedule')
+            # Check for next shot if process available
+            if not self.shot_process.busy():
+                self.shot_process.execute()
+            else:
+                logging.debug('Process busy unable to handle screenshot request, reschedule')
 
     def reset_scheduled_time(self):
         self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))
@@ -94,21 +83,16 @@ class ProcessManager:
                 if msg.logging:
                     logging.debug(msg.message)
 
-    def __create_screenshot_processes(self):
+    def __create_screenshot_process(self):
         # Create a new process object & start it
-        for x in range(0, self.max_processes):
-            process = ShotProcess(
-                self.last_shot, self.settings,
-                self.app_paths, self.shot_queue,
-                self.messaging_queue, self.error_count,
-                self.tesserocr_queue, self.lock)
-            self.processes.append(process)
-            process.start()
+        self.shot_process = ShotProcess(
+            self.last_shot, self.settings,
+            self.app_paths, self.shot_queue,
+            self.messaging_queue, self.error_count,
+            self.tesserocr_queue)
+        self.shot_process.start()
 
     def __create_gspro_process(self):
-        return
-        # Multiprocess variable to tell the process to start running this gives us control from
-        # this manager of when a process starts
         self.gspro_process = GSProProcess(
             self.settings, self.shot_queue,
             self.messaging_queue, self.error_count)
@@ -116,10 +100,10 @@ class ProcessManager:
 
     def shutdown(self):
         # Wait for all processes to finish
-        for process in self.processes:
-            process.shutdown()
-            process.join()
-            del process
+        if not self.shot_process is None:
+            self.shot_process.shutdown()
+            self.shot_process.join()
+            del self.shot_process
         if not self.gspro_process is None:
             self.gspro_process.shutdown()
             self.gspro_process.join()

@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Event
 
 from src.process_message import ProcessMessage
 
@@ -15,6 +15,8 @@ class BallData:
         self.hla = 0
         self.vla = 0
         self.club_speed = 0
+        self.back_spin = 0
+        self.side_spin = 0
 
     def __copy__(self):
         obj = type(self).__new__(self.__class__)
@@ -24,24 +26,23 @@ class BallData:
 
 class GSProProcess(Thread):
 
-    def __init__(self, settings, shot_queue, messaging_queue, error_count, stop_processing):
+    def __init__(self, settings, shot_queue, messaging_queue, error_count):
         Thread.__init__(self, daemon=True)
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
         self.settings = settings
         self.error_count = error_count
-        self.stop_processing = stop_processing
+        self._shutdown = Event()
 
     def run(self):
-        while self.stop_processing == 0:
+        while not self._shutdown.is_set():
             if not self.shot_queue.empty():
                 while not self.shot_queue.empty():
                     shot = self.shot_queue.get()
                     shot = eval(shot)
                 msg = ProcessMessage(error=False, message=f"Process {self.name}: running", logging=True, ui=True)
                 self.messaging_queue.put(repr(msg))
-        self.__shutdown()
         exit(0)
 
-    def __shutdown(self):
-        i=1
+    def shutdown(self):
+        self._shutdown.set()

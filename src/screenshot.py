@@ -1,4 +1,6 @@
 import ctypes
+import math
+
 import cv2
 import numpy as np
 import win32gui
@@ -19,6 +21,9 @@ class Screenshot:
         self.screenshot = []
         self.diff = False
         self.message = None
+        self.width = -1
+        self.height = -1
+
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:
@@ -37,7 +42,6 @@ class Screenshot:
             print(f"Please select the ROI for {value}.")
             roi = self.__select_roi()
             self.rois.values[value] = roi
-            logging.info(f"ROI value for {value}: {roi}")
         # Save settings file with new settings
         self.rois.write()
         
@@ -54,10 +58,19 @@ class Screenshot:
     def __capture_screenshot(self, window_name: str, target_width: int, target_height: int):
         ctypes.windll.user32.SetProcessDPIAware()
         hwnd = win32gui.FindWindow(None, window_name)
+        if not hwnd:
+            raise RuntimeError(f"Can't find window called '{window_name}'")
 
         rect = win32gui.GetClientRect(hwnd)
-        w = rect[2] - rect[0]
-        h = rect[3] - rect[1]
+        if self.width == -1:
+            self.width = rect[2] - rect[0]
+            self.height = rect[3] - rect[1]
+        else:
+            if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
+                raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
+
+        if not (self.width == target_width and self.height == target_height):
+            print(f"Dimensions seem wrong {self.width}x{self.height} vs json:{target_width}x{target_height}")
 
         rect_pos = win32gui.GetWindowRect(hwnd)
         left = rect_pos[0]
@@ -113,6 +126,9 @@ class Screenshot:
             if not diff and not last_shot is None:
                 if result != getattr(last_shot, self.rois.ball_data_mapping[key]):
                     diff = True
+        if diff:
+            self.ball_data.back_spin = round(self.ball_data.total_spin * math.cos(math.radians(self.ball_data.spin_axis)))
+            self.ball_data.side_spin = round(self.ball_data.total_spin * math.sin(math.radians(self.ball_data.spin_axis)))
 
         # Set diff attribute if value are different
         self.diff = diff
