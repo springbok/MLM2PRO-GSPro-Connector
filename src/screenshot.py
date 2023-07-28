@@ -1,13 +1,12 @@
 import ctypes
 import math
-
 import cv2
 import numpy as np
 import win32gui
 import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
-from src.gspro_process import BallData
+from src.ball_data import BallData
 from src.rois import Rois
 from src.ui import Color, UI
 
@@ -80,7 +79,7 @@ class Screenshot:
         mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
         save_dc = mfc_dc.CreateCompatibleDC()
         bitmap = win32ui.CreateBitmap()
-        bitmap.CreateCompatibleBitmap(mfc_dc, w, h)
+        bitmap.CreateCompatibleBitmap(mfc_dc, self.width, self.height)
         save_dc.SelectObject(bitmap)
 
         result = ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
