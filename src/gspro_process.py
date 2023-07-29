@@ -25,6 +25,8 @@ class GSProProcess(Thread):
                         shot = self.shot_queue.get()
                         shot = eval(shot)
                         logging.info(f"Process {self.name} retrieved shot data from queue: {json.dumps(self.screenshot.ball_data.__dict__)}")
+                        if self.gspro_connection.connected:
+                            self.gspro_connect.launch_ball(shot)
                 except Exception as e:
                     self.error_count = self.error_count + 1
                     msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {e}", logging=True, ui=True)

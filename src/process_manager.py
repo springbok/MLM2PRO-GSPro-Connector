@@ -16,6 +16,7 @@ class ProcessManager:
     def __init__(self, settings, app_paths, gspro_connection):
         self.app_paths = app_paths
         self.settings = settings
+        self.gspro_connection = gspro_connection
         self.last_shot = None
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
@@ -32,7 +33,6 @@ class ProcessManager:
         self.__initialise_tesserocr_queue()
         self.__create_screenshot_process()
         self.__create_gspro_process()
-        self.gspro_connection = gspro_connection
 
     def run(self):
         if not self.processes_paused and datetime.now() > self.scheduled_time:

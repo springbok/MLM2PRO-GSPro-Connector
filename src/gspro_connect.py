@@ -1,3 +1,4 @@
+import math
 import socket
 import logging
 import json
@@ -45,21 +46,39 @@ class GSProConnect:
                     return True
         return False
 
+    def test_shot_data(self):
+        ball_data = BallData()
+        ball_data.speed = 85
+        ball_data.spin_axis = 6.2
+        ball_data.total_spin = 4743.0
+        ball_data.hla = 1.0
+        ball_data.vla = 20.9
+        ball_data.club_speed = 65.0
+        ball_data.back_spin = round(ball_data.total_spin * math.cos(math.radians(ball_data.spin_axis)))
+        ball_data.side_spin = round(ball_data.total_spin * math.sin(math.radians(ball_data.spin_axis)))
+        return ball_data
+
     def send_test_signal(self):
+        ball_data = self.test_shot_data()
+        self.launch_ball(ball_data)
+
+    def launch_ball(self, ball_data: BallData) -> None:
         payload = {
             "DeviceID": self._device_id,
             "Units": self._units,
-            "ShotNumber": 1,
+            "ShotNumber": self._shot_number,
             "APIversion": self._api_version,
             "BallData": {
-                "Speed": 85.0,
-                "SpinAxis": 6.2,
-                "TotalSpin": 4743.0,
-                "HLA": 1.0,
-                "VLA": 20.9
+                "Speed": ball_data.speed,
+                "SpinAxis": ball_data.spin_axis,
+                "TotalSpin": ball_data.total_spin,
+                "HLA": ball_data.hla,
+                "VLA": ball_data.vla,
+                "Backspin": ball_data.back_spin,
+                "SideSpin": ball_data.side_spin
             },
             "ClubData": {
-                "Speed": 65.0
+                "Speed": ball_data.club_speed
             },
             "ShotDataOptions": {
                 "ContainsBallData": True,
@@ -69,38 +88,7 @@ class GSProConnect:
                 "IsHeartBeat": False
             }
         }
-
-        resp = self.send_msg(payload)
-        if (resp):
-            UI.display_message(Color.RED, "CONNECTOR ||", 'GSPro Connected')
-        else:
-            raise ConnectionError("No response received from GSPro")
-
-    def launch_ball(self, ball_data: BallData) -> None:
-        api_data = {
-            "DeviceID": self._device_id,
-            "Units": self._units,
-            "ShotNumber": self._shot_number,
-            "APIversion": self._api_version,
-            "BallData": {
-                "Speed": ball_data.ballspeed,
-                "SpinAxis": ball_data.spinaxis,
-                "TotalSpin": ball_data.totalspin,
-                "HLA": ball_data.hla,
-                "VLA": ball_data.vla,
-                "BackSpin": ball_data.back_spin,
-                "SideSpin": ball_data.side_spin
-            },
-            "ShotDataOptions": {
-                "ContainsBallData": True,
-                "ContainsClubData": False
-            },
-        }
-
-        print(json.dumps(api_data, indent=4))
-
-        self.send_msg(api_data)
-
+        self.send_msg(payload)
         self._shot_number += 1
 
     def terminate_session(self):
