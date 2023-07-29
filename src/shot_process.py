@@ -15,12 +15,13 @@ class ShotProcess(Thread):
         self.last_shot = None
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
-        self.error_count = 0
+        self.num_errors = 0
         self._busy = Event()
         self._shutdown = Event()
         self._execute = Event()
         self.tesserocr_queue = tesserocr_queue
         self.screenshot = Screenshot(self.settings, self.app_paths)
+        self.name = "shot_process"
 
     def run(self):
         # Execute if not shutdown, we are not already busy, and we have been told to execute
@@ -38,24 +39,24 @@ class ShotProcess(Thread):
                         # New shot so place shot data in shot queue for processing
                         logging.info(f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.__dict__)}")
                         self.last_shot = self.screenshot.ball_data.__copy__()
-                        self.shot_queue.put(repr(self.last_shot))
+                        self.shot_queue.put(json.dumps(self.screenshot.ball_data.__dict__))
+                        # Flag process as no longer busy
+                        self._busy.clear()
+                        # Release api and make it available
+                        if api is not None:
+                            self.tesserocr_queue.put(api)
                 except Exception as e:
-                    self.error_count = self.error_count + 1
-                    msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {e}", logging=True, ui=True)
+                    self.num_errors = self.num_errors + 1
+                    msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
+                    logging.debug(f"{msg}")
                     self.messaging_queue.put(repr(msg))
-                finally:
-                    # Flag process as no longer busy
-                    self._busy.clear()
-                    # Release api and make it available
-                    if api is not None:
-                        self.tesserocr_queue.put(api)
         exit(0)
 
     def error_count(self):
-        return self.error_count
+        return self.num_errors
 
     def reset_error_count(self):
-        self.error_count = 0
+        self.num_errors = 0
 
     def busy(self):
         return self._busy.is_set()

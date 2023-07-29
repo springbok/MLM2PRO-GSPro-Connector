@@ -22,7 +22,7 @@ class Rois:
             "Launch Angle (VLA)": "vla",
             "Club Speed": "club_speed"
         }
-        self.must_not_be_zero = ["speed", "total_spin", "hla", "club_speed"]
+        self.must_not_be_zero = ["speed", "total_spin", "club_speed"]
 
     def __load(self):
         logging.info(f"Loading rois from {self.path}")

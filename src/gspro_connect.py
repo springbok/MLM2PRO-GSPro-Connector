@@ -35,7 +35,7 @@ class GSProConnect:
                 sleep(1)
                 continue
             except socket.error as e:
-                UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{e}")
+                UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{format(e)}")
                 raise
             else:
                 if len(msg) == 0:
@@ -89,6 +89,8 @@ class GSProConnect:
             }
         }
         self.send_msg(payload)
+        UI.display_message(Color.GREEN, "CONNECTOR ||", f"Success: {json.dumps(ball_data.__dict__)}")
+
         self._shot_number += 1
 
     def terminate_session(self):

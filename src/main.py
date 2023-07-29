@@ -69,10 +69,10 @@ def main(app_paths=None):
                 if non_block_input.input_queued():
                     input_str = non_block_input.input_get()
                     # Process input, check if it's the quit option, if not process the selected option
-                    if input_str.strip() == non_block_input.exit_condition:
+                    if input_str.strip().upper() == non_block_input.exit_condition.upper():
                         done_processing = True
                     else:
-                        menu.process(input_str.upper(), process_manager, screenshot)
+                        menu.process(input_str.upper(), process_manager, gspro_connection, screenshot)
 
         except Exception as e:
             message = f'Failed to initialise: {format(e)}'

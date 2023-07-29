@@ -14,8 +14,9 @@ class GSProProcess(Thread):
         self.messaging_queue = messaging_queue
         self.settings = settings
         self.gspro_connection = gspro_connection
-        self.error_count = 0
+        self.num_errors = 0
         self._shutdown = Event()
+        self.name = "gspro_process"
 
     def run(self):
         while not self._shutdown.is_set():
@@ -23,22 +24,23 @@ class GSProProcess(Thread):
                 try:
                     while not self.shot_queue.empty():
                         shot = self.shot_queue.get()
-                        shot = eval(shot)
-                        logging.info(f"Process {self.name} retrieved shot data from queue: {json.dumps(self.screenshot.ball_data.__dict__)}")
+                        logging.info(f"Process {self.name} got shot from queue: {json.dumps(shot)}")
+                        shot = BallData(json.loads(shot))
+                        logging.info(f"Process {self.name} retrieved shot data from queue sending to gspro: {json.dumps(shot.__dict__)}")
                         if self.gspro_connection.connected:
-                            self.gspro_connect.launch_ball(shot)
+                            self.gspro_connection.gspro_connect.launch_ball(shot)
                 except Exception as e:
-                    self.error_count = self.error_count + 1
-                    msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {e}", logging=True, ui=True)
+                    self.num_errors = self.num_errors + 1
+                    msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
                     self.messaging_queue.put(repr(msg))
 
         exit(0)
 
     def error_count(self):
-        return self.error_count
+        return self.num_errors
 
     def reset_error_count(self):
-        self.error_count = 0
+        self.num_errors = 0
 
     def shutdown(self):
         self._shutdown.set()

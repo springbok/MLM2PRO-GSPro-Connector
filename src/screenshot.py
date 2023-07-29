@@ -68,8 +68,8 @@ class Screenshot:
             if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
                 raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
 
-        if not (self.width == target_width and self.height == target_height):
-            print(f"Dimensions seem wrong {self.width}x{self.height} vs json:{target_width}x{target_height}")
+        #if not (self.width == target_width and self.height == target_height):
+        #    print(f"Dimensions seem wrong {self.width}x{self.height} vs json:{target_width}x{target_height}")
 
         rect_pos = win32gui.GetWindowRect(hwnd)
         left = rect_pos[0]

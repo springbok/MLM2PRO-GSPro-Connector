@@ -1,15 +1,16 @@
+import logging
 from dataclasses import dataclass
 
 from src.ui import Color, UI
 
 @dataclass
 class MenuOptions:
-    EXIT: 'Q'
-    DISPLAY_MENU = 'M'
-    RESET_ROI = 'R'
-    RESET_GSPRO_CONNECTION = 'G'
-    TEST_GSPRO_CONNECTION = 'T'
-    UNPAUSE_CONNECTOR: 'U'
+    EXIT = "Q"
+    DISPLAY_MENU = "M"
+    RESET_ROI = "R"
+    RESET_GSPRO_CONNECTION = "G"
+    TEST_GSPRO_CONNECTION = "T"
+    UNPAUSE_CONNECTOR = "U"
 
 
 class Menu:
@@ -28,6 +29,8 @@ class Menu:
             print(key, '--', self.menu_options[key])
 
     def process(self, option, process_manager, gspro_connection, screenshot):
+        option = option.upper()
+        logging.info(f"key: {option}")
         soptions = ', '.join(map(str, list(self.menu_options.keys())))
         if option == MenuOptions.DISPLAY_MENU:
             self.display()
