@@ -1,6 +1,7 @@
 import logging
 import os
 from src.appdata import AppDataPaths
+from src.gspro_connection import GSProConnection
 from src.menu import Menu, MenuOptions
 from src.non_blocking_input import NonBlockingInput
 from src.process_manager import ProcessManager
@@ -38,10 +39,14 @@ def main(app_paths=None):
         settings = Settings(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
         # Check if we can read ROI's from file, if not prompt user to specify
-        Screenshot(settings, app_paths).load_rois()
+        screenshot = Screenshot(settings, app_paths)
+        screenshot.load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
+        # Get GSPro connection
+        gspro_connection = GSProConnection(settings)
+        gspro_connection.connect()
         # Create process manager to manage all threads
-        process_manager = ProcessManager(settings, app_paths)
+        process_manager = ProcessManager(settings, app_paths, gspro_connection)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
     except Exception as e:
         message = f'Failed to initialise: {format(e)}'
@@ -67,7 +72,7 @@ def main(app_paths=None):
                     if input_str.strip() == non_block_input.exit_condition:
                         done_processing = True
                     else:
-                        menu.process(input_str.upper(), process_manager)
+                        menu.process(input_str.upper(), process_manager, screenshot)
 
         except Exception as e:
             message = f'Failed to initialise: {format(e)}'
@@ -77,3 +82,4 @@ def main(app_paths=None):
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Shutting down connector...")
             # Stop processes cleanly
             process_manager.shutdown()
+            gspro_connection.disconnect()

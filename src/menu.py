@@ -27,17 +27,17 @@ class Menu:
         for key in self.menu_options.keys():
             print(key, '--', self.menu_options[key])
 
-    def process(self, option, process_manager):
+    def process(self, option, process_manager, gspro_connection, screenshot):
         soptions = ', '.join(map(str, list(self.menu_options.keys())))
         if option == MenuOptions.DISPLAY_MENU:
             self.display()
         elif option == MenuOptions.UNPAUSE_CONNECTOR:
             process_manager.restart()
-        elif option == 'R':
-            i=1
-            #try:
-            #    obtain_rois(True)
-            #except Exception as e:
-            #    print_colored_prefix(Color.RED, "Image Processing ||", "An error occurred: {}".format(e))
+        elif option == MenuOptions.RESET_GSPRO_CONNECTION:
+            gspro_connection.reset()
+        elif option == MenuOptions.TEST_GSPRO_CONNECTION:
+            gspro_connection.check_gspro_status()
+        elif option == MenuOptions.RESET_ROI:
+            screenshot.load_rois(True)
         else:
             UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option: {soptions}, press M top display menu")
