@@ -3,6 +3,7 @@ from queue import Queue
 
 import tesserocr
 
+from src.gspro_connect import GSProConnect
 from src.gspro_process import GSProProcess
 from src.shot_process import ShotProcess
 from src.ui import UI, Color
@@ -16,13 +17,12 @@ class ProcessManager:
         self.app_paths = app_paths
         self.settings = settings
         self.last_shot = None
-        self.error_count = 0
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
         # Create queue for messaging between processes and the manager, contains UI & error messages
         self.messaging_queue = Queue()
         # Create a queue to hold tesserocr instances that can be used by processes as
-        # PyTessBaseAPI is not pickable so doesn't work with multiprocessing
+        # PyTessBaseAPI is not pickable so doesn't work with multiprocessing & threading
         self.tesserocr_queue = Queue()
         self.shot_process = None
         self.gspro_process = None
@@ -32,24 +32,27 @@ class ProcessManager:
         self.__initialise_tesserocr_queue()
         self.__create_screenshot_process()
         self.__create_gspro_process()
+        self.gspro_connection = None
 
     def run(self):
         if not self.processes_paused and datetime.now() > self.scheduled_time:
-            if self.error_count < 5:
-                # Call a process to process a screenshot
+            if self.shot_process.error_count() < 5 and self.gspro_process.error_count() < 5:
+                # Call process to check for next shot
                 self.__capture_and_process_screenshot()
                 # Display and/or log any process messages
                 self.__process_message_queue()
             elif not self.processes_paused:
                 # More than 5 errors in processes, stop processing until restart by user
-                UI.display_message(Color.RED, "CONNECTOR ||", "More than 5 errors detected, stopping processing. Fix issues and then restart the connector.")
+                UI.display_message(Color.RED, "CONNECTOR ||", "Too many errors detected, stopping processing. Fix issues and then restart the connector.")
                 self.processes_paused = True
             # reset scheduled run time
             self.reset_scheduled_time()
 
     def restart(self):
+        # Restart if user elects to resume after too many errors
         self.processes_paused = False
-        self.error_count = 0
+        self.shot_process.reset_error_count()
+        self.gspro_process.reset_error_count()
 
     def __initialise_tesserocr_queue(self):
         tessdata_path =  self.app_paths.get_config_path(
@@ -71,6 +74,7 @@ class ProcessManager:
         self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))
 
     def __process_message_queue(self):
+        # Check message queue and display messages
         if not self.messaging_queue.empty():
             while not self.messaging_queue.empty():
                 msg = self.messaging_queue.get()
@@ -84,22 +88,22 @@ class ProcessManager:
                     logging.debug(msg.message)
 
     def __create_screenshot_process(self):
-        # Create a new process object & start it
+        # Create a new shot process object & start it
         self.shot_process = ShotProcess(
             self.last_shot, self.settings,
             self.app_paths, self.shot_queue,
-            self.messaging_queue, self.error_count,
-            self.tesserocr_queue)
+            self.messaging_queue, self.tesserocr_queue)
         self.shot_process.start()
 
     def __create_gspro_process(self):
+        # Create GSPro process
         self.gspro_process = GSProProcess(
             self.settings, self.shot_queue,
-            self.messaging_queue, self.error_count)
+            self.messaging_queue, self.gspro_connection)
         self.gspro_process.start()
 
     def shutdown(self):
-        # Wait for all processes to finish
+        # Shutdown all processes
         if not self.shot_process is None:
             self.shot_process.shutdown()
             self.shot_process.join()

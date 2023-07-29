@@ -18,7 +18,7 @@ class Screenshot:
         self.settings = settings
         self.ball_data = BallData()
         self.screenshot = []
-        self.diff = False
+        self.new_shot = False
         self.message = None
         self.width = -1
         self.height = -1
@@ -115,7 +115,10 @@ class Screenshot:
         self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
-            result = float(self.__recognize_roi(self.rois.values[key], api))
+            try:
+                result = float(self.__recognize_roi(self.rois.values[key], api))
+            except Exception as e:
+                raise ValueError(f"Could not convert value for '{key}' to float 0")
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
             # Check values are not 0
@@ -130,7 +133,7 @@ class Screenshot:
             self.ball_data.side_spin = round(self.ball_data.total_spin * math.sin(math.radians(self.ball_data.spin_axis)))
 
         # Set diff attribute if value are different
-        self.diff = diff
+        self.new_shot = diff
 
 
 

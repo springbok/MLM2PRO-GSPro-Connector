@@ -5,17 +5,18 @@ from time import sleep
 from src.ball_data import BallData
 
 class GSProConnect:
-    def __init__(self, device_id, units, api_version, club_data=False) -> None:
+    def __init__(self, device_id, units, api_version, ip_address, port) -> None:
         self._device_id = device_id
         self._units = units
         self._api_version = api_version
-        self._send_club_data = club_data
+        self.ip_address = ip_address
+        self.port = port
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._shot_number = 1
 
-    def init_socket(self, ip_address, port):
-        self._socket.connect((ip_address, port))
+    def init_socket(self):
+        self._socket.connect((self.ip_address, self.port))
         self._socket.settimeout(2)
 
     def send_msg(self, payload, attempts=10):

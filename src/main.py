@@ -10,8 +10,6 @@ from src.ui import Color, UI
 
 def setup_logging(app_paths):
     level = logging.DEBUG
-    #if settings.DEBUG == "False":
-    #    level = logging.CRITICAL + 1
     path = app_paths.get_log_file_path()
     if os.path.isfile(path):
         os.unlink(path)
@@ -33,13 +31,16 @@ def main(app_paths=None):
         app_paths = AppDataPaths()
         app_paths.setup()
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Setting up logging...')
+        # Setup logger
         setup_logging(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
+        # Load settings
         settings = Settings(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
+        # Check if we can read ROI's from file, if not prompt user to specify
         Screenshot(settings, app_paths).load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
-        # Create process manager specify the max processes allowed to run at the same time
+        # Create process manager to manage all threads
         process_manager = ProcessManager(settings, app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
     except Exception as e:
@@ -58,6 +59,7 @@ def main(app_paths=None):
             # Start process schedule
             process_manager.reset_scheduled_time()
             while not done_processing:
+                # Check for and process next shot
                 process_manager.run()
                 if non_block_input.input_queued():
                     input_str = non_block_input.input_get()
