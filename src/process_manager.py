@@ -5,6 +5,7 @@ import tesserocr
 
 from src.gspro_connect import GSProConnect
 from src.gspro_process import GSProProcess
+from src.menu import MenuOptions
 from src.shot_process import ShotProcess
 from src.ui import UI, Color
 # Needed when we convert msg back to an object using eval
@@ -43,16 +44,17 @@ class ProcessManager:
                 self.__process_message_queue()
             elif not self.processes_paused:
                 # More than 5 errors in processes, stop processing until restart by user
-                UI.display_message(Color.RED, "CONNECTOR ||", "Too many errors detected, stopping processing. Fix issues and then restart the connector.")
+                UI.display_message(Color.RED, "CONNECTOR ||", f"Too many errors detected, stopping processing. Fix issues and then unpause the connector by pressing {MenuOptions.UNPAUSE_CONNECTOR}")
                 self.processes_paused = True
             # reset scheduled run time
             self.reset_scheduled_time()
 
     def restart(self):
         # Restart if user elects to resume after too many errors
-        self.processes_paused = False
-        self.shot_process.reset_error_count()
-        self.gspro_process.reset_error_count()
+        if self.processes_paused:
+            self.processes_paused = False
+            self.shot_process.reset_error_count()
+            self.gspro_process.reset_error_count()
 
     def __initialise_tesserocr_queue(self):
         tessdata_path =  self.app_paths.get_config_path(

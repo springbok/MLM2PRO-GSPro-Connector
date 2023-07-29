@@ -1,7 +1,7 @@
 import logging
 import os
 from src.appdata import AppDataPaths
-from src.menu import Menu
+from src.menu import Menu, MenuOptions
 from src.non_blocking_input import NonBlockingInput
 from src.process_manager import ProcessManager
 from src.screenshot import Screenshot
@@ -53,7 +53,7 @@ def main(app_paths=None):
         menu.display()
         try:
             # Use non blocking key capture
-            non_block_input = NonBlockingInput(exit_condition='q')
+            non_block_input = NonBlockingInput(exit_condition=MenuOptions.EXIT)
             done_processing = False
             input_str = ""
             # Start process schedule
