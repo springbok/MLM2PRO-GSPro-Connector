@@ -12,8 +12,9 @@ class GSProConnection:
             settings.GSPRO['UNITS'],
             settings.GSPRO['API_VERSION'],
             settings.GSPRO['IP_ADDRESS'],
-            settings.GSPRO['port']
+            settings.GSPRO['PORT']
         )
+        self.connected = False
 
     def connect(self):
         # Connect to GSPro
@@ -22,9 +23,11 @@ class GSProConnection:
             logging.info(msg)
             UI.display_message(Color.GREEN, "CONNECTOR ||", msg)
             self.gspro_connect.init_socket()
-            check_gspro_status()
+            self.check_gspro_status()
         except Exception as e:
-            UI.display_message(Color.RED, "CONNECTOR ||", f"Error while trying to connect to GSPro, make sure GSPro is running")
+            raise ConnectionError(f"Error while trying to connect to GSPro, make sure GSPro is running. Exception: {e}")
+        else:
+            self.connected = True
 
     def reset(self):
         msg = "Resetting GSPro connection..."
@@ -35,6 +38,7 @@ class GSProConnection:
 
     def disconnect(self):
         self.gspro_connect.terminate_session()
+        self.connected = False
 
     def check_gspro_status(self):
         msg = "Checking GSPro connection status..."
@@ -43,9 +47,6 @@ class GSProConnection:
         for attempt in range(10):
             try:
                 self.gspro_connect.send_test_signal()
-            except KeyboardInterrupt:
+                break
+            except Exception as e:
                 raise
-            except:
-                self.connect()
-                continue
-        raise Exception

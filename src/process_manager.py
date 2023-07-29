@@ -3,7 +3,6 @@ from queue import Queue
 
 import tesserocr
 
-from src.gspro_connect import GSProConnect
 from src.gspro_process import GSProProcess
 from src.menu import MenuOptions
 from src.shot_process import ShotProcess

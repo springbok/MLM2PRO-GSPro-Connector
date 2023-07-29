@@ -3,6 +3,8 @@ import logging
 import json
 from time import sleep
 from src.ball_data import BallData
+from src.ui import UI, Color
+
 
 class GSProConnect:
     def __init__(self, device_id, units, api_version, ip_address, port) -> None:
@@ -16,51 +18,63 @@ class GSProConnect:
         self._shot_number = 1
 
     def init_socket(self):
+        logging.info(f"Connecting to GSPro using IP: {self.ip_address} Port: {self.port}")
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((self.ip_address, self.port))
-        self._socket.settimeout(2)
+        self._socket.settimeout(5)
 
     def send_msg(self, payload, attempts=10):
         for attempt in range(attempts):
             try:
-                logging.info("sending message to GSPro...")
+                logging.info(f"Sending to GSPro data: {payload}")
                 self._socket.sendall(json.dumps(payload).encode("utf-8"))
                 msg = self._socket.recv(8096)
             except socket.timeout as e:
-                print('timed out. Retrying...')
+                UI.display_message(Color.RED, "CONNECTOR ||", 'Timed out. Retrying...')
                 sleep(1)
                 continue
             except socket.error as e:
-                print('Error waiting for GSPro response:')
-                print(e)
+                UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{e}")
                 raise
             else:
                 if len(msg) == 0:
-                    print('GS Pro closed connection')
+                    UI.display_message(Color.RED, "CONNECTOR ||", f"GSPro closed the connection")
                     return False
                 else:
-                    print("response from GSPro: ")
-                    print(msg.decode('UTF-8'))
+                    logging.debug(f"Response from GSPro: {msg.decode('UTF-8')}")
                     return True
-        print('passed loop')
         return False
 
     def send_test_signal(self):
         payload = {
             "DeviceID": self._device_id,
             "Units": self._units,
-            "ShotNumber": self._shot_number,
+            "ShotNumber": 1,
             "APIversion": self._api_version,
-            "ShotDataOptions": {
-                "ContainsBallData": False,
-                "ContainsClubData": False,
+            "BallData": {
+                "Speed": 85.0,
+                "SpinAxis": 6.2,
+                "TotalSpin": 4743.0,
+                "HLA": 1.0,
+                "VLA": 20.9
             },
+            "ClubData": {
+                "Speed": 65.0
+            },
+            "ShotDataOptions": {
+                "ContainsBallData": True,
+                "ContainsClubData": True,
+                "LaunchMonitorIsReady": True,
+                "LaunchMonitorBallDetected": True,
+                "IsHeartBeat": False
+            }
         }
 
         resp = self.send_msg(payload)
         if (resp):
-            print('GSPro Connected...')
+            UI.display_message(Color.RED, "CONNECTOR ||", 'GSPro Connected')
         else:
-            raise Exception
+            raise ConnectionError("No response received from GSPro")
 
     def launch_ball(self, ball_data: BallData) -> None:
         api_data = {
