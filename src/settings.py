@@ -11,17 +11,19 @@ class Settings:
             name='settings',
             ext='.json'
         )
-        self.settings_json = multiline.loads("""{
-    "HOST": "127.0.0.1", 
-    "PORT": 921, 
-
-    "WINDOW_NAME": "AirPlay", 
-    "TARGET_WIDTH": 1638, 
-    "TARGET_HEIGHT": 752, 
-    "METRIC": "Yards", 
-    "DEBUG": "True", 
-    "SCREENSHOT_INTERVAL": 500 
-}""", multiline=True)
+        self.settings_json = {
+            "GSPRO": {
+                "IP_ADDRESS": "127.0.0.1",
+                "PORT": 921,
+                "API_VERSION": "1",
+                "DEVICE_ID": "Rapsodo MLM2PRO",
+                "UNITS": "Yards"
+            },
+            "WINDOW_NAME": "AirPlay",
+            "TARGET_WIDTH": 1638,
+            "TARGET_HEIGHT": 752,
+            "SCREENSHOT_INTERVAL": 500
+        }
         self.__create()
         self.__load()
 

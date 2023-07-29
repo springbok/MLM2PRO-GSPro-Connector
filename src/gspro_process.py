@@ -1,46 +1,46 @@
-from datetime import datetime, timedelta
-from multiprocessing import Process
+import json
+import logging
+from threading import Thread, Event
+# Required for to reconstruct the object from the queue
+from src.ball_data import BallData
+from src.gspro_connect import GSProConnect
 from src.process_message import ProcessMessage
 
-# All code needs to multiprocess safe, so do no use the normal logger for example
-# for logging we add a message we want to log to the messaging_queue and the process manager
-# will log it for us
+class GSProProcess(Thread):
 
-class BallData:
-    def __init__(self):
-        self.speed = 0
-        self.spin_axis = 0
-        self.total_spin = 0
-        self.hla = 0
-        self.vla = 0
-        self.club_speed = 0
-
-
-class GSProProcess(Process):
-
-    def __init__(self, settings, shot_queue, messaging_queue, error_count, stop_processing):
-        Process.__init__(self)
+    def __init__(self, settings, shot_queue, messaging_queue, gspro_connection):
+        Thread.__init__(self, daemon=True)
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
         self.settings = settings
-        self.error_count = error_count
-        self.scheduled_time = None
-        self.__reset_scheduled_time()
-        self.stop_processing = stop_processing
+        self.gspro_connection = gspro_connection
+        self.num_errors = 0
+        self._shutdown = Event()
+        self.name = "gspro_process"
 
     def run(self):
-        while self.stop_processing == 0:
-            # Start new process checking scheduled_time
-            if datetime.now() > self.scheduled_time:
-                msg = ProcessMessage(error=False, message=f"Process {self.name}: running", logging=True, ui=True)
-                self.messaging_queue.put(repr(msg))
-                # Reschedule
-                self.__reset_scheduled_time()
-        self.__shutdown()
+        while not self._shutdown.is_set():
+            if not self.shot_queue.empty():
+                try:
+                    while not self.shot_queue.empty():
+                        shot = self.shot_queue.get()
+                        logging.info(f"Process {self.name} got shot from queue: {json.dumps(shot)}")
+                        shot = BallData(json.loads(shot))
+                        logging.info(f"Process {self.name} retrieved shot data from queue sending to gspro: {json.dumps(shot.__dict__)}")
+                        if self.gspro_connection.connected:
+                            self.gspro_connection.gspro_connect.launch_ball(shot)
+                except Exception as e:
+                    self.num_errors = self.num_errors + 1
+                    msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
+                    self.messaging_queue.put(repr(msg))
+
         exit(0)
 
-    def __shutdown(self):
-        i=1
+    def error_count(self):
+        return self.num_errors
 
-    def __reset_scheduled_time(self):
-        self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))
+    def reset_error_count(self):
+        self.num_errors = 0
+
+    def shutdown(self):
+        self._shutdown.set()

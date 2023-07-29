@@ -16,9 +16,6 @@ class UI:
         print(f"{color}{prefix}{Color.RESET}", message)
         if color == Color.RED:
             logging.exception(message)
-        else:
-            logging.info(message)
-
 
 
 
