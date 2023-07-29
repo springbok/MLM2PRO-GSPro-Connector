@@ -46,7 +46,6 @@ class ShotProcess(Thread):
                     logging.debug(f"{msg}")
                     self.messaging_queue.put(repr(msg))
                 finally:
-                    logging.debug("finished not busy")
                     # Flag process as no longer busy
                     self._busy.clear()
                     # Release api and make it available

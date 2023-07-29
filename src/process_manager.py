@@ -68,8 +68,6 @@ class ProcessManager:
             # Check for next shot if process available
             if not self.shot_process.busy():
                 self.shot_process.execute()
-            else:
-                logging.debug('Process busy unable to handle screenshot request, reschedule')
 
     def reset_scheduled_time(self):
         self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))

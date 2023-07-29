@@ -119,11 +119,14 @@ class Screenshot:
                 result = float(self.__recognize_roi(self.rois.values[key], api))
             except Exception as e:
                 raise ValueError(f"Could not convert value for '{key}' to float 0")
-            # Put the value for the current ROI into the ball data object
-            setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
             # Check values are not 0
             if self.rois.ball_data_mapping[key] in self.rois.must_not_be_zero and result == float(0):
                 raise ValueError(f"Value for '{key}' is 0")
+            # For some reason ball speed sometimes get an extra digit added
+            if self.rois.ball_data_mapping[key] == 'speed' and result > 400:
+                result = result / 10
+            # Put the value for the current ROI into the ball data object
+            setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
             # See if values are different from previous shot
             if not diff and not last_shot is None:
                 if result != getattr(last_shot, self.rois.ball_data_mapping[key]):
