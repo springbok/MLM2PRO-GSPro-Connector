@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import math
 import cv2
 import numpy as np
@@ -22,6 +23,7 @@ class Screenshot:
         self.message = None
         self.width = -1
         self.height = -1
+        self.app_paths = app_paths
 
 
     def load_rois(self, reset=False):
@@ -30,6 +32,9 @@ class Screenshot:
             self.__get_rois_from_user()
         else:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
+
+    def reload_rois(self):
+        self.rois = Rois(self.app_paths)
 
     def __get_rois_from_user(self):
         input("- Press enter after you've hit your first shot. -")
@@ -116,7 +121,8 @@ class Screenshot:
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
             try:
-                result = float(self.__recognize_roi(self.rois.values[key], api))
+                result = self.__recognize_roi(self.rois.values[key], api)
+                result = float(result)
             except Exception as e:
                 raise ValueError(f"Could not convert value for '{key}' to float 0")
             # Check values are not 0

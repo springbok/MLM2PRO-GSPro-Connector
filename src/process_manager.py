@@ -44,13 +44,20 @@ class ProcessManager:
             elif not self.processes_paused:
                 # More than 5 errors in processes, stop processing until restart by user
                 UI.display_message(Color.RED, "CONNECTOR ||", f"Too many errors detected, stopping processing. Fix issues and then unpause the connector by pressing {MenuOptions.UNPAUSE_CONNECTOR}")
-                self.processes_paused = True
+                self.pause()
             # reset scheduled run time
             self.reset_scheduled_time()
+
+    def pause(self):
+        self.processes_paused = True
+        self.gspro_process.pause()
+        self.shot_process.pause()
 
     def restart(self):
         # Restart if user elects to resume after too many errors
         if self.processes_paused:
+            self.gspro_process.resume()
+            self.shot_process.resume()
             self.processes_paused = False
             self.shot_process.reset_error_count()
             self.gspro_process.reset_error_count()

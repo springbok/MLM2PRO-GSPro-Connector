@@ -37,6 +37,13 @@ class GSProConnect:
             except socket.error as e:
                 UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{format(e)}")
                 raise
+            except Exception as e:
+                if "[WinError 10054]" in format(e):
+                    msg = f"Could not connect to the GSPro Connect, please start/restart from GSPro:{format(e)}"
+                else:
+                    msg = f"Unknown error: format(e)"
+                UI.display_message(Color.RED, "CONNECTOR ||", msg)
+                raise
             else:
                 if len(msg) == 0:
                     UI.display_message(Color.RED, "CONNECTOR ||", f"GSPro closed the connection")

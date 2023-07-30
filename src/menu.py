@@ -1,6 +1,7 @@
 import logging
 from dataclasses import dataclass
 
+from src.screenshot import Screenshot
 from src.ui import Color, UI
 
 @dataclass
@@ -28,7 +29,7 @@ class Menu:
         for key in self.menu_options.keys():
             print(key, '--', self.menu_options[key])
 
-    def process(self, option, process_manager, gspro_connection, screenshot):
+    def process(self, option, process_manager, gspro_connection, settings, app_paths):
         option = option.upper()
         logging.info(f"key: {option}")
         soptions = ', '.join(map(str, list(self.menu_options.keys())))
@@ -41,6 +42,10 @@ class Menu:
         elif option == MenuOptions.TEST_GSPRO_CONNECTION:
             gspro_connection.check_gspro_status()
         elif option == MenuOptions.RESET_ROI:
-            screenshot.load_rois(True)
+            # Pause thread while obtaining ROI's
+            process_manager.pause()
+            Screenshot(settings, app_paths).load_rois(True)
+            # Resume threads
+            process_manager.restart()
         else:
             UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option: {soptions}, press M top display menu")

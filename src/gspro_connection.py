@@ -25,7 +25,7 @@ class GSProConnection:
             self.gspro_connect.init_socket()
             self.check_gspro_status()
         except Exception as e:
-            raise ConnectionError(f"Error while trying to connect to GSPro, make sure GSPro is running. Exception: {format(e)}")
+            raise ConnectionError(f"Error while trying to connect to GSPro, make sure GSPro Connect is running, start/restart from GSPro. Exception: {format(e)}")
         else:
             self.connected = True
 
