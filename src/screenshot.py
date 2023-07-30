@@ -125,7 +125,7 @@ class Screenshot:
             try:
                 result = self.__recognize_roi(self.rois.values[key], api)
                 # Remove any chars other than numbers
-                result = re.sub('\D', '', result)
+                result = re.sub('[^-\d\.]', '', result)
                 logging.debug(f"key: {key} result: {result}")
                 result = float(result)
             except Exception as e:
