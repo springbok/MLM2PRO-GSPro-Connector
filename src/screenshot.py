@@ -1,6 +1,8 @@
 import ctypes
 import logging
 import math
+import re
+
 import cv2
 import numpy as np
 import win32gui
@@ -122,6 +124,9 @@ class Screenshot:
             # Use ROI to get value from screenshot
             try:
                 result = self.__recognize_roi(self.rois.values[key], api)
+                # Remove any chars other than numbers
+                result = re.sub('\D', '', result)
+                logging.debug(f"key: {key} result: {result}")
                 result = float(result)
             except Exception as e:
                 raise ValueError(f"Could not convert value for '{key}' to float 0")
