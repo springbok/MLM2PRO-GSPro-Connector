@@ -22,10 +22,14 @@ class ShotProcess(Thread):
         self.tesserocr_queue = tesserocr_queue
         self.screenshot = Screenshot(self.settings, self.app_paths)
         self.name = "shot_process"
+        self._pause = Event()
+        self.resume()
 
     def run(self):
         # Execute if not shutdown, we are not already busy, and we have been told to execute
         while not self._shutdown.is_set():
+            # When _pause is clear we wait(suspended) if set we process
+            self._pause.wait()
             if not self._busy.is_set() and self._execute.is_set():
                 api = None
                 try:
@@ -42,7 +46,7 @@ class ShotProcess(Thread):
                         self.shot_queue.put(json.dumps(self.screenshot.ball_data.__dict__))
                 except Exception as e:
                     self.num_errors = self.num_errors + 1
-                    msg = ProcessMessage(error=False, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
+                    msg = ProcessMessage(error=True, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
                     logging.debug(f"{msg}")
                     self.messaging_queue.put(repr(msg))
                 finally:
@@ -68,4 +72,12 @@ class ShotProcess(Thread):
             self._execute.set()
 
     def shutdown(self):
+        self.resume()
         self._shutdown.set()
+
+    def pause(self):
+        self._pause.clear()
+
+    def resume(self):
+        self.screenshot.reload_rois()
+        self._pause.set()

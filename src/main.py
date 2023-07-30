@@ -39,8 +39,7 @@ def main(app_paths=None):
         settings = Settings(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
         # Check if we can read ROI's from file, if not prompt user to specify
-        screenshot = Screenshot(settings, app_paths)
-        screenshot.load_rois()
+        Screenshot(settings, app_paths).load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
         # Get GSPro connection
         gspro_connection = GSProConnection(settings)
@@ -72,7 +71,7 @@ def main(app_paths=None):
                     if input_str.strip().upper() == non_block_input.exit_condition.upper():
                         done_processing = True
                     else:
-                        menu.process(input_str.upper(), process_manager, gspro_connection, screenshot)
+                        menu.process(input_str.upper(), process_manager, gspro_connection, settings, app_paths)
 
         except Exception as e:
             message = f'Failed to initialise: {format(e)}'
