@@ -30,7 +30,8 @@ class Screenshot:
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
+            if not reset:
+                UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
             self.__get_rois_from_user()
         else:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
@@ -71,9 +72,10 @@ class Screenshot:
         if self.width == -1:
             self.width = rect[2] - rect[0]
             self.height = rect[3] - rect[1]
-        else:
-            if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
-                raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
+        # Need to do more testing on when and how window size changes, for now comment out
+        # else:
+        #    if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
+        #        raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
 
         #if not (self.width == target_width and self.height == target_height):
         #    print(f"Dimensions seem wrong {self.width}x{self.height} vs json:{target_width}x{target_height}")
@@ -110,7 +112,10 @@ class Screenshot:
         # use tesseract to recognize the text
         api.SetImage(Image.fromarray(cropped_img))
         result = api.GetUTF8Text()
-        cleaned_result = ''.join(c for c in result if c.isdigit() or c == '.' or c == '-' or c == '_' or c == '~')
+        cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)", result)[0]
+        # Make sure result is an array and has elements
+        if type(cleaned_result) in (tuple, list) and len(cleaned_result) > 0:
+            cleaned_result = cleaned_result[0]
         return cleaned_result.strip()
 
     def capture_and_process_screenshot(self, last_shot, api):
@@ -124,8 +129,6 @@ class Screenshot:
             # Use ROI to get value from screenshot
             try:
                 result = self.__recognize_roi(self.rois.values[key], api)
-                # Remove any chars other than numbers
-                result = re.sub('[^-\d\.]', '', result)
                 #logging.debug(f"key: {key} result: {result}")
                 result = float(result)
             except Exception as e:

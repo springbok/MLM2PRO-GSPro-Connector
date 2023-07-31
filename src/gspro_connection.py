@@ -23,7 +23,9 @@ class GSProConnection:
             logging.info(msg)
             UI.display_message(Color.GREEN, "CONNECTOR ||", msg)
             self.gspro_connect.init_socket()
-            self.check_gspro_status()
+            # Assume gspro connected at this point as socket was opened without error,
+            # no need to send test shot or heartbeat
+            #self.check_gspro_status()
         except Exception as e:
             raise ConnectionError(f"Error while trying to connect to GSPro, make sure GSPro Connect is running, start/restart from GSPro. Exception: {format(e)}")
         else:
