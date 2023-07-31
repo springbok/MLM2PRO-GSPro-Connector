@@ -71,9 +71,10 @@ class Screenshot:
         if self.width == -1:
             self.width = rect[2] - rect[0]
             self.height = rect[3] - rect[1]
-        else:
-            if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
-                raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
+        # Need to do more testing on when and how window size changes, for now comment out
+        # else:
+        #    if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
+        #        raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
 
         #if not (self.width == target_width and self.height == target_height):
         #    print(f"Dimensions seem wrong {self.width}x{self.height} vs json:{target_width}x{target_height}")
