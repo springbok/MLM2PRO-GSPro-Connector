@@ -110,7 +110,10 @@ class Screenshot:
         # use tesseract to recognize the text
         api.SetImage(Image.fromarray(cropped_img))
         result = api.GetUTF8Text()
-        cleaned_result = ''.join(c for c in result if c.isdigit() or c == '.' or c == '-' or c == '_' or c == '~')
+        cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)", result)[0]
+        # Make sure result is an array and has elements
+        if type(cleaned_result) in (tuple, list) and len(cleaned_result) > 0:
+            cleaned_result = cleaned_result[0]
         return cleaned_result.strip()
 
     def capture_and_process_screenshot(self, last_shot, api):
@@ -123,11 +126,7 @@ class Screenshot:
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
             try:
-                result = self.__recognize_roi(self.rois.values[key], api)
-                # Remove any chars other than numbers
-                result = re.sub('[^-\d\.]', '', result)
-                #logging.debug(f"key: {key} result: {result}")
-                result = float(result)
+                result = float(self.__recognize_roi(self.rois.values[key], api))
             except Exception as e:
                 raise ValueError(f"Could not convert value for '{key}' to float 0")
             # Check values are not 0
