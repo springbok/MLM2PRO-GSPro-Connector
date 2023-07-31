@@ -30,7 +30,8 @@ class Screenshot:
 
     def load_rois(self, reset=False):
         if reset or len(self.rois.values) <= 0:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
+            if not reset:
+                UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
             self.__get_rois_from_user()
         else:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
