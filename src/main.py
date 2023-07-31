@@ -55,6 +55,7 @@ def main(app_paths=None):
         # Display the menu
         menu = Menu()
         menu.display()
+        input("- Connector ready, press enter after you've hit your first shot. -")
         try:
             # Use non blocking key capture
             non_block_input = NonBlockingInput(exit_condition=MenuOptions.EXIT)

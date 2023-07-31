@@ -128,7 +128,9 @@ class Screenshot:
         for key in self.rois.keys:
             # Use ROI to get value from screenshot
             try:
-                result = float(self.__recognize_roi(self.rois.values[key], api))
+                result = self.__recognize_roi(self.rois.values[key], api)
+                #logging.debug(f"key: {key} result: {result}")
+                result = float(result)
             except Exception as e:
                 raise ValueError(f"Could not convert value for '{key}' to float 0")
             # Check values are not 0
