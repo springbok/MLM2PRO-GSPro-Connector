@@ -138,8 +138,10 @@ class Screenshot:
                 raise ValueError(f"Value for '{key}' is 0")
             # For some reason ball speed sometimes get an extra digit added
             if self.rois.ball_data_mapping[key] == 'speed' and result > 400:
+                logging.debug(f"Invalid {key} value: {result} > 400")
                 result = result / 10
             elif self.rois.ball_data_mapping[key] == 'total_spin' and result > 25000:
+                logging.debug(f"Invalid {key} value: {result} > 25000")
                 result = result / 10
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
