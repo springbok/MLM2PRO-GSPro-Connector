@@ -21,9 +21,11 @@ class Settings:
             },
             "WINDOW_NAME": "AirPlay",
             "TARGET_WIDTH": 1638,
-            "TARGET_HEIGHT": 752,
-            "SCREENSHOT_INTERVAL": 500
+            "TARGET_HEIGHT": 752
         }
+        # Removed this from the settings file, specifies the
+        # number of ms between screenshots
+        self.SCREENSHOT_INTERVAL = 500
         self.__create()
         self.__load()
 
