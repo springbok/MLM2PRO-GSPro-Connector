@@ -1,4 +1,5 @@
 /.idea
+/appdata
 debug.log
 rois.json
 /Tesseract-OCR
