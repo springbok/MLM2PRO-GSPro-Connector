@@ -77,7 +77,7 @@ class ProcessManager:
                 self.shot_process.execute()
 
     def reset_scheduled_time(self):
-        self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.SCREENSHOT_INTERVAL * 1000))
+        self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.screenshot_interval * 1000))
 
     def __process_message_queue(self):
         # Check message queue and display messages

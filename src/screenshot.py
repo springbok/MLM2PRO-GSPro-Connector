@@ -10,14 +10,12 @@ import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
 from src.ball_data import BallData
-from src.rois import Rois
 from src.ui import Color, UI
 
 
 class Screenshot:
 
     def __init__(self, settings, app_paths):
-        self.rois = Rois(app_paths)
         self.settings = settings
         self.ball_data = BallData()
         self.screenshot = []
@@ -29,28 +27,25 @@ class Screenshot:
 
 
     def load_rois(self, reset=False):
-        if reset or len(self.rois.values) <= 0:
+        if reset or len(self.settings.rois) <= 0:
             if not reset:
                 UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
             self.__get_rois_from_user()
         else:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
 
-    def reload_rois(self):
-        self.rois = Rois(self.app_paths)
-
     def __get_rois_from_user(self):
         input("- Press enter after you've hit your first shot. -")
         # Run capture_window function in a separate thread
-        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
-        self.rois.rois = []
+        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.target_width, self.settings.target_height)
+        self.settings.rois = []
         # Ask user to select ROIs for each value, if they weren't found in the json
-        for value in self.rois.keys:
-            print(f"Please select the ROI for {value}.")
+        for key in BallData.properties:
+            print(f"Please select the ROI for {BallData.properties[key]}.")
             roi = self.__select_roi()
-            self.rois.values[value] = roi
+            self.settings.rois[key] = roi
         # Save settings file with new settings
-        self.rois.write()
+        self.settings.create()
         
     def __select_roi(self):
         plt.imshow(cv2.cvtColor(self.screenshot, cv2.COLOR_BGR2RGB))
@@ -124,30 +119,30 @@ class Screenshot:
             diff = True
         else:
             diff = False
-        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
-        for key in self.rois.keys:
+        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.target_width, self.settings.target_height)
+        for key in BallData.properties:
             # Use ROI to get value from screenshot
             try:
-                result = self.__recognize_roi(self.rois.values[key], api)
+                result = self.__recognize_roi(self.settings.rois[key], api)
                 #logging.debug(f"key: {key} result: {result}")
                 result = float(result)
             except Exception as e:
-                raise ValueError(f"Could not convert value for '{key}' to float 0")
+                raise ValueError(f"Could not convert value for '{BallData.properties[key]}' to float 0")
             # Check values are not 0
-            if self.rois.ball_data_mapping[key] in self.rois.must_not_be_zero and result == float(0):
-                raise ValueError(f"Value for '{key}' is 0")
+            if key in BallData.must_not_be_zero and result == float(0):
+                raise ValueError(f"Value for '{BallData.properties[key]}' is 0")
             # For some reason ball speed sometimes get an extra digit added
-            if self.rois.ball_data_mapping[key] == 'speed' and result > 400:
-                logging.debug(f"Invalid {key} value: {result} > 400")
+            if key == 'speed' and result > 400:
+                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 400")
                 result = result / 10
-            elif self.rois.ball_data_mapping[key] == 'total_spin' and result > 25000:
-                logging.debug(f"Invalid {key} value: {result} > 25000")
+            elif key == 'total_spin' and result > 25000:
+                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 25000")
                 result = result / 10
             # Put the value for the current ROI into the ball data object
-            setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
+            setattr(self.ball_data, key, result)
             # See if values are different from previous shot
             if not diff and not last_shot is None:
-                if result != getattr(last_shot, self.rois.ball_data_mapping[key]):
+                if result != getattr(last_shot, key):
                     diff = True
         if diff:
             self.ball_data.back_spin = round(self.ball_data.total_spin * math.cos(math.radians(self.ball_data.spin_axis)))

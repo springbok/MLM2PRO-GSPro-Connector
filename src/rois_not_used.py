@@ -2,7 +2,7 @@ import json
 import os
 import logging
 
-class Rois:
+class RoisNotUsed:
 
     def __init__(self, app_paths):
         self.path = app_paths.get_config_path(

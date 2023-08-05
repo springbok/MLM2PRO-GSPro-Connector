@@ -1,13 +1,15 @@
 import logging
 import os
 from src.appdata import AppDataPaths
+from src.device_manager import DeviceManager
 from src.gspro_connection import GSProConnection
 from src.menu import Menu, MenuOptions
 from src.non_blocking_input import NonBlockingInput
 from src.process_manager import ProcessManager
 from src.screenshot import Screenshot
-from src.settings import Settings
+from src.gspro_settings import GSProSettings
 from src.ui import Color, UI
+
 
 def setup_logging(app_paths):
     level = logging.DEBUG
@@ -20,11 +22,12 @@ def setup_logging(app_paths):
         level=level,
         filename=path,
         encoding='utf-8',
-        force = True
+        force=True
     )
     logging.getLogger(__name__)
 
-def main(app_paths=None):
+
+def main():
     # Init
     UI.display_message(Color.GREEN, "CONNECTOR ||", 'Initialising...')
     try:
@@ -35,17 +38,20 @@ def main(app_paths=None):
         # Setup logger
         setup_logging(app_paths)
         UI.display_message(Color.GREEN, "CONNECTOR ||", 'Loading settings...')
-        # Load settings
-        settings = Settings(app_paths)
+        # Load GSPro settings
+        gspro_settings = GSProSettings(app_paths)
+        # Check for device config files
+        device_manager = DeviceManager(app_paths)
+        device_manager.select_device()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
         # Check if we can read ROI's from file, if not prompt user to specify
-        Screenshot(settings, app_paths).load_rois()
+        Screenshot(device_manager.current_device, app_paths).load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
         # Get GSPro connection
-        gspro_connection = GSProConnection(settings)
+        gspro_connection = GSProConnection(gspro_settings)
         gspro_connection.connect()
         # Create process manager to manage all threads
-        process_manager = ProcessManager(settings, app_paths, gspro_connection)
+        process_manager = ProcessManager(device_manager.current_device, app_paths, gspro_connection)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
     except Exception as e:
         message = f'Failed to initialise: {format(e)}'
@@ -72,7 +78,7 @@ def main(app_paths=None):
                     if input_str.strip().upper() == non_block_input.exit_condition.upper():
                         done_processing = True
                     else:
-                        menu.process(input_str.upper(), process_manager, gspro_connection, settings, app_paths)
+                        menu.process(input_str.upper(), process_manager, gspro_connection, device_manager.current_device, app_paths)
 
         except Exception as e:
             message = f'Failed to initialise: {format(e)}'

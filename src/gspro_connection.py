@@ -8,11 +8,11 @@ class GSProConnection:
 
     def __init__(self, settings) -> None:
         self.gspro_connect = GSProConnect(
-            settings.GSPRO['DEVICE_ID'],
-            settings.GSPRO['UNITS'],
-            settings.GSPRO['API_VERSION'],
-            settings.GSPRO['IP_ADDRESS'],
-            settings.GSPRO['PORT']
+            settings.device_id,
+            settings.units,
+            settings.api_version,
+            settings.ip_address,
+            settings.port
         )
         self.connected = False
 
