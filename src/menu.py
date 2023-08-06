@@ -13,6 +13,8 @@ class MenuOptions:
     RESET_GSPRO_CONNECTION = "G"
     TEST_GSPRO_CONNECTION = "T"
     UNPAUSE_CONNECTOR = "U"
+    CHANGE_DEVICE = "C"
+    DISPLAY_VERSION = "V"
 
 
 class Menu:
@@ -23,6 +25,8 @@ class Menu:
             MenuOptions.RESET_GSPRO_CONNECTION: 'Reset GSPro Connection',
             MenuOptions.TEST_GSPRO_CONNECTION: 'Test GSPro Connection',
             MenuOptions.UNPAUSE_CONNECTOR: 'Unpause Connector',
+            MenuOptions.CHANGE_DEVICE: 'Change Connected Device',
+            MenuOptions.DISPLAY_VERSION: 'Display Connector Version',
             MenuOptions.EXIT: 'Exit',
         }
 
@@ -48,5 +52,12 @@ class Menu:
             Screenshot(application).load_rois(True)
             # Resume threads
             application.process_manager.restart()
+        elif option == MenuOptions.CHANGE_DEVICE:
+            application.process_manager.pause()
+            application.device_manager.select_device()
+            application.process_manager.restart()
+        elif option == MenuOptions.DISPLAY_VERSION:
+            print(f'Version {Application.version}')
+            print(f'Connected Device: {application.device_manager.current_device.name}')
         else:
             UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option: {soptions}, press M top display menu")
