@@ -1,12 +1,13 @@
 import logging
 
 from src.gspro_connect import GSProConnect
+from src.settings import Settings
 from src.ui import UI, Color
 
 
 class GSProConnection:
 
-    def __init__(self, settings) -> None:
+    def __init__(self, settings: Settings) -> None:
         self.gspro_connect = GSProConnect(
             settings.device_id,
             settings.units,

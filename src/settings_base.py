@@ -5,9 +5,9 @@ import logging
 
 class SettingsBase:
 
-    def __init__(self, path, settings):
+    def __init__(self, path: str, settings_json: json):
         self.path = path
-        self.settings = settings
+        self.settings_json = settings_json
         self.__load()
 
     def __load(self):
@@ -30,4 +30,4 @@ class SettingsBase:
         if not os.path.isfile(self.path):
             logging.debug(f"File does not exist creating: {self.path}")
             with open(self.path, "w") as file:
-                file.write(json.dumps(self.settings, indent=4))
+                file.write(json.dumps(self.settings_json, indent=4))

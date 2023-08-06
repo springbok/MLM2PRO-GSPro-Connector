@@ -1,12 +1,12 @@
 from src.settings_base import SettingsBase
 
 
-class GSProSettings(SettingsBase):
+class Settings(SettingsBase):
 
     def __init__(self, app_paths):
         SettingsBase.__init__(self,
             app_paths.get_config_path(
-                name='gspro_settings',
+                name='settings',
                 ext='.json'
             ), {
                 "ip_address": "127.0.0.1",

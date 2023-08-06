@@ -4,6 +4,8 @@ import os
 import logging
 import re
 from dataclasses import dataclass
+
+from src.appdata import AppDataPaths
 from src.menu import MenuOptions
 from src.non_blocking_input import NonBlockingInput
 from src.ui import UI, Color
@@ -13,11 +15,16 @@ from src.ui import UI, Color
 class Device:
     id: int
     name: str
-    width: int
-    height: int
+    window_rect: { 'left': int, 'top': int, 'right': int, 'bottom': int}
     window_name: str
     rois: dict
     path: str
+
+    def width(self):
+        return self.window_rect['right'] - self.window_rect['left']
+
+    def height(self):
+        return self.window_rect['bottom'] - self.window_rect['top']
 
     def file_name(self):
         return f'device_{self.name}.json'
@@ -25,7 +32,7 @@ class Device:
     def file_path(self):
         return f'{self.path}\\{self.file_name()}'
 
-    def create(self):
+    def save(self):
         with open(self.file_path(), "w") as file:
             file.write(self.to_json())
 
@@ -50,14 +57,14 @@ class Device:
 
 class DeviceManager:
 
-    def __init__(self, app_paths):
+    def __init__(self, app_paths: AppDataPaths):
         self.app_paths = app_paths
         self.current_device = None
         # Load standard devices
         self.devices = []
-        self.devices.append(Device(1, 'iphone', 1638, 752, 'AirPlay', {}, self.app_paths.app_data_path))
-        self.devices.append(Device(2, 'ipad', 1597, 1198, 'AirPlay', {}, self.app_paths.app_data_path))
-        self.devices.append(Device(3, 'android', 1597, 1198, 'EasyCast', {}, self.app_paths.app_data_path))
+        self.devices.append(Device(1, 'iphone', { 'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
+        self.devices.append(Device(2, 'ipad', { 'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
+        self.devices.append(Device(3, 'android', { 'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'EasyCast', {}, self.app_paths.app_data_path))
         # Create files if they don't exist
         self.__create()
         # Load other devices files
@@ -66,7 +73,7 @@ class DeviceManager:
     def __create(self):
         for device in self.devices:
             if not os.path.isfile(device.file_path()):
-                device.create()
+                device.save()
 
     def __load_other_devices(self):
         # Check directory and load any other device files in format device_<device>.json

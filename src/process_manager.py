@@ -3,6 +3,7 @@ from queue import Queue
 
 import tesserocr
 
+from src.application import Application
 from src.gspro_process import GSProProcess
 from src.menu import MenuOptions
 from src.shot_process import ShotProcess
@@ -13,11 +14,8 @@ from datetime import datetime, timedelta
 
 class ProcessManager:
 
-    def __init__(self, settings, app_paths, gspro_connection):
-        self.app_paths = app_paths
-        self.settings = settings
-        self.gspro_connection = gspro_connection
-        self.last_shot = None
+    def __init__(self, application: Application):
+        self.application = application
         # Create a queue to store shots to be sent to GSPro
         self.shot_queue = Queue()
         # Create queue for messaging between processes and the manager, contains UI & error messages
@@ -63,11 +61,8 @@ class ProcessManager:
             self.gspro_process.reset_error_count()
 
     def __initialise_tesserocr_queue(self):
-        tessdata_path =  self.app_paths.get_config_path(
-            name='train',
-            ext='.traineddata'
-        )
-        tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
+        tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD)
+        #tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
         self.tesserocr_queue.put(tesserocr_api)
 
     def __capture_and_process_screenshot(self):
@@ -77,7 +72,7 @@ class ProcessManager:
                 self.shot_process.execute()
 
     def reset_scheduled_time(self):
-        self.scheduled_time = datetime.now() + timedelta(microseconds=(self.settings.screenshot_interval * 1000))
+        self.scheduled_time = datetime.now() + timedelta(microseconds=(self.application.settings.screenshot_interval * 1000))
 
     def __process_message_queue(self):
         # Check message queue and display messages
@@ -96,16 +91,18 @@ class ProcessManager:
     def __create_screenshot_process(self):
         # Create a new shot process object & start it
         self.shot_process = ShotProcess(
-            self.last_shot, self.settings,
-            self.app_paths, self.shot_queue,
-            self.messaging_queue, self.tesserocr_queue)
+            self.application,
+            self.shot_queue,
+            self.messaging_queue,
+            self.tesserocr_queue)
         self.shot_process.start()
 
     def __create_gspro_process(self):
         # Create GSPro process
         self.gspro_process = GSProProcess(
-            self.settings, self.shot_queue,
-            self.messaging_queue, self.gspro_connection)
+            self.application,
+            self.shot_queue,
+            self.messaging_queue)
         self.gspro_process.start()
 
     def shutdown(self):
