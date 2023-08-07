@@ -82,10 +82,6 @@ class Screenshot:
             self.width = self.application.device_manager.current_device.width
             self.height = self.application.device_manager.current_device.width
 
-        rect_pos = win32gui.GetWindowRect(hwnd)
-        left = rect_pos[0]
-        top = rect_pos[1]
-
         hwnd_dc = win32gui.GetWindowDC(hwnd)
         mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
         save_dc = mfc_dc.CreateCompatibleDC()
