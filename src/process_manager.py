@@ -1,8 +1,6 @@
 import logging
 from queue import Queue
-
 import tesserocr
-
 from src.application import Application
 from src.gspro_process import GSProProcess
 from src.menu import MenuOptions
@@ -11,6 +9,7 @@ from src.ui import UI, Color
 # Needed when we convert msg back to an object using eval
 from src.process_message import ProcessMessage
 from datetime import datetime, timedelta
+
 
 class ProcessManager:
 
@@ -62,7 +61,7 @@ class ProcessManager:
 
     def __initialise_tesserocr_queue(self):
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD)
-        #tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
+        # tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
         self.tesserocr_queue.put(tesserocr_api)
 
     def __capture_and_process_screenshot(self):
@@ -84,7 +83,7 @@ class ProcessManager:
                     color = Color.GREEN
                     if msg.error:
                         color = Color.RED
-                    UI.display_message(Color.GREEN, "CONNECTOR ||", msg.message)
+                    UI.display_message(color, "CONNECTOR ||", msg.message)
                 if msg.logging:
                     logging.debug(msg.message)
 
@@ -118,6 +117,3 @@ class ProcessManager:
         while not self.tesserocr_queue.empty():
             api = self.tesserocr_queue.get()
             api.End()
-
-
-

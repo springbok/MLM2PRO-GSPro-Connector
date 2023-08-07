@@ -2,17 +2,17 @@ import json
 import logging
 from queue import Queue
 from threading import Thread, Event
-
 from src.application import Application
 from src.process_message import ProcessMessage
 from src.screenshot import Screenshot
+
 
 class ShotProcess(Thread):
 
     def __init__(self,
                  application: Application,
                  shot_queue: Queue,
-                 messaging_queue, Queue,
+                 messaging_queue: Queue,
                  tesserocr_queue: Queue):
         Thread.__init__(self, daemon=True)
         self.application = application

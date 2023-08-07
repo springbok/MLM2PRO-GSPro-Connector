@@ -1,9 +1,9 @@
 import logging
 from dataclasses import dataclass
-
 from src.application import Application
 from src.screenshot import Screenshot
 from src.ui import Color, UI
+
 
 @dataclass
 class MenuOptions:

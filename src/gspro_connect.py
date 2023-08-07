@@ -30,7 +30,7 @@ class GSProConnect:
                 logging.info(f"Sending to GSPro data: {payload}")
                 self._socket.sendall(json.dumps(payload).encode("utf-8"))
                 msg = self._socket.recv(8096)
-            except socket.timeout as e:
+            except socket.timeout:
                 UI.display_message(Color.RED, "CONNECTOR ||", 'Timed out. Retrying...')
                 sleep(1)
                 continue
@@ -101,5 +101,5 @@ class GSProConnect:
         self._shot_number += 1
 
     def terminate_session(self):
-        if (self._socket):
+        if self._socket:
             self._socket.close()

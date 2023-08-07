@@ -53,7 +53,7 @@ def main():
         gspro_connection = GSProConnection(app.settings)
         gspro_connection.connect()
         # Create process manager to manage all threads
-        process_manager = ProcessManager(app)
+        app.process_manager = ProcessManager(app)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
     except Exception as e:
         message = f'Failed to initialise: {format(e)}'
@@ -70,10 +70,10 @@ def main():
             done_processing = False
             input_str = ""
             # Start process schedule
-            process_manager.reset_scheduled_time()
+            app.process_manager.reset_scheduled_time()
             while not done_processing:
                 # Check for and process next shot
-                process_manager.run()
+                app.process_manager.run()
                 if non_block_input.input_queued():
                     input_str = non_block_input.input_get()
                     # Process input, check if it's the quit option, if not process the selected option

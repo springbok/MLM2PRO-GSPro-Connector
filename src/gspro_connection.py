@@ -1,5 +1,4 @@
 import logging
-
 from src.gspro_connect import GSProConnect
 from src.settings import Settings
 from src.ui import UI, Color
@@ -26,7 +25,7 @@ class GSProConnection:
             self.gspro_connect.init_socket()
             # Assume gspro connected at this point as socket was opened without error,
             # no need to send test shot or heartbeat
-            #self.check_gspro_status()
+            # self.check_gspro_status()
         except Exception as e:
             raise ConnectionError(f"Error while trying to connect to GSPro, make sure GSPro Connect is running, start/restart from GSPro. Exception: {format(e)}")
         else:
@@ -51,7 +50,5 @@ class GSProConnection:
             try:
                 self.gspro_connect.send_test_signal()
                 break
-            except Exception as e:
+            except Exception:
                 raise
-
-

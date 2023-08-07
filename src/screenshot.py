@@ -26,7 +26,6 @@ class Screenshot:
         self.width = -1
         self.height = -1
 
-
     def load_rois(self, reset=False):
         if reset or len(self.application.device_manager.current_device.rois) <= 0:
             if not reset:
@@ -36,7 +35,7 @@ class Screenshot:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
 
     def __get_rois_from_user(self):
-        input("- Press enter after you've hit your first shot and resized the airplay app window. -")
+        input("- Press enter after you've hit your first shot and correctly resized the airplay window to remove black borders. -")
         # Run capture_window function in a separate thread
         self.__capture_screenshot()
         self.application.device_manager.current_device.rois = []
@@ -72,6 +71,7 @@ class Screenshot:
                 }
                 # Write values to settings file
                 self.application.device_manager.current_device.save()
+                logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {self.application.device_manager.current_device.window_rect}')
             else:
                 # Resize window to correct size
                 win32gui.MoveWindow(hwnd,
@@ -79,6 +79,7 @@ class Screenshot:
                     self.application.device_manager.current_device.window_rect['top'],
                     self.application.device_manager.current_device.width,
                     self.application.device_manager.current_device.height, True)
+                logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
             self.width = self.application.device_manager.current_device.width
             self.height = self.application.device_manager.current_device.width
 
@@ -127,9 +128,9 @@ class Screenshot:
             # Use ROI to get value from screenshot
             try:
                 result = self.__recognize_roi(self.application.device_manager.current_device.rois[key], api)
-                #logging.debug(f"key: {key} result: {result}")
+                # logging.debug(f"key: {key} result: {result}")
                 result = float(result)
-            except Exception as e:
+            except Exception:
                 raise ValueError(f"Could not convert value for '{BallData.properties[key]}' to float 0")
             # Check values are not 0
             if key in BallData.must_not_be_zero and result == float(0):
@@ -158,7 +159,3 @@ class Screenshot:
         self.width = -1
         self.height = -1
         self.application.device_manager.current_device.load()
-
-
-
-

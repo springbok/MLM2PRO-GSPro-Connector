@@ -4,7 +4,6 @@ import os
 import logging
 import re
 from dataclasses import dataclass
-
 from src.appdata import AppDataPaths
 from src.menu import MenuOptions
 from src.non_blocking_input import NonBlockingInput
@@ -15,7 +14,7 @@ from src.ui import UI, Color
 class Device:
     id: int
     name: str
-    window_rect: { 'left': int, 'top': int, 'right': int, 'bottom': int}
+    window_rect: {'left': int, 'top': int, 'right': int, 'bottom': int}
     window_name: str
     rois: dict
     path: str
@@ -62,9 +61,9 @@ class DeviceManager:
         self.current_device = None
         # Load standard devices
         self.devices = []
-        self.devices.append(Device(1, 'iphone', { 'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
-        self.devices.append(Device(2, 'ipad', { 'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
-        self.devices.append(Device(3, 'android', { 'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'EasyCast', {}, self.app_paths.app_data_path))
+        self.devices.append(Device(1, 'iphone', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
+        self.devices.append(Device(2, 'ipad', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
+        self.devices.append(Device(3, 'android', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'EasyCast', {}, self.app_paths.app_data_path))
         # Create files if they don't exist
         self.__create()
         # Load other devices files
@@ -110,5 +109,5 @@ class DeviceManager:
                         self.current_device = self.devices[sel-1]
                         self.current_device.load()
                         logging.debug(f'Selected device: {self.current_device.to_json()}')
-                    except Exception as e:
+                    except Exception:
                         UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option or press Q to Quit")
