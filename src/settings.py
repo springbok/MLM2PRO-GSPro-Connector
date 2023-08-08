@@ -18,4 +18,4 @@ class Settings(SettingsBase):
         )
         # Removed this from the settings file, specifies the
         # number of ms between screenshots
-        self.screenshot_interval = 500
+        self.screenshot_interval = 250

@@ -1,12 +1,11 @@
 import json
-import logging
 
 
 class BallData:
     properties = {
         'speed': 'Ball Speed',
-        'spin_axis': 'Spin Rate',
-        'total_spin': 'Spin Axis',
+        'spin_axis': 'Spin Axis',
+        'total_spin': 'Spin Rate',
         'hla': 'Launch Direction (HLA)',
         'vla': 'Launch Angle (VLA)',
         'club_speed': 'Club Speed',
@@ -20,9 +19,7 @@ class BallData:
         for key in BallData.properties:
             setattr(self, key, 0)
         for dictionary in initial_data:
-            logging.debug(f'dictionary: {dictionary}')
             for key in dictionary:
-                logging.debug(f'key: {key}')
                 setattr(self, key, dictionary[key])
         for key in kwargs:
             setattr(self, key, kwargs[key])
