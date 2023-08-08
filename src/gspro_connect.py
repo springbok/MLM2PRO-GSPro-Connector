@@ -96,7 +96,7 @@ class GSProConnect:
             }
         }
         self.send_msg(payload)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", f"Success: {json.dumps(ball_data.to_json())}")
+        UI.display_message(Color.GREEN, "CONNECTOR ||", f"Success: {ball_data.to_json()}")
 
         self._shot_number += 1
 

@@ -41,10 +41,15 @@ class DeviceManager:
                 self.devices.append(Device(i, res[0], 0, 0, '', {}, self.app_paths.app_data_path))
 
     def __display_devices(self):
+        if not self.current_device is None:
+            print(f'Connected Device: {self.current_device.name}')
         print('Select the device you want to connect:')
         for device in self.devices:
             print(device.id, '--', device.name)
-        print('Q -- Quit')
+        if not self.current_device is None:
+            print('Q -- Keep selected device')
+        else:
+            print('Q -- Quit')
 
     def select_device(self):
         self.__display_devices()
@@ -52,10 +57,16 @@ class DeviceManager:
         done_processing = False
         input_str = ""
         while not done_processing:
-            if non_block_input.input_queued():
-                input_str = non_block_input.input_get()
+            input_str = non_block_input.input_get()
+            if len(input_str) > 0:
                 if input_str.strip().upper() == non_block_input.exit_condition.upper():
-                    exit()
+                    if not self.current_device is None:
+                        # We already selected a device previously so exit menu
+                        done_processing = True
+                        print(f'Keeping current device: {self.current_device.name}')
+                    else:
+                        # We've not yet selected a device so exit app
+                        exit()
                 else:
                     done_processing = True
                     try:
@@ -64,6 +75,7 @@ class DeviceManager:
                             raise Exception()
                         self.current_device = self.devices[sel-1]
                         self.current_device.load()
+                        print(f'Changed to device: {self.current_device.name}')
                         logging.debug(f'Selected device: {self.current_device.to_json()}')
                     except Exception:
                         UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option or press Q to Quit")

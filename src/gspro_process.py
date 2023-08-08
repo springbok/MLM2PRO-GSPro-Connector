@@ -31,7 +31,7 @@ class GSProProcess(Thread):
                         shot = self.shot_queue.get()
                         logging.info(f"Process {self.name} got shot from queue: {shot}")
                         shot = BallData(json.loads(shot))
-                        logging.info(f"Process {self.name} retrieved shot data from queue sending to gspro: {json.dumps(shot.to_json())}")
+                        logging.info(f"Process {self.name} retrieved shot data from queue sending to gspro: {shot.to_json()}")
                         if self.application.gspro_connection.connected:
                             self.application.gspro_connection.gspro_connect.launch_ball(shot)
                 except Exception as e:

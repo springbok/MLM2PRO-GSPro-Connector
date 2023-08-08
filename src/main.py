@@ -71,15 +71,18 @@ def main():
             # Start process schedule
             app.process_manager.reset_scheduled_time()
             while not done_processing:
-                # Check for and process next shot
-                app.process_manager.run()
-                if non_block_input.input_queued():
-                    input_str = non_block_input.input_get()
+                input_str = non_block_input.input_get()
+                if len(input_str) > 0:
                     # Process input, check if it's the quit option, if not process the selected option
                     if input_str.strip().upper() == non_block_input.exit_condition.upper():
                         done_processing = True
                     else:
                         menu.process(input_str.upper(), app)
+                        non_block_input.resume()
+                else:
+                    # Check for and process next shot
+                    app.process_manager.run()
+
 
         except Exception as e:
             message = f'Failed to initialise: {format(e)}'

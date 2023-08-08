@@ -132,6 +132,8 @@ class Screenshot:
                 result = float(result)
             except Exception as e:
                 msg = f"Could not convert value {result} for '{BallData.properties[key]}' to float 0"
+                # Reset width to -1 to force window to be resized in case that is the cause of the missread
+                self.width = -1
                 logging.debug(msg)
                 raise ValueError(msg)
             # Check values are not 0
@@ -141,8 +143,8 @@ class Screenshot:
             if key == 'speed' and result > 400:
                 logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 400")
                 result = result / 10
-            elif key == 'total_spin' and result > 25000:
-                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 25000")
+            elif key == 'total_spin' and result > 20000:
+                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 20000")
                 result = result / 10
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, key, result)
