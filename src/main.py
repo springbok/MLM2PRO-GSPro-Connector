@@ -50,8 +50,8 @@ def main():
         Screenshot(app).load_rois()
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
         # Get GSPro connection
-        gspro_connection = GSProConnection(app.settings)
-        gspro_connection.connect()
+        app.gspro_connection = GSProConnection(app.settings)
+        app.gspro_connection.connect()
         # Create process manager to manage all threads
         app.process_manager = ProcessManager(app)
         UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
@@ -63,7 +63,6 @@ def main():
         # Display the menu
         menu = Menu()
         menu.display()
-        input("- Connector ready, press enter after you've hit your first shot. -")
         try:
             # Use non blocking key capture
             non_block_input = NonBlockingInput(exit_condition=MenuOptions.EXIT)

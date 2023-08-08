@@ -36,7 +36,7 @@ class Menu:
 
     def process(self, option, application: Application):
         option = option.upper()
-        logging.info(f"key: {option}")
+        logging.info(f"menu selection: {option}")
         soptions = ', '.join(map(str, list(self.menu_options.keys())))
         if option == MenuOptions.DISPLAY_MENU:
             self.display()

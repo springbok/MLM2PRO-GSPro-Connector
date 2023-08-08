@@ -2,14 +2,12 @@ import ctypes
 import logging
 import math
 import re
-
 import cv2
 import numpy as np
 import win32gui
 import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
-
 from src.application import Application
 from src.ball_data import BallData
 from src.ui import Color, UI
@@ -32,19 +30,20 @@ class Screenshot:
                 UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
             self.__get_rois_from_user()
         else:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
+            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previously saved ROI's")
 
     def __get_rois_from_user(self):
         input("- Press enter after you've hit your first shot and correctly resized the airplay window to remove black borders. -")
         # Run capture_window function in a separate thread
         self.__capture_screenshot()
-        self.application.device_manager.current_device.rois = []
+        self.application.device_manager.current_device.rois = {}
         self.application.device_manager.current_device.window_rect = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
         # Ask user to select ROIs for each value, if they weren't found in the json
-        for key in BallData.properties:
+        for key in BallData.rois_properties:
             print(f"Please select the ROI for {BallData.properties[key]}.")
             roi = self.__select_roi()
             self.application.device_manager.current_device.rois[key] = roi
+            self.application.device_manager.current_device.save()
 
     def __select_roi(self):
         plt.imshow(cv2.cvtColor(self.screenshot, cv2.COLOR_BGR2RGB))
@@ -63,7 +62,7 @@ class Screenshot:
             raise RuntimeError(f"Can't find window called '{self.application.device_manager.current_device.window_name}'")
 
         if self.width == -1:
-            if self.application.device_manager.current_device.width <= 0 or self.application.device_manager.current_device.height <= 0:
+            if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:
                 # Obtain current window rect
                 rect = win32gui.GetClientRect(hwnd)
                 self.application.device_manager.current_device.window_rect = {
@@ -77,11 +76,11 @@ class Screenshot:
                 win32gui.MoveWindow(hwnd,
                     self.application.device_manager.current_device.window_rect['left'],
                     self.application.device_manager.current_device.window_rect['top'],
-                    self.application.device_manager.current_device.width,
-                    self.application.device_manager.current_device.height, True)
+                    self.application.device_manager.current_device.width(),
+                    self.application.device_manager.current_device.height(), True)
                 logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
-            self.width = self.application.device_manager.current_device.width
-            self.height = self.application.device_manager.current_device.width
+            self.width = self.application.device_manager.current_device.width()
+            self.height = self.application.device_manager.current_device.height()
 
         hwnd_dc = win32gui.GetWindowDC(hwnd)
         mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
@@ -124,14 +123,17 @@ class Screenshot:
         else:
             diff = False
         self.__capture_screenshot()
-        for key in BallData.properties:
+        for key in BallData.rois_properties:
             # Use ROI to get value from screenshot
+            result = 0
             try:
                 result = self.__recognize_roi(self.application.device_manager.current_device.rois[key], api)
                 # logging.debug(f"key: {key} result: {result}")
                 result = float(result)
-            except Exception:
-                raise ValueError(f"Could not convert value for '{BallData.properties[key]}' to float 0")
+            except Exception as e:
+                msg = f"Could not convert value {result} for '{BallData.properties[key]}' to float 0"
+                logging.debug(msg)
+                raise ValueError(msg)
             # Check values are not 0
             if key in BallData.must_not_be_zero and result == float(0):
                 raise ValueError(f"Value for '{BallData.properties[key]}' is 0")

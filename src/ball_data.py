@@ -1,4 +1,5 @@
 import json
+import logging
 
 
 class BallData:
@@ -12,14 +13,16 @@ class BallData:
         'back_spin': 'Back Spin',
         'side_spin': 'Side Spin'
     }
-    rois = ['speed', 'spin_axis', 'total_spin', 'hla', 'vla', 'club_speed']
+    rois_properties = ['speed', 'spin_axis', 'total_spin', 'hla', 'vla', 'club_speed']
     must_not_be_zero = ['speed', 'total_spin', 'club_speed']
 
     def __init__(self, *initial_data, **kwargs):
         for key in BallData.properties:
             setattr(self, key, 0)
         for dictionary in initial_data:
+            logging.debug(f'dictionary: {dictionary}')
             for key in dictionary:
+                logging.debug(f'key: {key}')
                 setattr(self, key, dictionary[key])
         for key in kwargs:
             setattr(self, key, kwargs[key])
