@@ -44,7 +44,7 @@ class Menu:
             if option == MenuOptions.DISPLAY_MENU:
                 self.display()
             elif option == MenuOptions.UNPAUSE_CONNECTOR:
-                application.process_manager.restart()
+                i=1
             elif option == MenuOptions.RESET_GSPRO_CONNECTION:
                 application.gspro_connection.reset()
             elif option == MenuOptions.TEST_GSPRO_CONNECTION:

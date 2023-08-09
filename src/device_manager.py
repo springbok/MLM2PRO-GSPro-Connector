@@ -75,7 +75,7 @@ class DeviceManager:
                             raise Exception()
                         self.current_device = self.devices[sel-1]
                         self.current_device.load()
-                        print(f'Changed to device: {self.current_device.name}')
+                        print(f'Selected device: {self.current_device.name}')
                         logging.debug(f'Selected device: {self.current_device.to_json()}')
                     except Exception:
                         UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option or press Q to Quit")

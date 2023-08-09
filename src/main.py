@@ -61,6 +61,7 @@ def main():
         logging.info(message)
     else:
         # Display the menu
+        input('Connector is ready, please press enter after taking your first shot.')
         menu = Menu()
         menu.display()
         try:

@@ -4,6 +4,7 @@ import logging
 import json
 from time import sleep
 from src.ball_data import BallData
+from src.menu import MenuOptions
 from src.ui import UI, Color
 
 
@@ -35,11 +36,14 @@ class GSProConnect:
                 sleep(1)
                 continue
             except socket.error as e:
-                UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{format(e)}")
+                if "[WinError 10054]" in format(e):
+                    UI.display_message(Color.RED, "CONNECTOR ||", f"Could not connect to the GSPro Connect, please start/restart from GSPro then press {MenuOptions.RESET_GSPRO_CONNECTION} to reset GSPro connection:{format(e)}")
+                else:
+                    UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{format(e)}")
                 raise
             except Exception as e:
                 if "[WinError 10054]" in format(e):
-                    msg = f"Could not connect to the GSPro Connect, please start/restart from GSPro:{format(e)}"
+                    msg = f"Could not connect to the GSPro Connect, please start/restart from GSPro then press {MenuOptions.RESET_GSPRO_CONNECTION} to reset GSPro connection:{format(e)}"
                 else:
                     msg = f"Unknown error: format(e)"
                 UI.display_message(Color.RED, "CONNECTOR ||", msg)

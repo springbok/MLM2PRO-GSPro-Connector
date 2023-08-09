@@ -1,5 +1,5 @@
 class Application:
-    version = "V1.00.00"
+    version = "V0.01.00"
 
     def __init__(self):
         self.app_paths = None
