@@ -33,7 +33,7 @@ class Screenshot:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previously saved ROI's")
 
     def __get_rois_from_user(self):
-        input("- Press enter after you've hit your first shot and correctly resized the airplay window to remove black borders. -")
+        input("- Press enter after you've hit your first shot and correctly resized the screen mirror window to remove black borders. -")
         # Run capture_window function in a separate thread
         self.__capture_screenshot()
         self.application.device_manager.current_device.rois = {}
