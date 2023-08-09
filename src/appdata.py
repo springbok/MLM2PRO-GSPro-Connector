@@ -42,7 +42,7 @@ class FileBasedLock:
 
 @lru_cache()
 def get_home_folder():
-    return Path.home().absolute()
+    return os.getcwd() #Path.home().absolute()
 
 
 @lru_cache()
@@ -215,7 +215,8 @@ class AppDataPaths:
         if sys.platform == 'linux':
             app_data_folder_name = f'.{name}'
         else:
-            app_data_folder_name = os.getenv('APPDATA').replace('Roaming', 'Local\\') + name
+            app_data_folder_name = 'appdata'
+
 
         return os.path.join(self.home_folder_path, app_data_folder_name)
 

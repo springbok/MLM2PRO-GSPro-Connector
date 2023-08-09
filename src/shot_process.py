@@ -1,17 +1,20 @@
-import json
 import logging
+from queue import Queue
 from threading import Thread, Event
+from src.application import Application
 from src.process_message import ProcessMessage
 from src.screenshot import Screenshot
 
+
 class ShotProcess(Thread):
 
-    def __init__(self, last_shot, settings,
-                 apps_paths, shot_queue,
-                 messaging_queue, tesserocr_queue):
+    def __init__(self,
+                 application: Application,
+                 shot_queue: Queue,
+                 messaging_queue: Queue,
+                 tesserocr_queue: Queue):
         Thread.__init__(self, daemon=True)
-        self.app_paths = apps_paths
-        self.settings = settings
+        self.application = application
         self.last_shot = None
         self.shot_queue = shot_queue
         self.messaging_queue = messaging_queue
@@ -20,7 +23,7 @@ class ShotProcess(Thread):
         self._shutdown = Event()
         self._execute = Event()
         self.tesserocr_queue = tesserocr_queue
-        self.screenshot = Screenshot(self.settings, self.app_paths)
+        self.screenshot = Screenshot(self.application)
         self.name = "shot_process"
         self._pause = Event()
         self.resume()
@@ -41,9 +44,9 @@ class ShotProcess(Thread):
                     self.screenshot.capture_and_process_screenshot(self.last_shot, api)
                     if self.screenshot.new_shot:
                         # New shot so place shot data in shot queue for processing
-                        logging.info(f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.__dict__)}")
+                        logging.info(f"Process {self.name} shot data: {self.screenshot.ball_data.to_json()}")
                         self.last_shot = self.screenshot.ball_data.__copy__()
-                        self.shot_queue.put(json.dumps(self.screenshot.ball_data.__dict__))
+                        self.shot_queue.put(self.screenshot.ball_data.to_json())
                 except Exception as e:
                     self.num_errors = self.num_errors + 1
                     msg = ProcessMessage(error=True, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
@@ -79,5 +82,6 @@ class ShotProcess(Thread):
         self._pause.clear()
 
     def resume(self):
-        self.screenshot.reload_rois()
+        # Reload device settings in case of a change
+        self.screenshot.reload_device_settings()
         self._pause.set()

@@ -2,56 +2,49 @@ import ctypes
 import logging
 import math
 import re
-
 import cv2
 import numpy as np
 import win32gui
 import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
+from src.application import Application
 from src.ball_data import BallData
-from src.rois import Rois
 from src.ui import Color, UI
 
 
 class Screenshot:
 
-    def __init__(self, settings, app_paths):
-        self.rois = Rois(app_paths)
-        self.settings = settings
+    def __init__(self, application: Application):
+        self.application = application
         self.ball_data = BallData()
         self.screenshot = []
         self.new_shot = False
         self.message = None
         self.width = -1
         self.height = -1
-        self.app_paths = app_paths
-
 
     def load_rois(self, reset=False):
-        if reset or len(self.rois.values) <= 0:
+        if reset or len(self.application.device_manager.current_device.rois) <= 0:
             if not reset:
                 UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
             self.__get_rois_from_user()
         else:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
-
-    def reload_rois(self):
-        self.rois = Rois(self.app_paths)
+            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previously saved ROI's")
 
     def __get_rois_from_user(self):
-        input("- Press enter after you've hit your first shot. -")
+        input("- Press enter after you've hit your first shot and correctly resized the airplay window to remove black borders. -")
         # Run capture_window function in a separate thread
-        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
-        self.rois.rois = []
+        self.__capture_screenshot()
+        self.application.device_manager.current_device.rois = {}
+        self.application.device_manager.current_device.window_rect = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
         # Ask user to select ROIs for each value, if they weren't found in the json
-        for value in self.rois.keys:
-            print(f"Please select the ROI for {value}.")
+        for key in BallData.rois_properties:
+            print(f"Please select the ROI for {BallData.properties[key]}.")
             roi = self.__select_roi()
-            self.rois.values[value] = roi
-        # Save settings file with new settings
-        self.rois.write()
-        
+            self.application.device_manager.current_device.rois[key] = roi
+            self.application.device_manager.current_device.save()
+
     def __select_roi(self):
         plt.imshow(cv2.cvtColor(self.screenshot, cv2.COLOR_BGR2RGB))
         plt.show(block=False)
@@ -62,27 +55,32 @@ class Screenshot:
         x2, y2 = map(int, roi[1])
         return (x1, y1, x2 - x1, y2 - y1)
 
-    def __capture_screenshot(self, window_name: str, target_width: int, target_height: int):
+    def __capture_screenshot(self):
         ctypes.windll.user32.SetProcessDPIAware()
-        hwnd = win32gui.FindWindow(None, window_name)
+        hwnd = win32gui.FindWindow(None, self.application.device_manager.current_device.window_name)
         if not hwnd:
-            raise RuntimeError(f"Can't find window called '{window_name}'")
+            raise RuntimeError(f"Can't find window called '{self.application.device_manager.current_device.window_name}'")
 
-        rect = win32gui.GetClientRect(hwnd)
         if self.width == -1:
-            self.width = rect[2] - rect[0]
-            self.height = rect[3] - rect[1]
-        # Need to do more testing on when and how window size changes, for now comment out
-        # else:
-        #    if not (self.width == rect[2] - rect[0] and self.height == rect[3] - rect[0]):
-        #        raise RuntimeError(f"Target window ({window_name}) size has changed to {self.width}x{self.height} {rect}")
-
-        #if not (self.width == target_width and self.height == target_height):
-        #    print(f"Dimensions seem wrong {self.width}x{self.height} vs json:{target_width}x{target_height}")
-
-        rect_pos = win32gui.GetWindowRect(hwnd)
-        left = rect_pos[0]
-        top = rect_pos[1]
+            if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:
+                # Obtain current window rect
+                rect = win32gui.GetClientRect(hwnd)
+                self.application.device_manager.current_device.window_rect = {
+                    'left': rect[0], 'top': rect[1], 'right': rect[2], 'bottom': rect[3]
+                }
+                # Write values to settings file
+                self.application.device_manager.current_device.save()
+                logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {self.application.device_manager.current_device.window_rect}')
+            else:
+                # Resize window to correct size
+                win32gui.MoveWindow(hwnd,
+                    self.application.device_manager.current_device.window_rect['left'],
+                    self.application.device_manager.current_device.window_rect['top'],
+                    self.application.device_manager.current_device.width(),
+                    self.application.device_manager.current_device.height(), True)
+                logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
+            self.width = self.application.device_manager.current_device.width()
+            self.height = self.application.device_manager.current_device.height()
 
         hwnd_dc = win32gui.GetWindowDC(hwnd)
         mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
@@ -124,28 +122,35 @@ class Screenshot:
             diff = True
         else:
             diff = False
-        self.__capture_screenshot(self.settings.WINDOW_NAME, self.settings.TARGET_WIDTH, self.settings.TARGET_HEIGHT)
-        for key in self.rois.keys:
+        self.__capture_screenshot()
+        for key in BallData.rois_properties:
             # Use ROI to get value from screenshot
+            result = 0
             try:
-                result = self.__recognize_roi(self.rois.values[key], api)
-                #logging.debug(f"key: {key} result: {result}")
+                result = self.__recognize_roi(self.application.device_manager.current_device.rois[key], api)
+                # logging.debug(f"key: {key} result: {result}")
                 result = float(result)
             except Exception as e:
-                raise ValueError(f"Could not convert value for '{key}' to float 0")
+                msg = f"Could not convert value {result} for '{BallData.properties[key]}' to float 0"
+                # Reset width to -1 to force window to be resized in case that is the cause of the missread
+                self.width = -1
+                logging.debug(msg)
+                raise ValueError(msg)
             # Check values are not 0
-            if self.rois.ball_data_mapping[key] in self.rois.must_not_be_zero and result == float(0):
-                raise ValueError(f"Value for '{key}' is 0")
+            if key in BallData.must_not_be_zero and result == float(0):
+                raise ValueError(f"Value for '{BallData.properties[key]}' is 0")
             # For some reason ball speed sometimes get an extra digit added
-            if self.rois.ball_data_mapping[key] == 'speed' and result > 400:
+            if key == 'speed' and result > 400:
+                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 400")
                 result = result / 10
-            elif self.rois.ball_data_mapping[key] == 'total_spin' and result > 25000:
+            elif key == 'total_spin' and result > 20000:
+                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 20000")
                 result = result / 10
             # Put the value for the current ROI into the ball data object
-            setattr(self.ball_data, self.rois.ball_data_mapping[key], result)
+            setattr(self.ball_data, key, result)
             # See if values are different from previous shot
             if not diff and not last_shot is None:
-                if result != getattr(last_shot, self.rois.ball_data_mapping[key]):
+                if result != getattr(last_shot, key):
                     diff = True
         if diff:
             self.ball_data.back_spin = round(self.ball_data.total_spin * math.cos(math.radians(self.ball_data.spin_axis)))
@@ -154,6 +159,7 @@ class Screenshot:
         # Set diff attribute if value are different
         self.new_shot = diff
 
-
-
-
+    def reload_device_settings(self):
+        self.width = -1
+        self.height = -1
+        self.application.device_manager.current_device.load()
