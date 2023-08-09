@@ -13,7 +13,7 @@ class Color:
 class UI:
     @staticmethod
     def display_message(color, prefix, message):
-        print(f"{color}{prefix}{Color.RESET}", message)
+        print(f"{prefix}", message)
         if color == Color.RED:
             logging.exception(message)
 
