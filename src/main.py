@@ -1,5 +1,6 @@
 import logging
 import os
+
 from src.appdata import AppDataPaths
 from src.application import Application
 from src.device_manager import DeviceManager
@@ -45,29 +46,23 @@ def main():
         # Check for device config files
         app.device_manager = DeviceManager(app.app_paths)
         app.device_manager.select_device()
-        UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
-        # Check if we can read ROI's from file, if not prompt user to specify
-        Screenshot(app).load_rois()
-        UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
-        # Get GSPro connection
-        app.gspro_connection = GSProConnection(app.settings)
-        app.gspro_connection.connect()
-        # Create process manager to manage all threads
-        app.process_manager = ProcessManager(app)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
-    except Exception as e:
-        message = f'Failed to initialise: {format(e)}'
-        UI.display_message(Color.RED, "CONNECTOR ||", message)
-        logging.info(message)
-    else:
-        # Display the menu
-        input('Connector is ready, please press enter after taking your first shot.')
-        menu = Menu()
-        menu.display()
-        try:
+        if not app.device_manager.exit:
+            UI.display_message(Color.GREEN, "CONNECTOR ||", "Checking for saved ROI's...")
+            # Check if we can read ROI's from file, if not prompt user to specify
+            Screenshot(app).load_rois()
+            UI.display_message(Color.GREEN, "CONNECTOR ||", "Starting processing threads...")
+            # Get GSPro connection
+            app.gspro_connection = GSProConnection(app.settings)
+            app.gspro_connection.connect()
+            # Create process manager to manage all threads
+            app.process_manager = ProcessManager(app)
+            UI.display_message(Color.GREEN, "CONNECTOR ||", "Connector is ready")
+            # Display the menu
+            input('Connector is ready, please press enter after taking your first shot.')
+            menu = Menu()
+            menu.display()
             # Use non blocking key capture
             non_block_input = NonBlockingInput(exit_condition=MenuOptions.EXIT)
-            done_processing = False
             input_str = ""
             # Start process schedule
             app.process_manager.reset_scheduled_time()
@@ -84,13 +79,16 @@ def main():
                     # Check for and process next shot
                     app.process_manager.run()
 
-
-        except Exception as e:
-            message = f'Failed to initialise: {format(e)}'
-            UI.display_message(Color.RED, "CONNECTOR ||", message)
-            logging.info(message)
-        finally:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Shutting down connector...")
-            # Stop processes cleanly
+    except KeyboardInterrupt:
+        print("Ctrl-C pressed exiting")
+    except Exception as e:
+        message = f'Failed to initialise: {format(e)}'
+        UI.display_message(Color.RED, "CONNECTOR ||", message)
+        logging.info(message)
+    finally:
+        UI.display_message(Color.GREEN, "CONNECTOR ||", "Shutting down connector...")
+        # Stop processes cleanly
+        if not app.process_manager is None:
             app.process_manager.shutdown()
+        if not app.gspro_connection is None:
             app.gspro_connection.disconnect()

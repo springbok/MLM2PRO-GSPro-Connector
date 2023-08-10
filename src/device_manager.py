@@ -14,6 +14,7 @@ class DeviceManager:
     def __init__(self, app_paths: AppDataPaths):
         self.app_paths = app_paths
         self.current_device = None
+        self.exit = False
         # Load standard devices
         self.devices = []
         self.devices.append(Device(1, 'iphone', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
@@ -56,26 +57,37 @@ class DeviceManager:
         non_block_input = NonBlockingInput(exit_condition=MenuOptions.EXIT)
         done_processing = False
         input_str = ""
-        while not done_processing:
-            input_str = non_block_input.input_get()
-            if len(input_str) > 0:
-                if input_str.strip().upper() == non_block_input.exit_condition.upper():
-                    if not self.current_device is None:
-                        # We already selected a device previously so exit menu
-                        done_processing = True
-                        print(f'Keeping current device: {self.current_device.name}')
+        try:
+            while not done_processing:
+                input_str = non_block_input.input_get()
+                if len(input_str) > 0:
+                    logging.debug(f'key pressed: {input_str}')
+                    non_block_input.pause()
+                    if input_str.strip().upper() == non_block_input.exit_condition.upper():
+                        if not self.current_device is None:
+                            # We already selected a device previously so exit menu
+                            done_processing = True
+                            print(f'Keeping current device: {self.current_device.name}')
+                        else:
+                            # We've not yet selected a device so exit app
+                            self.exit = True
+                            done_processing = True
                     else:
-                        # We've not yet selected a device so exit app
-                        exit()
-                else:
-                    done_processing = True
-                    try:
-                        sel = int(input_str)
-                        if sel <= 0 or sel > len(self.devices):
-                            raise Exception()
-                        self.current_device = self.devices[sel-1]
-                        self.current_device.load()
-                        print(f'Selected device: {self.current_device.name}')
-                        logging.debug(f'Selected device: {self.current_device.to_json()}')
-                    except Exception:
-                        UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option or press Q to Quit")
+                        done_processing = True
+                        try:
+                            sel = int(input_str)
+                            if sel <= 0 or sel > len(self.devices):
+                                raise Exception()
+                            self.current_device = self.devices[sel-1]
+                            self.current_device.load()
+                            print(f'Changed to device: {self.current_device.name}')
+                            logging.debug(f'Selected device: {self.current_device.to_json()}')
+                        except Exception:
+                            UI.display_message(Color.RED, "", f"Invalid option. Please enter a valid option or press Q to Quit")
+
+        except KeyboardInterrupt:
+            logging.debug("Ctrl-C pressed exiting device manager")
+            self.exit = True
+            raise
+        except Exception:
+            raise
