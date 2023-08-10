@@ -12,7 +12,7 @@ class BallData:
         'back_spin': 'Back Spin',
         'side_spin': 'Side Spin'
     }
-    rois_properties = ['speed', 'spin_axis', 'total_spin', 'hla', 'vla', 'club_speed']
+    rois_properties = ['speed', 'total_spin', 'spin_axis', 'hla', 'vla', 'club_speed']
     must_not_be_zero = ['speed', 'total_spin', 'club_speed']
 
     def __init__(self, *initial_data, **kwargs):
