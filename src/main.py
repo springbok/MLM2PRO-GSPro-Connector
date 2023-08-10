@@ -66,6 +66,7 @@ def main():
             input_str = ""
             # Start process schedule
             app.process_manager.reset_scheduled_time()
+            done_processing = False
             while not done_processing:
                 input_str = non_block_input.input_get()
                 if len(input_str) > 0:
