@@ -1,3 +1,4 @@
+import logging
 from queue import Queue
 from threading import Thread, Event
 
@@ -17,10 +18,14 @@ class NonBlockingInput(Thread):
         while not done_queueing_input:
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
-            console_input = input()
-            self.pause()
-            self.input_queue.put(console_input)
-            if console_input.strip().upper() == self.exit_condition:
+            try:
+                console_input = input()
+                self.pause()
+                self.input_queue.put(console_input)
+                if console_input.strip().upper() == self.exit_condition:
+                    done_queueing_input = True
+            except Exception:
+                logging.debug(f'Exiting waiting for input possibly due to CTRL+C pressed')
                 done_queueing_input = True
 
     def input_queued(self):

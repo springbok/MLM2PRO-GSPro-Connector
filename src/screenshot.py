@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 from src.application import Application
 from src.ball_data import BallData
 from src.ui import Color, UI
+import pygetwindow as gw
 
 
 class Screenshot:
@@ -21,8 +22,17 @@ class Screenshot:
         self.screenshot = []
         self.new_shot = False
         self.message = None
-        self.width = -1
-        self.height = -1
+        self.resize_window = True
+        self.mirror_window = None
+        self.__find_mirror_window()
+
+    def __find_mirror_window(self):
+        if self.mirror_window is None:
+            mirror_windows = gw.getWindowsWithTitle(self.application.device_manager.current_device.window_name)
+            if len(mirror_windows) <= 0:
+                raise RuntimeError(
+                    f"Can't find window called '{self.application.device_manager.current_device.window_name}'")
+            self.mirror_window = mirror_windows[0]
 
     def load_rois(self, reset=False):
         if reset or len(self.application.device_manager.current_device.rois) <= 0:
@@ -33,7 +43,7 @@ class Screenshot:
             UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previously saved ROI's")
 
     def __get_rois_from_user(self):
-        input("- Press enter after you've hit your first shot and correctly resized the airplay window to remove black borders. -")
+        input("- Press enter after you've hit your first shot and correctly resized the screen mirror window to remove black borders. -")
         # Run capture_window function in a separate thread
         self.__capture_screenshot()
         self.application.device_manager.current_device.rois = {}
@@ -57,39 +67,41 @@ class Screenshot:
 
     def __capture_screenshot(self):
         ctypes.windll.user32.SetProcessDPIAware()
-        hwnd = win32gui.FindWindow(None, self.application.device_manager.current_device.window_name)
-        if not hwnd:
-            raise RuntimeError(f"Can't find window called '{self.application.device_manager.current_device.window_name}'")
-
-        if self.width == -1:
+        # Make sure windows is not minimized
+        if self.mirror_window.isMinimized:
+            self.mirror_window.restore()
+        # Resize to correct size if required
+        if self.resize_window:
             if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:
                 # Obtain current window rect
-                rect = win32gui.GetClientRect(hwnd)
                 self.application.device_manager.current_device.window_rect = {
-                    'left': rect[0], 'top': rect[1], 'right': rect[2], 'bottom': rect[3]
+                    'left': self.mirror_window._rect.left,
+                    'top': self.mirror_window._rect.top,
+                    'right': self.mirror_window._rect.right,
+                    'bottom': self.mirror_window._rect.bottom
                 }
+
                 # Write values to settings file
                 self.application.device_manager.current_device.save()
                 logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {self.application.device_manager.current_device.window_rect}')
             else:
                 # Resize window to correct size
-                win32gui.MoveWindow(hwnd,
-                    self.application.device_manager.current_device.window_rect['left'],
-                    self.application.device_manager.current_device.window_rect['top'],
+                self.mirror_window.resizeTo(
                     self.application.device_manager.current_device.width(),
-                    self.application.device_manager.current_device.height(), True)
+                    self.application.device_manager.current_device.height())
                 logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
-            self.width = self.application.device_manager.current_device.width()
-            self.height = self.application.device_manager.current_device.height()
+            self.resize_window = False
 
-        hwnd_dc = win32gui.GetWindowDC(hwnd)
+        hwnd_dc = win32gui.GetWindowDC(self.mirror_window._hWnd)
         mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
         save_dc = mfc_dc.CreateCompatibleDC()
         bitmap = win32ui.CreateBitmap()
-        bitmap.CreateCompatibleBitmap(mfc_dc, self.width, self.height)
+        bitmap.CreateCompatibleBitmap(mfc_dc,
+                                      self.mirror_window.width,
+                                      self.mirror_window.height)
         save_dc.SelectObject(bitmap)
 
-        result = ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
+        result = ctypes.windll.user32.PrintWindow(self.mirror_window._hWnd, save_dc.GetSafeHdc(), 3)
 
         bmpinfo = bitmap.GetInfo()
         bmpstr = bitmap.GetBitmapBits(True)
@@ -101,7 +113,7 @@ class Screenshot:
             win32gui.DeleteObject(bitmap.GetHandle())
             save_dc.DeleteDC()
             mfc_dc.DeleteDC()
-            win32gui.ReleaseDC(hwnd, hwnd_dc)
+            win32gui.ReleaseDC(self.mirror_window._hWnd, hwnd_dc)
             raise RuntimeError(f"Unable to acquire screenshot! Result: {result}")
 
     def __recognize_roi(self, roi, api):
@@ -133,7 +145,7 @@ class Screenshot:
             except Exception as e:
                 msg = f"Could not convert value {result} for '{BallData.properties[key]}' to float 0"
                 # Reset width to -1 to force window to be resized in case that is the cause of the missread
-                self.width = -1
+                self.resize_window = True
                 logging.debug(msg)
                 raise ValueError(msg)
             # Check values are not 0
@@ -160,6 +172,5 @@ class Screenshot:
         self.new_shot = diff
 
     def reload_device_settings(self):
-        self.width = -1
-        self.height = -1
+        self.resize_window = True
         self.application.device_manager.current_device.load()
