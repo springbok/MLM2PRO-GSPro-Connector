@@ -1,17 +1,13 @@
-import ctypes
 import logging
 import math
 import re
 import cv2
-import numpy as np
-import win32gui
-import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
 from src.application import Application
 from src.ball_data import BallData
+from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.ui import Color, UI
-import pygetwindow as gw
 
 
 class Screenshot:
@@ -24,15 +20,6 @@ class Screenshot:
         self.message = None
         self.resize_window = True
         self.mirror_window = None
-        self.__find_mirror_window()
-
-    def __find_mirror_window(self):
-        if self.mirror_window is None:
-            mirror_windows = gw.getWindowsWithTitle(self.application.device_manager.current_device.window_name)
-            if len(mirror_windows) <= 0:
-                raise RuntimeError(
-                    f"Can't find window called '{self.application.device_manager.current_device.window_name}'")
-            self.mirror_window = mirror_windows[0]
 
     def load_rois(self, reset=False):
         if reset or len(self.application.device_manager.current_device.rois) <= 0:
@@ -66,55 +53,35 @@ class Screenshot:
         return (x1, y1, x2 - x1, y2 - y1)
 
     def __capture_screenshot(self):
-        ctypes.windll.user32.SetProcessDPIAware()
-        # Make sure windows is not minimized
-        if self.mirror_window.isMinimized:
-            self.mirror_window.restore()
+        # Find the window using window title
+        if self.mirror_window is None:
+            self.mirror_window = ScreenMirrorWindow(self.application.device_manager.current_device.window_name)
+            self.screenshot_of_window = ScreenshotOfWindow(
+                hwnd=self.mirror_window.hwnd,
+                client=True,
+                ascontiguousarray=True)
         # Resize to correct size if required
         if self.resize_window:
             if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:
                 # Obtain current window rect
                 self.application.device_manager.current_device.window_rect = {
-                    'left': self.mirror_window._rect.left,
-                    'top': self.mirror_window._rect.top,
-                    'right': self.mirror_window._rect.right,
-                    'bottom': self.mirror_window._rect.bottom
+                    'left': self.mirror_window.rect.left,
+                    'top': self.mirror_window.rect.top,
+                    'right': self.mirror_window.rect.right,
+                    'bottom': self.mirror_window.rect.bottom
                 }
-
                 # Write values to settings file
                 self.application.device_manager.current_device.save()
                 logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {self.application.device_manager.current_device.window_rect}')
             else:
                 # Resize window to correct size
-                self.mirror_window.resizeTo(
+                self.mirror_window.resize(
                     self.application.device_manager.current_device.width(),
                     self.application.device_manager.current_device.height())
                 logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
             self.resize_window = False
-
-        hwnd_dc = win32gui.GetWindowDC(self.mirror_window._hWnd)
-        mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
-        save_dc = mfc_dc.CreateCompatibleDC()
-        bitmap = win32ui.CreateBitmap()
-        bitmap.CreateCompatibleBitmap(mfc_dc,
-                                      self.mirror_window.width,
-                                      self.mirror_window.height)
-        save_dc.SelectObject(bitmap)
-
-        result = ctypes.windll.user32.PrintWindow(self.mirror_window._hWnd, save_dc.GetSafeHdc(), 3)
-
-        bmpinfo = bitmap.GetInfo()
-        bmpstr = bitmap.GetBitmapBits(True)
-
-        screenshot = np.frombuffer(bmpstr, dtype=np.uint8).reshape((bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4))
-        self.screenshot = np.ascontiguousarray(screenshot)[..., :-1]
-
-        if not result:
-            win32gui.DeleteObject(bitmap.GetHandle())
-            save_dc.DeleteDC()
-            mfc_dc.DeleteDC()
-            win32gui.ReleaseDC(self.mirror_window._hWnd, hwnd_dc)
-            raise RuntimeError(f"Unable to acquire screenshot! Result: {result}")
+        # Take screenshot
+        self.screenshot = self.screenshot_of_window.screenshot_window()
 
     def __recognize_roi(self, roi, api):
         # crop the roi from screenshot
