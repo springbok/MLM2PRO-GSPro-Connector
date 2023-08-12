@@ -60,6 +60,9 @@ class Screenshot:
                 hwnd=self.mirror_window.hwnd,
                 client=True,
                 ascontiguousarray=True)
+        # Make sure window is not minimized
+        if self.mirror_window.is_minimized():
+            self.mirror_window.restore()
         # Resize to correct size if required
         if self.resize_window:
             if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:

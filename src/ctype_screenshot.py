@@ -20,6 +20,11 @@ from ctypes.wintypes import (
     WORD,
 )
 
+SW_MINIMIZE = 6
+SW_MAXIMIZE = 3
+SW_HIDE = 0
+SW_SHOW = 5
+SW_RESTORE = 9
 
 SRCCOPY = 13369376
 DIB_RGB_COLORS = BI_RGB = 0
@@ -67,6 +72,8 @@ def check_zero(result, func, args):
 # from https://github.com/Soldie/Stitch-Rat-pyton/blob/8e22e91c94237959c02d521aab58dc7e3d994cea/Configuration/mss/windows.py
 GetClientRect = windll.user32.GetClientRect
 GetWindowRect = windll.user32.GetWindowRect
+IsIconic = windll.user32.IsIconic
+ShowWindow = windll.user32.ShowWindow
 SetWindowPos = windll.user32.SetWindowPos
 user32.SetWindowPos.errcheck = check_zero
 PrintWindow = windll.user32.PrintWindow
@@ -178,6 +185,12 @@ class ScreenMirrorWindow:
 
     def resize(self, width: int, height: int):
         user32.SetWindowPos(self.hwnd, 0, self.rect.left, self.rect.top, width, height, 0)
+
+    def is_minimized(self):
+        return user32.IsIconic(self.hwnd) != 0
+
+    def restore(self):
+        user32.ShowWindow(self.hwnd, SW_RESTORE)
 
 
 class ScreenshotOfWindow:
