@@ -321,10 +321,10 @@ class ScreenshotOfWindow:
 
         if not values_are_the_same:
             self._create_bmi(w, h)
-            imagex = ctypes.create_string_buffer(buffer_len)
+            self.imagex = ctypes.create_string_buffer(buffer_len)
 
         windll.gdi32.GetDIBits(
-            self.saveDC, self.bmp, 0, h, imagex, self.bmi, DIB_RGB_COLORS
+            self.saveDC, self.bmp, 0, h, self.imagex, self.bmi, DIB_RGB_COLORS
         )
         (
             self.old_left,
@@ -334,10 +334,11 @@ class ScreenshotOfWindow:
             self.old_width,
             self.old_height,
         ) = (left, right, top, bottom, w, h)
-        self.imagex = bytearray(h * w * 3)
-        self.imagex[0::3], self.imagex[1::3], self.imagex[2::3] = imagex[2::4], imagex[1::4], imagex[0::4]
+        imagex = bytearray(h * w * 3)
+        imagex[0::3], imagex[1::3], imagex[2::3] = self.imagex[2::4], self.imagex[1::4], self.imagex[0::4]
+
         return (
-            np.frombuffer(bytes(self.imagex), dtype=np.uint8)
+            np.frombuffer(bytes(imagex), dtype=np.uint8)
             .reshape((h, w, 3))[..., ::-1]
             .copy()
         )
