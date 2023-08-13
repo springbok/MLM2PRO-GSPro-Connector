@@ -18,7 +18,7 @@ GSPro connector for the MLM2Pro Launch Monitor.
 
 ## Documentation
 
-Getting Started guid and other documentation can be found [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/wiki)
+Getting Started guide and other documentation can be found [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/wiki)
 
 ## Latest Release
 
@@ -31,5 +31,6 @@ The latest release can be downloaded from [here](https://github.com/springbok/ML
 ## Acknowledgment
 
 ### Original Connector
-* Thank you to [rowenb](https://github.com/rowengb) for producing the first [connector](https://github.com/rowengb/GSPro-MLM2PRO-OCR-Connector), this connector uses the same technique of taking a screenshot of a mirror of the device running the Rapsodo app, it then extracts the shot metrics using OCR and transmits the result to GSPro.   
+* Thank you to [rowenb](https://github.com/rowengb) for producing the first [connector](https://github.com/rowengb/GSPro-MLM2PRO-OCR-Connector), this connector uses the same technique of taking a screenshot of a mirror of the device running the Rapsodo app, it then extracts the shot metrics using OCR and transmits the result to GSPro.
+### Contributor
 * [woner99](https://github.com/wonder99) for his testing, suggestions, & feedback.
