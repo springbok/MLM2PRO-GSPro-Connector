@@ -12,6 +12,7 @@ class Device:
     window_name: str
     rois: dict
     path: str
+    template: False
 
     def width(self):
         return self.window_rect['right'] - self.window_rect['left']
@@ -20,7 +21,10 @@ class Device:
         return self.window_rect['bottom'] - self.window_rect['top']
 
     def file_name(self):
-        return f'device_{self.name}.json'
+        template = ''
+        if self.template:
+            template = '.template'
+        return f'device_{self.name}.json{template}'
 
     def file_path(self):
         return f'{self.path}\\{self.file_name()}'
@@ -44,5 +48,5 @@ class Device:
 
     def to_json(self):
         return json.dumps(self,
-                          default=lambda o: dict((key, value) for key, value in o.__dict__.items() if key != 'path' and key != 'id'),
+                          default=lambda o: dict((key, value) for key, value in o.__dict__.items() if key != 'path' and key != 'id' and key != 'name' and key != 'template'),
                           indent=4)
