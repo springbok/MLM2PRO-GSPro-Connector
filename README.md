@@ -24,6 +24,10 @@ Getting Started guid and other documentation can be found [here](https://github.
 
 The latest release can be downloaded from [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/releases)
 
+## Beta Release
+
+**Please note this a Beta software, you use it at your own risk.**
+
 ## Acknowledgment
 
 ### Original Connector
