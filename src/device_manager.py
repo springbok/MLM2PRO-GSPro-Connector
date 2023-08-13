@@ -11,24 +11,30 @@ from src.ui import UI, Color
 
 class DeviceManager:
 
+    reload_option = 'R'
+
     def __init__(self, app_paths: AppDataPaths):
         self.app_paths = app_paths
         self.current_device = None
         self.exit = False
         # Load standard devices
-        self.devices = []
-        self.devices.append(Device(1, 'iphone', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
-        self.devices.append(Device(2, 'ipad', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path))
-        self.devices.append(Device(3, 'android', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'EasyCast', {}, self.app_paths.app_data_path))
+        self.__load_default_devices()
         # Create files if they don't exist
         self.__create()
         # Load other devices files
         self.__load_other_devices()
 
+    def __load_default_devices(self):
+        self.devices = []
+        self.devices.append(Device(1, 'iphone', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path, False))
+        self.devices.append(Device(2, 'ipad', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'AirPlay', {}, self.app_paths.app_data_path, False))
+        self.devices.append(Device(3, 'android', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'EasyCast', {}, self.app_paths.app_data_path, False))
+
     def __create(self):
         for device in self.devices:
             if not os.path.isfile(device.file_path()):
                 device.save()
+        Device(-1, '', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'Window Title', {}, self.app_paths.app_data_path, True).save()
 
     def __load_other_devices(self):
         # Check directory and load any other device files in format device_<device>.json
@@ -39,7 +45,7 @@ class DeviceManager:
             if not list(filter(lambda d: d.name == res[0], self.devices)):
                 i = i + 1
                 logging.debug(f'Found additional device config file: {file}')
-                self.devices.append(Device(i, res[0], 0, 0, '', {}, self.app_paths.app_data_path))
+                self.devices.append(Device(i, res[0], {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, '', {}, self.app_paths.app_data_path, False))
 
     def __display_devices(self):
         if not self.current_device is None:
@@ -47,6 +53,7 @@ class DeviceManager:
         print('Select the device you want to connect:')
         for device in self.devices:
             print(device.id, '--', device.name)
+        print(f'{DeviceManager.reload_option} -- Reload Devices')
         if not self.current_device is None:
             print('Q -- Keep selected device')
         else:
@@ -63,7 +70,8 @@ class DeviceManager:
                 if len(input_str) > 0:
                     logging.debug(f'key pressed: {input_str}')
                     non_block_input.pause()
-                    if input_str.strip().upper() == non_block_input.exit_condition.upper():
+                    input_str = input_str.strip().upper()
+                    if input_str == non_block_input.exit_condition.upper():
                         if not self.current_device is None:
                             # We already selected a device previously so exit menu
                             done_processing = True
@@ -72,6 +80,11 @@ class DeviceManager:
                             # We've not yet selected a device so exit app
                             self.exit = True
                             done_processing = True
+                    elif input_str == DeviceManager.reload_option:
+                        self.__load_default_devices()
+                        self.__load_other_devices()
+                        self.__display_devices()
+                        non_block_input.resume()
                     else:
                         done_processing = True
                         try:
