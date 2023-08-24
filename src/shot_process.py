@@ -1,4 +1,3 @@
-import json
 import logging
 from queue import Queue
 from threading import Thread, Event
@@ -45,9 +44,9 @@ class ShotProcess(Thread):
                     self.screenshot.capture_and_process_screenshot(self.last_shot, api)
                     if self.screenshot.new_shot:
                         # New shot so place shot data in shot queue for processing
-                        logging.info(f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.to_json())}")
+                        logging.info(f"Process {self.name} shot data: {self.screenshot.ball_data.to_json()}")
                         self.last_shot = self.screenshot.ball_data.__copy__()
-                        self.shot_queue.put(json.dumps(self.screenshot.ball_data.to_json()))
+                        self.shot_queue.put(self.screenshot.ball_data.to_json())
                     self.num_errors = 0
                 except Exception as e:
                     self.num_errors = self.num_errors + 1

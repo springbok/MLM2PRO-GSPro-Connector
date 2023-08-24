@@ -35,7 +35,7 @@ class GSProConnection:
         msg = "Resetting GSPro connection..."
         logging.info(msg)
         UI.display_message(Color.GREEN, "CONNECTOR ||", msg)
-        self.gspro_connect.terminate_session()
+        self.disconnect()
         self.connect()
 
     def disconnect(self):

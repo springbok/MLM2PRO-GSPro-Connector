@@ -4,15 +4,15 @@ import json
 class BallData:
     properties = {
         'speed': 'Ball Speed',
-        'spin_axis': 'Spin Rate',
-        'total_spin': 'Spin Axis',
+        'spin_axis': 'Spin Axis',
+        'total_spin': 'Spin Rate',
         'hla': 'Launch Direction (HLA)',
         'vla': 'Launch Angle (VLA)',
         'club_speed': 'Club Speed',
         'back_spin': 'Back Spin',
         'side_spin': 'Side Spin'
     }
-    rois = ['speed', 'spin_axis', 'total_spin', 'hla', 'vla', 'club_speed']
+    rois_properties = ['speed', 'total_spin', 'spin_axis', 'hla', 'vla', 'club_speed']
     must_not_be_zero = ['speed', 'total_spin', 'club_speed']
 
     def __init__(self, *initial_data, **kwargs):

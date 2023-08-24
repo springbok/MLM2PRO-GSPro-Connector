@@ -60,8 +60,7 @@ class ProcessManager:
             self.gspro_process.reset_error_count()
 
     def __initialise_tesserocr_queue(self):
-        tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD)
-        # tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
+        tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
         self.tesserocr_queue.put(tesserocr_api)
 
     def __capture_and_process_screenshot(self):

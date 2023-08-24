@@ -29,9 +29,9 @@ class GSProProcess(Thread):
                 try:
                     while not self.shot_queue.empty():
                         shot = self.shot_queue.get()
-                        logging.info(f"Process {self.name} got shot from queue: {json.dumps(shot)}")
+                        logging.info(f"Process {self.name} got shot from queue: {shot}")
                         shot = BallData(json.loads(shot))
-                        logging.info(f"Process {self.name} retrieved shot data from queue sending to gspro: {json.dumps(shot.to_json())}")
+                        logging.info(f"Process {self.name} retrieved shot data from queue sending to gspro: {shot.to_json()}")
                         if self.application.gspro_connection.connected:
                             self.application.gspro_connection.gspro_connect.launch_ball(shot)
                         self.num_errors = 0
@@ -39,6 +39,7 @@ class GSProProcess(Thread):
                     self.num_errors = self.num_errors + 1
                     msg = ProcessMessage(error=True, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
                     self.messaging_queue.put(repr(msg))
+                    logging.exception(e)
 
         exit(0)
 

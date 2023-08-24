@@ -1,17 +1,12 @@
-import ctypes
 import logging
 import math
 import re
-
 import cv2
-import numpy as np
-import win32gui
-import win32ui
 from PIL import Image
 from matplotlib import pyplot as plt
-
 from src.application import Application
 from src.ball_data import BallData
+from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.ui import Color, UI
 
 
@@ -23,8 +18,8 @@ class Screenshot:
         self.screenshot = []
         self.new_shot = False
         self.message = None
-        self.width = -1
-        self.height = -1
+        self.resize_window = True
+        self.mirror_window = None
 
     def load_rois(self, reset=False):
         if reset or len(self.application.device_manager.current_device.rois) <= 0:
@@ -32,19 +27,20 @@ class Screenshot:
                 UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
             self.__get_rois_from_user()
         else:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previosuly saved ROI's")
+            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previously saved ROI's")
 
     def __get_rois_from_user(self):
-        input("- Press enter after you've hit your first shot and correctly resized the airplay window to remove black borders. -")
+        input("- Press enter after you've hit your first shot and correctly resized the screen mirror window to remove black borders. -")
         # Run capture_window function in a separate thread
         self.__capture_screenshot()
-        self.application.device_manager.current_device.rois = []
+        self.application.device_manager.current_device.rois = {}
         self.application.device_manager.current_device.window_rect = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
         # Ask user to select ROIs for each value, if they weren't found in the json
-        for key in BallData.properties:
+        for key in BallData.rois_properties:
             print(f"Please select the ROI for {BallData.properties[key]}.")
             roi = self.__select_roi()
             self.application.device_manager.current_device.rois[key] = roi
+            self.application.device_manager.current_device.save()
 
     def __select_roi(self):
         plt.imshow(cv2.cvtColor(self.screenshot, cv2.COLOR_BGR2RGB))
@@ -57,53 +53,38 @@ class Screenshot:
         return (x1, y1, x2 - x1, y2 - y1)
 
     def __capture_screenshot(self):
-        ctypes.windll.user32.SetProcessDPIAware()
-        hwnd = win32gui.FindWindow(None, self.application.device_manager.current_device.window_name)
-        if not hwnd:
-            raise RuntimeError(f"Can't find window called '{self.application.device_manager.current_device.window_name}'")
-
-        if self.width == -1:
-            if self.application.device_manager.current_device.width <= 0 or self.application.device_manager.current_device.height <= 0:
+        # Find the window using window title
+        if self.mirror_window is None:
+            self.mirror_window = ScreenMirrorWindow(self.application.device_manager.current_device.window_name)
+            self.screenshot_of_window = ScreenshotOfWindow(
+                hwnd=self.mirror_window.hwnd,
+                client=True,
+                ascontiguousarray=True)
+        # Make sure window is not minimized
+        if self.mirror_window.is_minimized():
+            self.mirror_window.restore()
+        # Resize to correct size if required
+        if self.resize_window:
+            if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:
                 # Obtain current window rect
-                rect = win32gui.GetClientRect(hwnd)
                 self.application.device_manager.current_device.window_rect = {
-                    'left': rect[0], 'top': rect[1], 'right': rect[2], 'bottom': rect[3]
+                    'left': self.mirror_window.rect.left,
+                    'top': self.mirror_window.rect.top,
+                    'right': self.mirror_window.rect.right,
+                    'bottom': self.mirror_window.rect.bottom
                 }
                 # Write values to settings file
                 self.application.device_manager.current_device.save()
                 logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {self.application.device_manager.current_device.window_rect}')
             else:
                 # Resize window to correct size
-                win32gui.MoveWindow(hwnd,
-                    self.application.device_manager.current_device.window_rect['left'],
-                    self.application.device_manager.current_device.window_rect['top'],
-                    self.application.device_manager.current_device.width,
-                    self.application.device_manager.current_device.height, True)
+                self.mirror_window.resize(
+                    self.application.device_manager.current_device.width(),
+                    self.application.device_manager.current_device.height())
                 logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
-            self.width = self.application.device_manager.current_device.width
-            self.height = self.application.device_manager.current_device.width
-
-        hwnd_dc = win32gui.GetWindowDC(hwnd)
-        mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
-        save_dc = mfc_dc.CreateCompatibleDC()
-        bitmap = win32ui.CreateBitmap()
-        bitmap.CreateCompatibleBitmap(mfc_dc, self.width, self.height)
-        save_dc.SelectObject(bitmap)
-
-        result = ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 3)
-
-        bmpinfo = bitmap.GetInfo()
-        bmpstr = bitmap.GetBitmapBits(True)
-
-        screenshot = np.frombuffer(bmpstr, dtype=np.uint8).reshape((bmpinfo["bmHeight"], bmpinfo["bmWidth"], 4))
-        self.screenshot = np.ascontiguousarray(screenshot)[..., :-1]
-
-        if not result:
-            win32gui.DeleteObject(bitmap.GetHandle())
-            save_dc.DeleteDC()
-            mfc_dc.DeleteDC()
-            win32gui.ReleaseDC(hwnd, hwnd_dc)
-            raise RuntimeError(f"Unable to acquire screenshot! Result: {result}")
+            self.resize_window = False
+        # Take screenshot
+        self.screenshot = self.screenshot_of_window.screenshot_window()
 
     def __recognize_roi(self, roi, api):
         # crop the roi from screenshot
@@ -124,14 +105,19 @@ class Screenshot:
         else:
             diff = False
         self.__capture_screenshot()
-        for key in BallData.properties:
+        for key in BallData.rois_properties:
             # Use ROI to get value from screenshot
+            result = 0
             try:
                 result = self.__recognize_roi(self.application.device_manager.current_device.rois[key], api)
                 # logging.debug(f"key: {key} result: {result}")
                 result = float(result)
-            except Exception:
-                raise ValueError(f"Could not convert value for '{BallData.properties[key]}' to float 0")
+            except Exception as e:
+                msg = f"Could not convert value {result} for '{BallData.properties[key]}' to float 0"
+                # Reset width to -1 to force window to be resized in case that is the cause of the missread
+                self.resize_window = True
+                logging.debug(msg)
+                raise ValueError(msg)
             # Check values are not 0
             if key in BallData.must_not_be_zero and result == float(0):
                 raise ValueError(f"Value for '{BallData.properties[key]}' is 0")
@@ -139,8 +125,8 @@ class Screenshot:
             if key == 'speed' and result > 400:
                 logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 400")
                 result = result / 10
-            elif key == 'total_spin' and result > 25000:
-                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 25000")
+            elif key == 'total_spin' and result > 20000:
+                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 20000")
                 result = result / 10
             # Put the value for the current ROI into the ball data object
             setattr(self.ball_data, key, result)
@@ -156,6 +142,5 @@ class Screenshot:
         self.new_shot = diff
 
     def reload_device_settings(self):
-        self.width = -1
-        self.height = -1
+        self.resize_window = True
         self.application.device_manager.current_device.load()
