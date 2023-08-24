@@ -48,6 +48,7 @@ class ShotProcess(Thread):
                         logging.info(f"Process {self.name} shot data: {json.dumps(self.screenshot.ball_data.to_json())}")
                         self.last_shot = self.screenshot.ball_data.__copy__()
                         self.shot_queue.put(json.dumps(self.screenshot.ball_data.to_json()))
+                    self.num_errors = 0
                 except Exception as e:
                     self.num_errors = self.num_errors + 1
                     msg = ProcessMessage(error=True, message=f"Process {self.name}: Error: {format(e)}", logging=True, ui=True)
