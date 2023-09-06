@@ -2,60 +2,54 @@ import math
 import socket
 import logging
 import json
-from time import sleep
+from threading import Event
 from src.ball_data import BallData
-from src.menu import MenuOptions
-from src.ui import UI, Color
+from src.custom_exception import GSProConnectionTimeout, GSProConnectionUknownError, \
+    GSProConnectionGSProClosedConnection, GSProConnectionSocketError
 
 
 class GSProConnect:
-    def __init__(self, device_id, units, api_version, ip_address, port) -> None:
+    def __init__(self, device_id, units, api_version) -> None:
         self._device_id = device_id
         self._units = units
         self._api_version = api_version
-        self.ip_address = ip_address
-        self.port = port
-
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._shot_number = 1
+        self._connected = False
 
-    def init_socket(self):
-        logging.info(f"Connecting to GSPro using IP: {self.ip_address} Port: {self.port}")
+    def init_socket(self, ip_address: str, port: int) -> None:
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((self.ip_address, self.port))
-        self._socket.settimeout(5)
+        self._socket.connect((ip_address, port))
+        self._socket.settimeout(2)
+        self._connected = True
 
-    def send_msg(self, payload, attempts=10):
+    def send_msg(self, payload, attempts=2):
         for attempt in range(attempts):
             try:
                 logging.info(f"Sending to GSPro data: {payload}")
                 self._socket.sendall(json.dumps(payload).encode("utf-8"))
                 msg = self._socket.recv(8096)
             except socket.timeout:
-                UI.display_message(Color.RED, "CONNECTOR ||", 'Timed out. Retrying...')
-                sleep(1)
+                logging.info('Timed out. Retrying...')
+                if attempt >= attempts-1:
+                    raise GSProConnectionTimeout(f'Failed to send shot to GSPro after {attempts} attempts.')
+                Event().wait(0.5)
                 continue
             except socket.error as e:
-                if "[WinError 10054]" in format(e):
-                    UI.display_message(Color.RED, "CONNECTOR ||", f"Could not connect to the GSPro Connect, please start/restart from GSPro then press {MenuOptions.RESET_GSPRO_CONNECTION} to reset GSPro connection:{format(e)}")
-                else:
-                    UI.display_message(Color.RED, "CONNECTOR ||", f"Error waiting for GSPro response:{format(e)}")
-                raise
+                msg = f'GSPro Connector socket error when trying to send shot, Exception: {format(e)}'
+                logging.debug(msg)
+                raise GSProConnectionSocketError(msg)
             except Exception as e:
-                if "[WinError 10054]" in format(e):
-                    msg = f"Could not connect to the GSPro Connect, please start/restart from GSPro then press {MenuOptions.RESET_GSPRO_CONNECTION} to reset GSPro connection:{format(e)}"
-                else:
-                    msg = f"Unknown error: format(e)"
-                UI.display_message(Color.RED, "CONNECTOR ||", msg)
-                raise
+                msg = f"GSPro Connector unknown error when trying to send shot, Exception: {format(e)}"
+                logging.debug(msg)
+                raise GSProConnectionUknownError(msg)
             else:
                 if len(msg) == 0:
-                    UI.display_message(Color.RED, "CONNECTOR ||", f"GSPro closed the connection")
-                    return False
+                    msg = f"GSPro closed the connection"
+                    logging.debug(msg)
+                    raise GSProConnectionGSProClosedConnection(msg)
                 else:
                     logging.debug(f"Response from GSPro: {msg.decode('UTF-8')}")
-                    return True
-        return False
 
     def test_shot_data(self):
         ball_data = BallData()
@@ -100,10 +94,9 @@ class GSProConnect:
             }
         }
         self.send_msg(payload)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", f"Success: {ball_data.to_json()}")
-
         self._shot_number += 1
 
     def terminate_session(self):
         if self._socket:
             self._socket.close()
+            self._connected = False

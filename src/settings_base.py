@@ -31,3 +31,18 @@ class SettingsBase:
             logging.debug(f"File does not exist creating: {self.path}")
             with open(self.path, "w") as file:
                 file.write(json.dumps(self.settings_json, indent=4))
+
+    def to_json(self, compact=False):
+        exclude = ['path', 'settings_json', 'screenshot_interval']
+        if compact:
+            return json.dumps(self,
+                          default=lambda o: dict((key, value) for key, value in o.__dict__.items() if key not in exclude ),
+                          separators= ( ", " , ": " ))
+        else:
+           return json.dumps(self,
+                          default=lambda o: dict((key, value) for key, value in o.__dict__.items() if key not in exclude ),
+                          indent=4)
+
+    def save(self):
+        with open(self.path, "w") as file:
+            file.write(self.to_json())

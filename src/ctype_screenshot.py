@@ -3,8 +3,10 @@ from ctypes import wintypes
 from collections import namedtuple
 import numpy as np
 
+from src.custom_exception import WindowNotFoundException
+
 windll = ctypes.LibraryLoader(ctypes.WinDLL)
-windll.shcore.SetProcessDpiAwareness(2)
+#windll.shcore.SetProcessDpiAwareness(2)
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 psapi = ctypes.WinDLL("psapi", use_last_error=True)
 from ctypes.wintypes import (
@@ -98,6 +100,16 @@ BitBlt = windll.gdi32.BitBlt
 DeleteObject = windll.gdi32.DeleteObject
 GetDIBits = windll.gdi32.GetDIBits
 
+GWL_STYLE = -16
+WS_CAPTION = 0x00C00000
+WS_OVERLAPPED = 0x00000000
+WS_SYSMENU = 0x00080000
+WS_MINIMIZEBOX = 0x00020000
+WS_THICKFRAME = 0x00040000
+WS_MAXIMIZEBOX = 0x00010000
+GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
+SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
+
 windll.user32.GetWindowDC.argtypes = [HWND]
 windll.gdi32.CreateCompatibleDC.argtypes = [HDC]
 windll.gdi32.CreateCompatibleBitmap.argtypes = [HDC, INT, INT]
@@ -171,26 +183,58 @@ class ScreenMirrorWindow:
         self, title: str
     ):
         self.hwnd = None
-        self.rect = None
         self.title = title
+        self.rect = RECT()
+        self.rect_ref = ctypes.byref(self.rect)
         self.__find_window()
+
+    @staticmethod
+    def find_window(title):
+        hwnd = user32.FindWindowW(None, title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{title}'")
+        else:
+            return hwnd
 
     def __find_window(self):
         self.hwnd = user32.FindWindowW(None, self.title)
         if self.hwnd:
-            self.rect = RECT()
             user32.GetWindowRect(self.hwnd, ctypes.byref(self.rect))
         else:
-            raise RuntimeError(f"Can't find window called '{self.title}'")
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
 
     def resize(self, width: int, height: int):
-        user32.SetWindowPos(self.hwnd, 0, self.rect.left, self.rect.top, width, height, 0)
+        SetWindowPos(self.hwnd, 0, self.rect.left, self.rect.top, width, height, 0)
 
     def is_minimized(self):
         return user32.IsIconic(self.hwnd) != 0
 
     def restore(self):
-        user32.ShowWindow(self.hwnd, SW_RESTORE)
+        ShowWindow(self.hwnd, SW_RESTORE)
+
+    def size(self):
+        GetWindowRect(self.hwnd, self.rect_ref)
+        (
+            left,
+            right,
+            top,
+            bottom,
+            w,
+            h
+        ) = self.__get_rect_coords()
+        return {'w': w, 'h': h}
+
+    def __get_rect_coords(self):
+        left, right, top, bottom = (
+            self.rect.left,
+            self.rect.right,
+            self.rect.top,
+            self.rect.bottom,
+        )
+        w, h = right - left, bottom - top
+        return left, right, top, bottom, w, h
+
+
 
 
 class ScreenshotOfWindow:
@@ -317,7 +361,7 @@ class ScreenshotOfWindow:
         if self.client:
             PrintWindow(self.hwnd, self.saveDC, 3)
         else:
-            PrintWindow(self.hwnd, self.saveDC, 0)
+            PrintWindow(self.hwnd, self.saveDC, 3)
 
         if not values_are_the_same:
             self._create_bmi(w, h)

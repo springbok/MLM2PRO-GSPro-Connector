@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="ico">
+    <file>ico/about.ico</file>
+    <file>ico/connect.ico</file>
+    <file>ico/devices.ico</file>
+    <file>ico/exit.ico</file>
+    <file>ico/settings.ico</file>
+  </qresource>
+</RCC>

@@ -8,6 +8,7 @@ from dataclasses import dataclass
 class Device:
     id: int
     name: str
+    window_path: str
     window_rect: {'left': int, 'top': int, 'right': int, 'bottom': int}
     window_name: str
     rois: dict
@@ -28,6 +29,15 @@ class Device:
 
     def file_path(self):
         return f'{self.path}\\{self.file_name()}'
+
+    def change_name(self, new_name):
+        old = self.file_path()
+        self.name = new_name
+        new = self.file_path()
+        os.rename(old, new)
+
+    def delete(self):
+        os.unlink(self.file_path())
 
     def save(self):
         with open(self.file_path(), "w") as file:
