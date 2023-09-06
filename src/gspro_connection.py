@@ -1,54 +1,120 @@
-import logging
+from PySide6.QtCore import QThread, QCoreApplication, Signal, QObject
+from PySide6.QtWidgets import QMessageBox
+from src import MainWindow
+from src.ball_data import BallData
+from src.ctype_screenshot import ScreenMirrorWindow
 from src.gspro_connect import GSProConnect
+from src.gspro_worker import GsproWorker
+from src.log_message import LogMessageSystems, LogMessageTypes
 from src.settings import Settings
-from src.ui import UI, Color
+from src.worker_thread import WorkerThread
 
 
-class GSProConnection:
+class GSProConnection(QObject):
 
-    def __init__(self, settings: Settings) -> None:
+    connected_to_gspro = Signal()
+    disconnected_from_gspro = Signal()
+    shot_sent = Signal(object)
+    gspro_app_not_found = Signal()
+
+    def __init__(self, main_window: MainWindow, settings: Settings):
+        super(GSProConnection, self).__init__()
+        self.main_window = main_window
+        self.worker = None
+        self.thread = QThread()
+        self.connected = None
+        self.settings = settings
         self.gspro_connect = GSProConnect(
-            settings.device_id,
-            settings.units,
-            settings.api_version,
-            settings.ip_address,
-            settings.port
+            self.settings.device_id,
+            self.settings.units,
+            self.settings.api_version
         )
-        self.connected = False
+        self.main_window.gspro_status_label.setText('Not Connected')
+        self.main_window.gspro_status_label.setStyleSheet("QLabel { background-color : red; color : white; }")
+        self.__setup_send_shot_thread()
 
-    def connect(self):
-        # Connect to GSPro
-        try:
-            msg = "Connecting to GSPro..."
-            logging.info(msg)
-            UI.display_message(Color.GREEN, "CONNECTOR ||", msg)
-            self.gspro_connect.init_socket()
-            # Assume gspro connected at this point as socket was opened without error,
-            # no need to send test shot or heartbeat
-            # self.check_gspro_status()
-        except Exception as e:
-            raise ConnectionError(f"Error while trying to connect to GSPro, make sure GSPro Connect is running, start/restart from GSPro. Exception: {format(e)}")
-        else:
-            self.connected = True
+    def __setup_send_shot_thread(self):
+        self.send_shot_thread = QThread()
+        self.send_shot_worker = GsproWorker(
+            self.gspro_connect.launch_ball)
+        self.send_shot_worker.moveToThread(self.send_shot_thread)
+        self.send_shot_worker.started.connect(self.__sending_shot)
+        self.send_shot_worker.sent.connect(self.__sent)
+        self.send_shot_worker.error.connect(self.__send_shot_error)
+        self.send_shot_thread.started.connect(self.send_shot_worker.run)
+        self.send_shot_thread.start()
 
-    def reset(self):
-        msg = "Resetting GSPro connection..."
-        logging.info(msg)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", msg)
-        self.disconnect()
-        self.connect()
+    def __send_shot_error(self, error):
+        self.disconnect_from_gspro()
+        msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
+        self.__log_message(LogMessageTypes.LOGS, f'{msg}\nException: {format(error)}')
+        QMessageBox.critical(self.main_window, "GSPro Send Error", msg)
 
-    def disconnect(self):
+    def connect_to_gspro(self):
+        if not self.connected:
+            if self.__find_gspro_api_app():
+                self.worker = WorkerThread(
+                self.gspro_connect.init_socket,
+                self.settings.ip_address,
+                self.settings.port)
+                self.worker.moveToThread(self.thread)
+                self.worker.started.connect(self.__in_progress)
+                self.worker.result.connect(self.__connected)
+                self.worker.error.connect(self.__error)
+                #self.worker.finished.connect(self.__finished)
+                self.thread.started.connect(self.worker.run())
+                self.thread.start()
+
+    def disconnect_from_gspro(self):
+        if self.connected:
+            self.main_window.gspro_connect_button.setEnabled(False)
+            self.gspro_connect.terminate_session()
+            self.connected = False
+            self.disconnected_from_gspro.emit()
+
+    def __sent(self, balldata):
+        self.shot_sent.emit(balldata)
+
+    def __sending_shot(self):
+        self.__log_message(LogMessageTypes.ALL, 'Sending shot to GSPro')
+
+    def __in_progress(self):
+        msg = 'Connecting...'
+        self.__log_message(LogMessageTypes.ALL, f'Connecting to GSPro...')
+        self.__log_message(LogMessageTypes.LOGS, f'Connection settings: {self.settings.to_json(True)}')
+        self.main_window.gspro_status_label.setText(msg)
+        self.main_window.gspro_status_label.setStyleSheet("QLabel { background-color : orange; color : white; }")
+        self.main_window.gspro_connect_button.setEnabled(False)
+        QCoreApplication.processEvents()
+
+    def __connected(self):
+        self.connected = True
+        self.connected_to_gspro.emit()
+
+    def __error(self, error):
+        self.disconnect_from_gspro()
+        msg = "Error while trying to connect to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
+        self.__log_message(LogMessageTypes.LOGS, f'{msg} Exception: {format(error)}')
+        QMessageBox.critical(self.main_window, "GSPro Connect Error", msg)
+
+    def shutdown(self):
         self.gspro_connect.terminate_session()
         self.connected = False
+        self.thread.quit()
+        self.thread.wait()
+        self.send_shot_thread.quit()
+        self.send_shot_thread.wait()
 
-    def check_gspro_status(self):
-        msg = "Checking GSPro connection status..."
-        logging.info(msg)
-        UI.display_message(Color.GREEN, "CONNECTOR ||", msg)
-        for attempt in range(10):
-            try:
-                self.gspro_connect.send_test_signal()
-                break
-            except Exception:
-                raise
+    def __log_message(self, types, message):
+        self.main_window.log_message(types, LogMessageSystems.GSPRO_CONNECT, message)
+
+    def __find_gspro_api_app(self):
+        running = False
+        try:
+            ScreenMirrorWindow.find_window(self.settings.gspro_api_window_name)
+            running = True
+        except Exception:
+            self.gspro_app_not_found.emit()
+            running = False
+        return running
+

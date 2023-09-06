@@ -1,62 +1,163 @@
 import logging
 import math
 import re
-import cv2
+from threading import Event
+import numpy as np
+import pyqtgraph as pg
+import tesserocr
 from PIL import Image
-from matplotlib import pyplot as plt
-from src.application import Application
+from pyqtgraph import ViewBox
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
-from src.ui import Color, UI
+from src.device import Device
+from src.labeled_roi import LabeledROI
+from src.tesserocr_cvimage import TesserocrCVImage
 
 
-class Screenshot:
+class Screenshot(ViewBox):
 
-    def __init__(self, application: Application):
-        self.application = application
-        self.ball_data = BallData()
-        self.screenshot = []
-        self.new_shot = False
-        self.message = None
+    roi_color = "blue"
+    roi_pen_width = 2
+    roi_size_factor = 0.2
+
+    def __init__(self, *args, **kwargs):
+        ViewBox.__init__(self, *args, **kwargs)
+        pg.setConfigOptions(imageAxisOrder='row-major')
         self.resize_window = True
+        self.image_width = 0
+        self.image_height = 0
+        self.image_rois = {}
+        self.device = None
+        self.previous_screenshot_image = None
+        self.screenshot_image = []
         self.mirror_window = None
+        self.screenshot_image_of_window = None
+        self.new_shot = False
+        self.screenshot_new = False
+        self.previous_balldata = None
+        self.balldata = None
+        self.__setupUi()
+        self.tesserocr_api = TesserocrCVImage(psm=tesserocr.PSM.SINGLE_WORD, lang='train')
+        self.setAspectLocked(True)
+        self.setMenuEnabled(False)
+        self.invertY(True)
 
-    def load_rois(self, reset=False):
-        if reset or len(self.application.device_manager.current_device.rois) <= 0:
-            if not reset:
-                UI.display_message(Color.GREEN, "CONNECTOR ||", "Saved ROI's not found, please define ROI's from your first shot.")
-            self.__get_rois_from_user()
+    def __setupUi(self):
+        self.image_item = pg.ImageItem(None)
+        self.addItem(self.image_item)
+        self.__create_rois()
+
+    def __image(self):
+        self.image_item.setImage(self.screenshot_image)
+        #self.setLimits(xMin=0, xMax=self.image_item.width(), yMin=0, yMax=self.image_item.height())
+        self.setRange(xRange=[0, self.image_item.width()], yRange=[0, self.image_item.height()])
+        self.image_width = self.image_item.width()
+        self.image_height = self.image_item.height()
+
+    def update_rois(self, rois):
+        if len(self.image_rois) > 0 and len(rois) > 0:
+            for roi in BallData.rois_properties:
+                if roi in rois and len(rois[roi]) > 0:
+                    self.image_rois[roi].setState(rois[roi])
         else:
-            UI.display_message(Color.GREEN, "CONNECTOR ||", "Using previously saved ROI's")
+            self.__self_reset_rois()
 
-    def __get_rois_from_user(self):
-        input("- Press enter after you've hit your first shot and correctly resized the screen mirror window to remove black borders. -")
-        # Run capture_window function in a separate thread
-        self.__capture_screenshot()
-        self.application.device_manager.current_device.rois = {}
-        self.application.device_manager.current_device.window_rect = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
-        # Ask user to select ROIs for each value, if they weren't found in the json
-        for key in BallData.rois_properties:
-            print(f"Please select the ROI for {BallData.properties[key]}.")
-            roi = self.__select_roi()
-            self.application.device_manager.current_device.rois[key] = roi
-            self.application.device_manager.current_device.save()
+    def __create_rois(self):
+        if len(self.image_rois) <= 0:
+            for roi in BallData.rois_properties:
+                self.image_rois[roi] = LabeledROI(
+                    [0, 0], [self.image_width * Screenshot.roi_size_factor, self.image_height * Screenshot.roi_size_factor],
+                    pen=({'color': Screenshot.roi_color, 'width': Screenshot.roi_pen_width}),
+                    label=BallData.properties[roi])
+                self.addItem(self.image_rois[roi])
 
-    def __select_roi(self):
-        plt.imshow(cv2.cvtColor(self.screenshot, cv2.COLOR_BGR2RGB))
-        plt.show(block=False)
-        print("Please select the region of interest (ROI).")
-        roi = plt.ginput(n=2)
-        plt.close()
-        x1, y1 = map(int, roi[0])
-        x2, y2 = map(int, roi[1])
-        return (x1, y1, x2 - x1, y2 - y1)
+    def __self_reset_rois(self):
+        rois = {}
+        for roi in BallData.rois_properties:
+            rois[roi] = {
+                "pos": [0, 0],
+                "size": [self.image_width * Screenshot.roi_size_factor, self.image_height * Screenshot.roi_size_factor],
+                "angle": 0
+            }
+        self.update_rois(rois)
 
-    def __capture_screenshot(self):
+    def get_rois(self):
+        rois = {}
+        if not self.image_rois is None:
+            for roi in self.image_rois:
+                rois[roi] = self.image_rois[roi].saveState()
+        return rois
+
+    def zoom(self, in_or_out):
+        """
+        see ViewBox.scaleBy()
+        pyqtgraph wheel zoom is s = ~0.75
+        """
+        s = 0.9
+        zoom = (s, s) if in_or_out == "in" else (1 / s, 1 / s)
+        self.scaleBy(zoom)
+
+    def ocr_image(self):
+        self.balldata = BallData()
+        self.new_shot = False
+        for roi in BallData.rois_properties:
+            cropped_img = self.image_rois[roi].getArrayRegion(self.screenshot_image, self.image_item)
+            img = np.uint8(cropped_img)
+            self.tesserocr_api.SetCVImage(img)
+            ocr_result = self.tesserocr_api.GetUTF8Text()
+            msg = None
+            result = ''
+            try:
+                cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)", ocr_result)
+                if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
+                    cleaned_result = cleaned_result[0]
+                cleaned_result = cleaned_result.strip()
+                result = float(cleaned_result)
+                # Check values are not 0
+                if roi in BallData.must_not_be_zero and result == float(0):
+                    raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
+                # For some reason ball speed sometimes get an extra digit added
+                if roi == 'speed' and result > 400:
+                    logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 400")
+                    result = result / 10
+                elif roi == 'total_spin' and result > 15000:
+                    logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 15000")
+                    result = result / 10
+                setattr(self.balldata, roi, result)
+                # Check previous ball data if required
+                if not self.new_shot and not self.previous_balldata is None:
+                    previous_metric = getattr(self.previous_balldata, roi)
+                    if int(previous_metric) != int(result):
+                        self.new_shot = True
+            except ValueError as e:
+                msg = f'{format(e)}'
+            except:
+                msg = f"Could not convert value {result} for '{BallData.properties[roi]}' to float 0"
+            finally:
+                if not msg is None:
+                    # Force resize
+                    self.resize_window = True
+                    logging.debug(msg)
+                    self.balldata.errors[roi] = msg
+                    setattr(self.balldata, roi, BallData.invalid_value)
+                else:
+                    self.balldata.back_spin = round(
+                        self.balldata.total_spin * math.cos(math.radians(self.balldata.spin_axis)))
+                    self.balldata.side_spin = round(
+                        self.balldata.total_spin * math.sin(math.radians(self.balldata.spin_axis)))
+        if self.new_shot or self.previous_balldata is None:
+            if len(self.balldata.errors) > 0:
+                self.balldata.good_shot = False
+            else:
+                self.balldata.good_shot = True
+            self.previous_balldata = self.balldata.__copy__()
+
+    def capture_screenshot(self, device: Device, rois_setup=False):
         # Find the window using window title
-        if self.mirror_window is None:
-            self.mirror_window = ScreenMirrorWindow(self.application.device_manager.current_device.window_name)
-            self.screenshot_of_window = ScreenshotOfWindow(
+        hwnd = ScreenMirrorWindow.find_window(device.window_name)
+        if self.mirror_window is None or hwnd != self.mirror_window.hwnd:
+            self.mirror_window = ScreenMirrorWindow(device.window_name)
+            self.screenshot_image_of_window = ScreenshotOfWindow(
                 hwnd=self.mirror_window.hwnd,
                 client=True,
                 ascontiguousarray=True)
@@ -64,83 +165,73 @@ class Screenshot:
         if self.mirror_window.is_minimized():
             self.mirror_window.restore()
         # Resize to correct size if required
-        if self.resize_window:
-            if self.application.device_manager.current_device.width() <= 0 or self.application.device_manager.current_device.height() <= 0:
+        window_size = self.mirror_window.size()
+        if self.resize_window or window_size['h'] != device.height() or window_size['w'] != device.width():
+            logging.debug('Resize screen mirror window')
+            self.previous_screenshot_image = None
+            if device.width() <= 0 or device.height() <= 0:
                 # Obtain current window rect
-                self.application.device_manager.current_device.window_rect = {
+                device.window_rect = {
                     'left': self.mirror_window.rect.left,
                     'top': self.mirror_window.rect.top,
                     'right': self.mirror_window.rect.right,
                     'bottom': self.mirror_window.rect.bottom
                 }
                 # Write values to settings file
-                self.application.device_manager.current_device.save()
-                logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {self.application.device_manager.current_device.window_rect}')
+                if not rois_setup:
+                    device.save()
+                logging.debug(f'No previously saved window dimensions found, saving current window dimentions to config file: {device.window_rect}')
             else:
                 # Resize window to correct size
                 self.mirror_window.resize(
-                    self.application.device_manager.current_device.width(),
-                    self.application.device_manager.current_device.height())
-                logging.debug(f'Loading window dimensions from config file: {self.application.device_manager.current_device.window_rect}')
+                    device.width(),
+                    device.height())
+                # Give window time to resize before taking screenshot
+                Event().wait(0.25)
+                logging.debug(f'Loading window dimensions from config file: {device.window_rect}')
             self.resize_window = False
         # Take screenshot
-        self.screenshot = self.screenshot_of_window.screenshot_window()
+        self.screenshot_image = self.screenshot_image_of_window.screenshot_window()
+        #self.screenshot_image = np.array(Image.open('C:\python\mlm2pro-gspro-connect-gui\screenshot1.png'))
 
-    def __recognize_roi(self, roi, api):
-        # crop the roi from screenshot
-        cropped_img = self.screenshot[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
-        # use tesseract to recognize the text
-        api.SetImage(Image.fromarray(cropped_img))
-        result = api.GetUTF8Text()
-        cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)", result)[0]
-        # Make sure result is an array and has elements
-        if type(cleaned_result) in (tuple, list) and len(cleaned_result) > 0:
-            cleaned_result = cleaned_result[0]
-        return cleaned_result.strip()
+        # Check if new shot
+        self.new_shot = False
+        self.screenshot_new = False
+        mse = 1
+        if not self.previous_screenshot_image is None:
+            mse = self.__mse(self.previous_screenshot_image, self.screenshot_image)
+        if mse > 0.05:
+            self.screenshot_new = True
+            self.previous_screenshot_image = self.screenshot_image
+            self.__image()
+            logging.debug(f'Screenshot different mse: {mse}')
+        # Check if device changed, if so update roi's
+        if self.device != device:
+            self.device = device
+            self.update_rois(device.rois)
+        # To reset roi values pass in device without rois
+        if rois_setup and len(device.rois) <= 0:
+            self.update_rois(device.rois)
 
-    def capture_and_process_screenshot(self, last_shot, api):
-        # Check if we have a previous shot
-        if last_shot is None:
-            diff = True
-        else:
-            diff = False
-        self.__capture_screenshot()
-        for key in BallData.rois_properties:
-            # Use ROI to get value from screenshot
-            result = 0
-            try:
-                result = self.__recognize_roi(self.application.device_manager.current_device.rois[key], api)
-                # logging.debug(f"key: {key} result: {result}")
-                result = float(result)
-            except Exception as e:
-                msg = f"Could not convert value {result} for '{BallData.properties[key]}' to float 0"
-                # Reset width to -1 to force window to be resized in case that is the cause of the missread
-                self.resize_window = True
-                logging.debug(msg)
-                raise ValueError(msg)
-            # Check values are not 0
-            if key in BallData.must_not_be_zero and result == float(0):
-                raise ValueError(f"Value for '{BallData.properties[key]}' is 0")
-            # For some reason ball speed sometimes get an extra digit added
-            if key == 'speed' and result > 400:
-                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 400")
-                result = result / 10
-            elif key == 'total_spin' and result > 20000:
-                logging.debug(f"Invalid {BallData.properties[key]} value: {result} > 20000")
-                result = result / 10
-            # Put the value for the current ROI into the ball data object
-            setattr(self.ball_data, key, result)
-            # See if values are different from previous shot
-            if not diff and not last_shot is None:
-                if result != getattr(last_shot, key):
-                    diff = True
-        if diff:
-            self.ball_data.back_spin = round(self.ball_data.total_spin * math.cos(math.radians(self.ball_data.spin_axis)))
-            self.ball_data.side_spin = round(self.ball_data.total_spin * math.sin(math.radians(self.ball_data.spin_axis)))
+    def __mse(self, imageA, imageB):
+        err = 0
+        try:
+            # the 'Mean Squared Error' between the two images is the
+            # sum of the squared difference between the two images;
+            # NOTE: the two images must have the same dimension
+            err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+            err /= float(imageA.shape[0] * imageA.shape[1])
+        except:
+            # If error force new screenshot
+            err = 10
+        # return the MSE, the lower the error, the more "similar"
+        # the two images are
+        return err
 
-        # Set diff attribute if value are different
-        self.new_shot = diff
+    def shutdown(self):
+        self.tesserocr_api.End()
 
-    def reload_device_settings(self):
-        self.resize_window = True
-        self.application.device_manager.current_device.load()
+    @staticmethod
+    def screen_mirror_app_running(device):
+        return ScreenMirrorWindow.find_window(device.window_name)
+

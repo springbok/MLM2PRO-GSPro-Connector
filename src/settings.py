@@ -14,6 +14,9 @@ class Settings(SettingsBase):
                 "api_version": "1",
                 "device_id": "Rapsodo MLM2PRO",
                 "units": "Yards",
+                "gspro_path": "",
+                "grspo_window_name": "GSPro",
+                "gspro_api_window_name": "APIv1 Connect"
             }
         )
         # Removed this from the settings file, specifies the

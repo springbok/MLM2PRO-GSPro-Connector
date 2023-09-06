@@ -1,6 +1,7 @@
-1. cv2, numpy, etc.: pip install opencv-python
-got this error: DLL load failed while importing _cext: The specified module could not be found.
-download vc++: https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022
-3: matplotlib: pip install -U matplotlib
-4: tesserocr: https://github.com/simonflueckiger/tesserocr-windows_build/releases:
-pip install C:\Users\etien\Downloads\tesserocr-2.6.0-cp311-cp311-win_amd64.whl
+pyside6
+pyqt6-tools
+pyqtgraph
+numpy
+pillow
+tesserocr
+opencv-python
