@@ -5,6 +5,7 @@ __pycache__/
 *$py.class
 create_exe.txt
 external_tools.txt
+github public repo.txt
 
 # C extensions
 *.so
