@@ -1,5 +1,5 @@
 # MLM2PRO-GSPro-Connector
-GSPro connector for the MLM2Pro Launch Monitor.
+GSPro connector for the MLM2Pro Launch Monitor that includes putting.
 
 ## Highlights:
 
@@ -32,6 +32,9 @@ This connector was built from the ground up to be easy to use, reliable, accurat
 ### Verify ROI's
 ![Verify ROI's](images/verify_rois.png)
 
+### Putting
+![Putting](images/putting.png)
+
 ## Acknowledgments
 
 ### Joe Lagowski Facebook Group
@@ -46,14 +49,22 @@ If you want to join a great golfing community & watch some great golf content I'
 To join the Facebook group follow this [link](https://www.facebook.com/groups/771573784649240)\
 You can access Joe's YouTube channel [here](https://www.youtube.com/@JLagGOLF)
 
+**[Paul McMahon (wonder99)](https://github.com/wonder99)** for his great work in adding putting to the original connector, also for his testing & valuable feedback.  
+
+**[alleexx](https://github.com/alleexx)** for providing the webcam based putting utility, for more details go [here](https://github.com/alleexx/cam-putting-py). 
+
 ### Original Connector
 [rowenb](https://github.com/rowengb) for producing the first [connector](https://github.com/rowengb/GSPro-MLM2PRO-OCR-Connector).
 
 ## Documentation
 
-For a short installation & setup video you can go [here](https://youtu.be/9mhtPu8xs0s)
+* For a installation & setup video you can go [here](https://youtu.be/9mhtPu8xs0s)
 
-More detailed documentation can be found [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/wiki)
+* For a video on how to setup the Exputt with the connector you can go [here](https://www.youtube.com/watch?v=dV0CH2Vy0Y0)
+
+* For a video on how to setup Webcam putting with the connector you can go [here](https://www.youtube.com/watch?v=6YxTzUPReB0)
+
+* More detailed documentation can be found [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/wiki)
 
 ## Latest Release
 
