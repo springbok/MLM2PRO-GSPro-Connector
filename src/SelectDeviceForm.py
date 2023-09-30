@@ -7,10 +7,10 @@ from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QMainWindo
 from src.RoisForm import RoisForm
 from src.SelectDeviceForm_ui import Ui_SelectDeviceForm
 from src.appdata import AppDataPaths
+from src.ctype_screenshot import ScreenMirrorWindow
 from src.device import Device
 from src.devices import Devices
 from src.log_message import LogMessageSystems, LogMessageTypes
-from src.screenshot import Screenshot
 
 
 class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
@@ -92,7 +92,7 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
     def __find_screen_mirror_app(self, device):
         running = False
         try:
-            Screenshot.screen_mirror_app_running(device)
+            ScreenMirrorWindow.find_window(device.window_name)
             running = True
         except Exception:
             running = False
@@ -105,13 +105,13 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
                 self.__log_message(LogMessageTypes.ALL, f"{device.window_name} not running, starting")
                 try:
                     os.startfile(device.window_path)
-                    Event().wait(1)
+                    Event().wait(3)
                 except Exception as e:
                     self.__log_message(LogMessageTypes.LOG_FILE, f"Could not start app at {device.window_path} exception: {format(e)}")
         if not self.__find_screen_mirror_app(device):
             msg = f"Screen capture application ' {device.window_name}' does not seem to be running, please start the app and retry."
             self.__log_message(LogMessageTypes.LOG_FILE, msg)
-            QMessageBox.critical(self, "Screen Mirror App Not Found", msg)
+            QMessageBox.warning(self, "Screen Mirror App Not Found", msg)
         else:
             running = True
         return running

@@ -1,6 +1,8 @@
-import sys
 import traceback
+from threading import Event
+
 from PySide6.QtCore import QObject, Signal
+
 
 class WorkerThread(QObject):
     '''
@@ -21,6 +23,8 @@ class WorkerThread(QObject):
     result = Signal(object or None)
     progress = Signal(int)
     started = Signal()
+    paused = Signal()
+    resumed = Signal()
 
     def __init__(self, fn, *args, **kwargs):
         super(WorkerThread, self).__init__()
@@ -28,8 +32,11 @@ class WorkerThread(QObject):
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
+        self._pause = Event()
+        self.resume()
 
     def run(self):
+        self._pause.wait()
         '''
         Initialise the runner function with passed args, kwargs.
         '''
@@ -47,3 +54,11 @@ class WorkerThread(QObject):
             self.result.emit(result)  # Return the result of the processing
         finally:
             self.finished.emit()  # Done
+
+    def pause(self):
+        self._pause.clear()
+        self.paused.emit()
+
+    def resume(self):
+        self._pause.set()
+        self.resumed.emit()

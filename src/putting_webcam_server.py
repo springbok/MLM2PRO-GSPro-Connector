@@ -1,0 +1,90 @@
+import functools
+import json
+import logging
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from PySide6.QtCore import QObject, Signal
+from src.ball_data import BallData, PuttType
+from src.custom_exception import PutterNotSelected
+from src.putting_settings import PuttingSettings
+
+
+class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
+
+    def  __init__(self, *args, putting_worker=None, **kwargs):
+        self.ball_data = None
+        self.putting_worker = putting_worker
+        super(BaseHTTPRequestHandler, self).__init__(*args, **kwargs)
+
+    def do_POST(self):
+        message = ''
+        error = False
+        self.ball_data = BallData()
+        logging.debug('do_POST')
+        content_len = int(self.headers.get('content-length', 0))
+        try:
+            if content_len <= 0:
+                raise ValueError('Invalid putt data')
+            if not self.putting_worker.putter_selected():
+                raise PutterNotSelected('Putter not selected in GSPro, ignoring.')
+            post_body = self.rfile.read(content_len)
+            putt_data = json.loads(post_body)
+            self.ball_data.speed = float(putt_data['ballData']['BallSpeed'])
+            self.ball_data.total_spin = float(putt_data['ballData']['TotalSpin'])
+            self.ball_data.hla = float(putt_data['ballData']['LaunchDirection'])
+            self.ball_data.putt_type = PuttType.WEBCAM
+            self.ball_data.good_shot = True
+            message = {"result": "Success"}
+            logging.debug(f'Putting Server putt received: {self.ball_data.to_json()}')
+        except Exception as e:
+            message = {"result": format(e)}
+            logging.debug(f'Putting Error: {format(e)}')
+            self.putting_worker.send_error(e)
+            error = True
+        finally:
+            logging.debug("Send 200 response")
+            self.send_response_only(200)
+            self.end_headers()
+            self.wfile.write(str.encode(json.dumps(message)))
+            if not error:
+                self.putting_worker.send_putt(self.ball_data)
+
+
+class PuttingWebcamWorker(QObject):
+    started = Signal()
+    stopped = Signal()
+    error = Signal(object or None)
+    putt = Signal(object or None)
+
+    def __init__(self, settings: PuttingSettings):
+        super(PuttingWebcamWorker, self).__init__()
+        self._server = None
+        self.putter = False
+        self.settings = settings
+        self.name = 'PuttingWebcamWorker'
+
+    def run(self):
+        self.started.emit()
+        logging.debug(f'{self.name} Started')
+        handler_partial = functools.partial(PuttingRequestHandler, putting_worker=self)
+        self._server = HTTPServer(
+            (self.settings.webcam['ip_address'], self.settings.webcam['port']),
+            handler_partial)
+        self._server.serve_forever()
+
+    def stop(self):
+        self._server.shutdown()
+        self._server.socket.close()
+        self.stopped.emit()
+        logging.debug(f'{self.name} Stopped')
+
+    def send_putt(self, putt):
+        self.putt.emit(putt)
+
+    def send_error(self, error):
+        self.error.emit(error)
+
+    def putter_selected(self):
+        return self.putter
+
+    def select_putter(self, selected):
+        self.putter = selected

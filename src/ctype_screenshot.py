@@ -27,6 +27,11 @@ SW_MAXIMIZE = 3
 SW_HIDE = 0
 SW_SHOW = 5
 SW_RESTORE = 9
+HWND_TOPMOST = -1
+HWND_NOTOPMOST = -2
+SWP_NOMOVE = 0x0002
+SWP_SHOWWINDOW = 0x0040
+SWP_NOSIZE = 0x0001
 
 SRCCOPY = 13369376
 DIB_RGB_COLORS = BI_RGB = 0
@@ -90,6 +95,8 @@ user32.FindWindowW.restype = wintypes.HWND
 user32.GetWindowRect.argtypes = wintypes.HWND,ctypes.POINTER(RECT)
 user32.GetWindowRect.restype = wintypes.BOOL
 user32.GetWindowRect.errcheck = check_zero
+BringWindowToTop = windll.user32.BringWindowToTop
+SetForegroundWindow = windll.user32.SetForegroundWindow
 
 
 GetWindowDC = windll.user32.GetWindowDC
@@ -196,8 +203,35 @@ class ScreenMirrorWindow:
         else:
             return hwnd
 
+    @staticmethod
+    def top_window(title):
+        try:
+            hwnd = ScreenMirrorWindow.find_window(title)
+            SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
+            #BringWindowToTop(hwnd)
+            #SetForegroundWindow(hwnd)
+        except:
+            i = 1
+
+    @staticmethod
+    def bring_to_front(title):
+        try:
+            hwnd = ScreenMirrorWindow.find_window(title)
+            BringWindowToTop(hwnd)
+            SetForegroundWindow(hwnd)
+        except:
+            i=1
+
+    @staticmethod
+    def not_top_window(title):
+        try:
+            hwnd = ScreenMirrorWindow.find_window(title)
+            SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
+        except:
+            i=1
+
     def __find_window(self):
-        self.hwnd = user32.FindWindowW(None, self.title)
+        self.hwnd = ScreenMirrorWindow.find_window(self.title)
         if self.hwnd:
             user32.GetWindowRect(self.hwnd, ctypes.byref(self.rect))
         else:

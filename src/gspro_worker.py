@@ -1,7 +1,6 @@
-import logging
-import sys
 import traceback
 from PySide6.QtCore import QObject, Signal
+
 
 class GsproWorker(QObject):
     finished = Signal()
@@ -26,3 +25,4 @@ class GsproWorker(QObject):
                 self.sent.emit(balldata)  # Return the result of the processing
             finally:
                 self.finished.emit()  # Done
+                
