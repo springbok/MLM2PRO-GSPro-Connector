@@ -1,0 +1,19 @@
+Easiest way I found especially for Windows Store Apps such as AirPlay:
+
+1. Create a shortcut on the desktop
+2. If web store app:
+Press Windows Key + R.
+Type shell:AppsFolder and click OK.
+Store App Shortcut open Applications Folder.
+In the Folder, find the App you want to create the Shortcut for.
+Right-click on the App Icon.
+Select the Create shortcut Option.
+3. Right-click on the new shortcut, select the 'General' tab and check the 'Location'
+4. Open file explorer and navigate to the 'Location' folder
+5. Copy the name of the shortcut and append the 'Location' folder, e.g.
+C:\Users\Dev\Desktop\AirPlay - Shortcut.lnk
+
+
+For GSPro:
+C:\GSProV1\GSPLauncher.exe
+

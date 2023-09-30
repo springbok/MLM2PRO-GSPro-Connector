@@ -126,7 +126,7 @@ class DevicesForm(QWidget, Ui_DevicesForm):
             self,
             "Select a File",
             self.path_edit.toPlainText(),
-            "Exe (*.exe *.lnk)"
+            "Exe (*.exe *.lnk *.bat)"
         )
         if filename:
             path = Path(filename)

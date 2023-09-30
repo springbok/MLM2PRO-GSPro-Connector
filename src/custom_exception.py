@@ -1,6 +1,9 @@
 class WindowNotFoundException(Exception):
     pass
 
+class CameraWindowNotFoundException(Exception):
+    pass
+
 
 class GSProConnectionTimeout(Exception):
     pass
@@ -15,4 +18,8 @@ class GSProConnectionUknownError(Exception):
 
 
 class GSProConnectionGSProClosedConnection(Exception):
+    pass
+
+
+class PutterNotSelected(Exception):
     pass

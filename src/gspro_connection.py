@@ -1,7 +1,7 @@
+import logging
 from PySide6.QtCore import QThread, QCoreApplication, Signal, QObject
 from PySide6.QtWidgets import QMessageBox
 from src import MainWindow
-from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.gspro_connect import GSProConnect
 from src.gspro_worker import GsproWorker
@@ -16,6 +16,8 @@ class GSProConnection(QObject):
     disconnected_from_gspro = Signal()
     shot_sent = Signal(object)
     gspro_app_not_found = Signal()
+    club_selected = Signal(object)
+    club_selection_error = Signal()
 
     def __init__(self, main_window: MainWindow, settings: Settings):
         super(GSProConnection, self).__init__()
@@ -29,9 +31,11 @@ class GSProConnection(QObject):
             self.settings.units,
             self.settings.api_version
         )
+        self.gspro_connect.club_selected.connect(self.__club_selected)
         self.main_window.gspro_status_label.setText('Not Connected')
         self.main_window.gspro_status_label.setStyleSheet("QLabel { background-color : red; color : white; }")
         self.__setup_send_shot_thread()
+        self.__setup_club_selection_thread()
 
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
@@ -44,11 +48,30 @@ class GSProConnection(QObject):
         self.send_shot_thread.started.connect(self.send_shot_worker.run)
         self.send_shot_thread.start()
 
+    def __setup_club_selection_thread(self):
+        logging.debug('__setup_club_selection_thread start')
+        self.club_selecion_thread = QThread()
+        self.club_selecion_worker = WorkerThread(
+            self.gspro_connect.check_for_message)
+        self.club_selecion_worker.moveToThread(self.club_selecion_thread)
+        self.club_selecion_worker.error.connect(self.__club_selecion_error)
+        self.club_selecion_thread.start()
+
+    def __club_selecion_error(self, error):
+        self.club_selection_error.emit()
+        self.disconnect_from_gspro()
+        msg = f"Error while trying to check for club selection messages from GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
+        self.__log_message(LogMessageTypes.LOGS, f'{msg}\nException: {format(error)}')
+        QMessageBox.warning(self.main_window, "GSPro Receive Error", msg)
+
+    def __club_selected(self, club_data):
+        self.club_selected.emit(club_data)
+
     def __send_shot_error(self, error):
         self.disconnect_from_gspro()
         msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
         self.__log_message(LogMessageTypes.LOGS, f'{msg}\nException: {format(error)}')
-        QMessageBox.critical(self.main_window, "GSPro Send Error", msg)
+        QMessageBox.warning(self.main_window, "GSPro Send Error", msg)
 
     def connect_to_gspro(self):
         if not self.connected:
@@ -95,7 +118,7 @@ class GSProConnection(QObject):
         self.disconnect_from_gspro()
         msg = "Error while trying to connect to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
         self.__log_message(LogMessageTypes.LOGS, f'{msg} Exception: {format(error)}')
-        QMessageBox.critical(self.main_window, "GSPro Connect Error", msg)
+        QMessageBox.warning(self.main_window, "GSPro Connect Error", msg)
 
     def shutdown(self):
         self.gspro_connect.terminate_session()
@@ -104,6 +127,9 @@ class GSProConnection(QObject):
         self.thread.wait()
         self.send_shot_thread.quit()
         self.send_shot_thread.wait()
+        self.club_selecion_thread.quit()
+        self.club_selecion_thread.wait()
+
 
     def __log_message(self, types, message):
         self.main_window.log_message(types, LogMessageSystems.GSPRO_CONNECT, message)

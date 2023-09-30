@@ -7,8 +7,9 @@ from src.ball_data import BallData
 
 class VerifyRoiForm(QWidget, Ui_VerifyRoiForm):
 
-    def __init__(self):
+    def __init__(self, rois_properties):
         super().__init__()
+        self.rois_properties = rois_properties
         self.setupUi(self)
         self.close_button.clicked.connect(self.__close)
         self.balldata = {}
@@ -23,7 +24,7 @@ class VerifyRoiForm(QWidget, Ui_VerifyRoiForm):
     def __load_results(self):
         self.results_view.clear()
         items = []
-        for roi in BallData.rois_properties:
+        for roi in self.rois_properties:
             value = getattr(self.balldata, roi)
             if int(value) == BallData.invalid_value:
                 value = 'Invalid Value'

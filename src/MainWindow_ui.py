@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1060, 642)
+        MainWindow.resize(1139, 642)
         icon = QIcon()
         icon.addFile(u":/ico/ico/connect.ico", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -52,10 +52,15 @@ class Ui_MainWindow(object):
         icon4 = QIcon()
         icon4.addFile(u":/ico/ico/about.ico", QSize(), QIcon.Normal, QIcon.Off)
         self.actionAbout.setIcon(icon4)
+        self.actionPuttingSettings = QAction(MainWindow)
+        self.actionPuttingSettings.setObjectName(u"actionPuttingSettings")
+        icon5 = QIcon()
+        icon5.addFile(u":/ico/ico/Iconsmind-Outline-Golf-2.ico", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionPuttingSettings.setIcon(icon5)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_3 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.verticalLayout_4 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.main_tab = QTabWidget(self.centralwidget)
         self.main_tab.setObjectName(u"main_tab")
         self.connector_tab = QWidget()
@@ -104,6 +109,17 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.gspro_status_label)
 
+        self.club_selection = QLabel(self.groupBox)
+        self.club_selection.setObjectName(u"club_selection")
+        sizePolicy1.setHeightForWidth(self.club_selection.sizePolicy().hasHeightForWidth())
+        self.club_selection.setSizePolicy(sizePolicy1)
+        self.club_selection.setMinimumSize(QSize(120, 0))
+        self.club_selection.setFont(font)
+        self.club_selection.setAlignment(Qt.AlignCenter)
+        self.club_selection.setMargin(5)
+
+        self.verticalLayout.addWidget(self.club_selection)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
@@ -113,6 +129,54 @@ class Ui_MainWindow(object):
 
 
         self.horizontalLayout_8.addWidget(self.groupBox)
+
+        self.groupBox_3 = QGroupBox(self.connector_tab)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.horizontalLayout_3 = QHBoxLayout(self.groupBox_3)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.putting_server_button = QPushButton(self.groupBox_3)
+        self.putting_server_button.setObjectName(u"putting_server_button")
+        sizePolicy.setHeightForWidth(self.putting_server_button.sizePolicy().hasHeightForWidth())
+        self.putting_server_button.setSizePolicy(sizePolicy)
+        self.putting_server_button.setMaximumSize(QSize(200, 30))
+
+        self.verticalLayout_2.addWidget(self.putting_server_button)
+
+        self.putting_system_label = QLabel(self.groupBox_3)
+        self.putting_system_label.setObjectName(u"putting_system_label")
+        sizePolicy1.setHeightForWidth(self.putting_system_label.sizePolicy().hasHeightForWidth())
+        self.putting_system_label.setSizePolicy(sizePolicy1)
+        self.putting_system_label.setMinimumSize(QSize(120, 0))
+        self.putting_system_label.setFont(font)
+        self.putting_system_label.setAlignment(Qt.AlignCenter)
+        self.putting_system_label.setMargin(5)
+
+        self.verticalLayout_2.addWidget(self.putting_system_label)
+
+        self.putting_server_status_label = QLabel(self.groupBox_3)
+        self.putting_server_status_label.setObjectName(u"putting_server_status_label")
+        sizePolicy1.setHeightForWidth(self.putting_server_status_label.sizePolicy().hasHeightForWidth())
+        self.putting_server_status_label.setSizePolicy(sizePolicy1)
+        self.putting_server_status_label.setMinimumSize(QSize(120, 0))
+        self.putting_server_status_label.setFont(font)
+        self.putting_server_status_label.setAlignment(Qt.AlignCenter)
+        self.putting_server_status_label.setMargin(5)
+
+        self.verticalLayout_2.addWidget(self.putting_server_status_label)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer_2)
+
+
+        self.horizontalLayout_3.addLayout(self.verticalLayout_2)
+
+
+        self.horizontalLayout_8.addWidget(self.groupBox_3)
 
         self.groupBox_2 = QGroupBox(self.connector_tab)
         self.groupBox_2.setObjectName(u"groupBox_2")
@@ -126,12 +190,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.select_device_button = QPushButton(self.groupBox_2)
         self.select_device_button.setObjectName(u"select_device_button")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.select_device_button.sizePolicy().hasHeightForWidth())
         self.select_device_button.setSizePolicy(sizePolicy2)
-        self.select_device_button.setMaximumSize(QSize(200, 30))
+        self.select_device_button.setMaximumSize(QSize(16777215, 16777215))
 
         self.verticalLayout_8.addWidget(self.select_device_button)
 
@@ -147,9 +211,12 @@ class Ui_MainWindow(object):
 
         self.selected_mirror_app = QLabel(self.groupBox_2)
         self.selected_mirror_app.setObjectName(u"selected_mirror_app")
-        sizePolicy1.setHeightForWidth(self.selected_mirror_app.sizePolicy().hasHeightForWidth())
-        self.selected_mirror_app.setSizePolicy(sizePolicy1)
-        self.selected_mirror_app.setMinimumSize(QSize(120, 0))
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.selected_mirror_app.sizePolicy().hasHeightForWidth())
+        self.selected_mirror_app.setSizePolicy(sizePolicy3)
+        self.selected_mirror_app.setMinimumSize(QSize(0, 0))
         self.selected_mirror_app.setFont(font)
         self.selected_mirror_app.setAlignment(Qt.AlignCenter)
         self.selected_mirror_app.setMargin(5)
@@ -215,6 +282,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.label_4)
 
+        self.label_6 = QLabel(self.groupBox_2)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setFont(font1)
+        self.label_6.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_2.addWidget(self.label_6)
+
 
         self.edit_field_layout.addLayout(self.horizontalLayout_2)
 
@@ -223,8 +297,11 @@ class Ui_MainWindow(object):
         self.edit_field_layout1.setSizeConstraint(QLayout.SetFixedSize)
         self.speed_edit = QTextEdit(self.groupBox_2)
         self.speed_edit.setObjectName(u"speed_edit")
-        sizePolicy2.setHeightForWidth(self.speed_edit.sizePolicy().hasHeightForWidth())
-        self.speed_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.speed_edit.sizePolicy().hasHeightForWidth())
+        self.speed_edit.setSizePolicy(sizePolicy4)
         self.speed_edit.setMaximumSize(QSize(230, 50))
         font2 = QFont()
         font2.setPointSize(14)
@@ -234,8 +311,8 @@ class Ui_MainWindow(object):
 
         self.spin_axis_edit = QTextEdit(self.groupBox_2)
         self.spin_axis_edit.setObjectName(u"spin_axis_edit")
-        sizePolicy2.setHeightForWidth(self.spin_axis_edit.sizePolicy().hasHeightForWidth())
-        self.spin_axis_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.spin_axis_edit.sizePolicy().hasHeightForWidth())
+        self.spin_axis_edit.setSizePolicy(sizePolicy4)
         self.spin_axis_edit.setMaximumSize(QSize(230, 50))
         self.spin_axis_edit.setFont(font2)
 
@@ -243,8 +320,8 @@ class Ui_MainWindow(object):
 
         self.total_spin_edit = QTextEdit(self.groupBox_2)
         self.total_spin_edit.setObjectName(u"total_spin_edit")
-        sizePolicy2.setHeightForWidth(self.total_spin_edit.sizePolicy().hasHeightForWidth())
-        self.total_spin_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.total_spin_edit.sizePolicy().hasHeightForWidth())
+        self.total_spin_edit.setSizePolicy(sizePolicy4)
         self.total_spin_edit.setMaximumSize(QSize(230, 50))
         self.total_spin_edit.setFont(font2)
 
@@ -252,12 +329,21 @@ class Ui_MainWindow(object):
 
         self.hla_edit = QTextEdit(self.groupBox_2)
         self.hla_edit.setObjectName(u"hla_edit")
-        sizePolicy2.setHeightForWidth(self.hla_edit.sizePolicy().hasHeightForWidth())
-        self.hla_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.hla_edit.sizePolicy().hasHeightForWidth())
+        self.hla_edit.setSizePolicy(sizePolicy4)
         self.hla_edit.setMaximumSize(QSize(230, 50))
         self.hla_edit.setFont(font2)
 
         self.edit_field_layout1.addWidget(self.hla_edit)
+
+        self.path_edit = QTextEdit(self.groupBox_2)
+        self.path_edit.setObjectName(u"path_edit")
+        sizePolicy4.setHeightForWidth(self.path_edit.sizePolicy().hasHeightForWidth())
+        self.path_edit.setSizePolicy(sizePolicy4)
+        self.path_edit.setMaximumSize(QSize(230, 50))
+        self.path_edit.setFont(font2)
+
+        self.edit_field_layout1.addWidget(self.path_edit)
 
 
         self.edit_field_layout.addLayout(self.edit_field_layout1)
@@ -293,6 +379,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.SideSpin)
 
+        self.SideSpin_2 = QLabel(self.groupBox_2)
+        self.SideSpin_2.setObjectName(u"SideSpin_2")
+        self.SideSpin_2.setFont(font1)
+        self.SideSpin_2.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_5.addWidget(self.SideSpin_2)
+
 
         self.edit_field_layout.addLayout(self.horizontalLayout_5)
 
@@ -301,8 +394,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setSizeConstraint(QLayout.SetFixedSize)
         self.vla_edit = QTextEdit(self.groupBox_2)
         self.vla_edit.setObjectName(u"vla_edit")
-        sizePolicy2.setHeightForWidth(self.vla_edit.sizePolicy().hasHeightForWidth())
-        self.vla_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.vla_edit.sizePolicy().hasHeightForWidth())
+        self.vla_edit.setSizePolicy(sizePolicy4)
         self.vla_edit.setMaximumSize(QSize(230, 50))
         self.vla_edit.setFont(font2)
 
@@ -310,8 +403,8 @@ class Ui_MainWindow(object):
 
         self.club_speed_edit = QTextEdit(self.groupBox_2)
         self.club_speed_edit.setObjectName(u"club_speed_edit")
-        sizePolicy2.setHeightForWidth(self.club_speed_edit.sizePolicy().hasHeightForWidth())
-        self.club_speed_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.club_speed_edit.sizePolicy().hasHeightForWidth())
+        self.club_speed_edit.setSizePolicy(sizePolicy4)
         self.club_speed_edit.setMaximumSize(QSize(230, 50))
         self.club_speed_edit.setFont(font2)
 
@@ -319,8 +412,8 @@ class Ui_MainWindow(object):
 
         self.back_spin_edit = QTextEdit(self.groupBox_2)
         self.back_spin_edit.setObjectName(u"back_spin_edit")
-        sizePolicy2.setHeightForWidth(self.back_spin_edit.sizePolicy().hasHeightForWidth())
-        self.back_spin_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.back_spin_edit.sizePolicy().hasHeightForWidth())
+        self.back_spin_edit.setSizePolicy(sizePolicy4)
         self.back_spin_edit.setMaximumSize(QSize(230, 50))
         self.back_spin_edit.setFont(font2)
 
@@ -328,12 +421,21 @@ class Ui_MainWindow(object):
 
         self.side_spin_edit = QTextEdit(self.groupBox_2)
         self.side_spin_edit.setObjectName(u"side_spin_edit")
-        sizePolicy2.setHeightForWidth(self.side_spin_edit.sizePolicy().hasHeightForWidth())
-        self.side_spin_edit.setSizePolicy(sizePolicy2)
+        sizePolicy4.setHeightForWidth(self.side_spin_edit.sizePolicy().hasHeightForWidth())
+        self.side_spin_edit.setSizePolicy(sizePolicy4)
         self.side_spin_edit.setMaximumSize(QSize(230, 50))
         self.side_spin_edit.setFont(font2)
 
         self.horizontalLayout_6.addWidget(self.side_spin_edit)
+
+        self.face_to_target_edit = QTextEdit(self.groupBox_2)
+        self.face_to_target_edit.setObjectName(u"face_to_target_edit")
+        sizePolicy4.setHeightForWidth(self.face_to_target_edit.sizePolicy().hasHeightForWidth())
+        self.face_to_target_edit.setSizePolicy(sizePolicy4)
+        self.face_to_target_edit.setMaximumSize(QSize(230, 50))
+        self.face_to_target_edit.setFont(font2)
+
+        self.horizontalLayout_6.addWidget(self.face_to_target_edit)
 
 
         self.edit_field_layout.addLayout(self.horizontalLayout_6)
@@ -341,14 +443,14 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addLayout(self.edit_field_layout)
 
-        self.horizontalLayout_12.setStretch(0, 2)
+        self.horizontalLayout_12.setStretch(0, 1)
 
         self.horizontalLayout_13.addLayout(self.horizontalLayout_12)
 
 
         self.horizontalLayout_8.addWidget(self.groupBox_2)
 
-        self.horizontalLayout_8.setStretch(1, 2)
+        self.horizontalLayout_8.setStretch(2, 2)
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_8)
 
@@ -390,7 +492,7 @@ class Ui_MainWindow(object):
 
         self.main_tab.addTab(self.log_tab, "")
 
-        self.horizontalLayout_3.addWidget(self.main_tab)
+        self.verticalLayout_4.addWidget(self.main_tab)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
@@ -404,6 +506,7 @@ class Ui_MainWindow(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionDevices)
         self.toolBar.addAction(self.actionSettings)
+        self.toolBar.addAction(self.actionPuttingSettings)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionAbout)
 
@@ -420,13 +523,25 @@ class Ui_MainWindow(object):
         self.actionExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
         self.actionDevices.setText(QCoreApplication.translate("MainWindow", u"Devices", None))
         self.actionSettings.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
+#if QT_CONFIG(tooltip)
+        self.actionSettings.setToolTip(QCoreApplication.translate("MainWindow", u"Settings", None))
+#endif // QT_CONFIG(tooltip)
         self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
+        self.actionPuttingSettings.setText(QCoreApplication.translate("MainWindow", u"Putting Settings", None))
+#if QT_CONFIG(tooltip)
+        self.actionPuttingSettings.setToolTip(QCoreApplication.translate("MainWindow", u"Putting Settings", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.connector_tab.setToolTip("")
 #endif // QT_CONFIG(tooltip)
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"GSPro Connection", None))
         self.gspro_connect_button.setText(QCoreApplication.translate("MainWindow", u"Connect", None))
         self.gspro_status_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.club_selection.setText("")
+        self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Putting", None))
+        self.putting_server_button.setText(QCoreApplication.translate("MainWindow", u"Connect", None))
+        self.putting_system_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.putting_server_status_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Launch Monitor", None))
         self.select_device_button.setText(QCoreApplication.translate("MainWindow", u"Device", None))
         self.selected_device.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
@@ -436,11 +551,13 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Ball Speed", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Spin Axis", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Spin Rate", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Launch Direction (HLA)", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Launch Dir (HLA)", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"Path", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Launch Angle (VLA)", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Club Speed", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Back Spin", None))
         self.SideSpin.setText(QCoreApplication.translate("MainWindow", u"Side Spin", None))
+        self.SideSpin_2.setText(QCoreApplication.translate("MainWindow", u"Face to Target", None))
         self.main_tab.setTabText(self.main_tab.indexOf(self.connector_tab), QCoreApplication.translate("MainWindow", u"Connector", None))
         ___qtablewidgetitem = self.log_table.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Date", None));

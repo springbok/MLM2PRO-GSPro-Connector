@@ -6,6 +6,8 @@ from enum import Flag, auto
 class LogMessageSystems:
     CONNECTOR = 'Connector'
     GSPRO_CONNECT = 'GSProConnect'
+    WEBCAM_PUTTING = "Webcam Putting"
+    EXPUTT_PUTTING = "ExPutt"
 
 
 @dataclass

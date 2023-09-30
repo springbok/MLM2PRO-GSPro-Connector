@@ -8,9 +8,9 @@ class SettingsBase:
     def __init__(self, path: str, settings_json: json):
         self.path = path
         self.settings_json = settings_json
-        self.__load()
+        self.load()
 
-    def __load(self):
+    def load(self):
         self.__create()
         logging.debug(f"Loading settings from {self.path}")
         if os.path.isfile(self.path):

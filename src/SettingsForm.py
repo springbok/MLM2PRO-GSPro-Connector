@@ -55,7 +55,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self,
             "Select a File",
             self.gspro_path_edit.toPlainText(),
-            "Exe (*.exe *.lnk)"
+            "Exe (*.exe *.lnk *.bat)"
         )
         if filename:
             path = Path(filename)

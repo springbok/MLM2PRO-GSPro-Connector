@@ -4,7 +4,6 @@ import sys
 import time
 from contextlib import contextmanager
 from functools import lru_cache
-from pathlib import Path
 from typing import Optional
 
 # For usage see https://appdata.readthedocs.io/en/latest/

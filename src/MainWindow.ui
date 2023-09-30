@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1060</width>
+    <width>1139</width>
     <height>642</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
    <double>6.000000000000000</double>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <widget class="QTabWidget" name="main_tab">
       <property name="currentIndex">
@@ -41,7 +41,7 @@
            <enum>QLayout::SetFixedSize</enum>
           </property>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,2">
+           <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,2">
             <property name="sizeConstraint">
              <enum>QLayout::SetDefaultConstraint</enum>
             </property>
@@ -110,7 +110,151 @@
                   </widget>
                  </item>
                  <item>
+                  <widget class="QLabel" name="club_selection">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>12</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="margin">
+                    <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
                   <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string>Putting</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetDefaultConstraint</enum>
+               </property>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <item>
+                  <widget class="QPushButton" name="putting_server_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Connect</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="putting_system_label">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>12</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>TextLabel</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="margin">
+                    <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="putting_server_status_label">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>12</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>TextLabel</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="margin">
+                    <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_2">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -134,7 +278,7 @@
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_13">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="2,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="1,0">
                  <property name="sizeConstraint">
                   <enum>QLayout::SetDefaultConstraint</enum>
                  </property>
@@ -146,15 +290,15 @@
                    <item>
                     <widget class="QPushButton" name="select_device_button">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>200</width>
-                       <height>30</height>
+                       <width>16777215</width>
+                       <height>16777215</height>
                       </size>
                      </property>
                      <property name="text">
@@ -183,14 +327,14 @@
                    <item>
                     <widget class="QLabel" name="selected_mirror_app">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>120</width>
+                       <width>0</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -318,7 +462,22 @@
                         </font>
                        </property>
                        <property name="text">
-                        <string>Launch Direction (HLA)</string>
+                        <string>Launch Dir (HLA)</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_6">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>Path</string>
                        </property>
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
@@ -416,6 +575,27 @@
                        </property>
                       </widget>
                      </item>
+                     <item>
+                      <widget class="QTextEdit" name="path_edit">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>230</width>
+                         <height>50</height>
+                        </size>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                      </widget>
+                     </item>
                     </layout>
                    </item>
                    <item>
@@ -477,6 +657,21 @@
                        </property>
                        <property name="text">
                         <string>Side Spin</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="SideSpin_2">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>Face to Target</string>
                        </property>
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
@@ -555,6 +750,27 @@
                      </item>
                      <item>
                       <widget class="QTextEdit" name="side_spin_edit">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>230</width>
+                         <height>50</height>
+                        </size>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QTextEdit" name="face_to_target_edit">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                          <horstretch>0</horstretch>
@@ -654,6 +870,7 @@
    <addaction name="separator"/>
    <addaction name="actionDevices"/>
    <addaction name="actionSettings"/>
+   <addaction name="actionPuttingSettings"/>
    <addaction name="separator"/>
    <addaction name="actionAbout"/>
   </widget>
@@ -683,6 +900,9 @@
    <property name="text">
     <string>Settings</string>
    </property>
+   <property name="toolTip">
+    <string>Settings</string>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="icon">
@@ -691,6 +911,18 @@
    </property>
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionPuttingSettings">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/ico/ico/Iconsmind-Outline-Golf-2.ico</normaloff>:/ico/ico/Iconsmind-Outline-Golf-2.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Putting Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Putting Settings</string>
    </property>
   </action>
  </widget>

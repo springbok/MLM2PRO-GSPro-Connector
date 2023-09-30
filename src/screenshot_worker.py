@@ -2,10 +2,10 @@ import logging
 import traceback
 from threading import Event
 from PySide6.QtCore import QObject, Signal
-
-from src.ball_data import BallData
 from src.device import Device
 from src.screenshot import Screenshot
+from src.screenshot_exputt import ScreenshotExPutt
+
 
 class ScreenshotWorker(QObject):
     finished = Signal()
@@ -16,13 +16,20 @@ class ScreenshotWorker(QObject):
     started = Signal()
     paused = Signal()
     resumed = Signal()
+    putting_started = Signal()
+    putting_stopped = Signal()
 
 
     def __init__(self, interval: int):
         super(ScreenshotWorker, self).__init__()
         self.device = None
+        self.putter = False
+        self.putting_active = False
+        self.putting_rois_reload = True
         self.interval = interval
         self.screenshot = Screenshot()
+        self.exputt_screenshot = ScreenshotExPutt()
+        self.putting_settings = None
         self.name = 'ScreenshotWorker'
         self._shutdown = Event()
         self._pause = Event()
@@ -38,18 +45,11 @@ class ScreenshotWorker(QObject):
             self._pause.wait()
             if not self._shutdown.is_set() and not self.device is None:
                 try:
-                    # Grab sreenshot and process data, checks if this is a new shot
-                    self.screenshot.capture_screenshot(self.device)
-                    if self.screenshot.screenshot_new:
-                        self.screenshot.ocr_image()
-                        if self.screenshot.new_shot:
-                            if self.screenshot.balldata.good_shot:
-                                self.shot.emit(self.screenshot.balldata)
-                            else:
-                                logging.info(f"Process {self.name} bad shot data: {self.screenshot.balldata.to_json()}, errors: {self.screenshot.balldata.errors}")
-                                self.bad_shot.emit(self.screenshot.balldata)
+                    if self.putter and self.putting_active:
+                        self.__do_screenshot(self.exputt_screenshot, self.putting_settings, self.putting_rois_reload)
+                        self.putting_rois_reload = False
                     else:
-                        self.same_shot.emit()
+                        self.__do_screenshot(self.screenshot, self.device, False)
                 except Exception as e:
                     if not isinstance(e, ValueError):
                         self.pause()
@@ -57,7 +57,26 @@ class ScreenshotWorker(QObject):
                     logging.debug(f'Error in process {self.name}: {format(e)}, {traceback.format_exc()}')
                     self.error.emit((e, traceback.format_exc()))
         self.screenshot.shutdown()
+        if not self.exputt_screenshot is None:
+            self.exputt_screenshot.shutdown()
         self.finished.emit()
+
+    def __do_screenshot(self, screenshot, settings, rois_setup):
+        # Grab sreenshot and process data, checks if this is a new shot
+        screenshot.capture_screenshot(settings, rois_setup)
+        if screenshot.screenshot_new:
+            screenshot.ocr_image()
+            if screenshot.new_shot:
+                if screenshot.balldata.good_shot:
+                    self.shot.emit(screenshot.balldata)
+                else:
+                    logging.info(
+                        f"Process {self.name} bad shot data: {screenshot.balldata.to_json()}, errors: {screenshot.balldata.errors}")
+                    self.bad_shot.emit(screenshot.balldata)
+            else:
+                self.same_shot.emit()
+        else:
+            self.same_shot.emit()
 
     def shutdown(self):
         self.resume()
@@ -77,4 +96,24 @@ class ScreenshotWorker(QObject):
         # In case rois were updated
         self.screenshot.update_rois(self.device.rois)
         self.screenshot.resize_window = True
+
+    def select_putter(self, selected):
+        logging.debug(f"self.putter: {self.putter}")
+        self.putter = selected
+
+    def set_putting_active(self, active):
+        self.putting_active = active
+        if active:
+            self.putting_started.emit()
+        else:
+            self.putting_stopped.emit()
+        logging.debug(f'self.putting_active: {self.putting_active}')
+
+    def get_putting_active(self):
+        return self.putting_active
+
+    def reload_putting_rois(self):
+        if not self.putting_settings is None and not self.exputt_screenshot is None:
+            self.putting_settings.load()
+            self.putting_rois_reload = True
 
