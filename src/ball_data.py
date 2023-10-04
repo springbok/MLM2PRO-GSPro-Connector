@@ -167,13 +167,13 @@ class BallData:
                     if result > 40:
                         logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 40")
                         if result > 100:
-                            result = result /100
+                            result = math.floor(result / 100)
                         else:
-                            result = result / 10
+                            result = math.floor(result / 10)
                     setattr(self, BallMetrics.CLUB_SPEED, result)
                 elif roi == BallMetrics.HLA and (result > 20 or result < -20):
                     logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 20")
-                    result = result / 10
+                    result = math.floor(result / 10)
                 setattr(self, roi, result)
                 # Check previous ball data if required
                 if not self.new_shot:
@@ -210,13 +210,13 @@ class BallData:
             # For some reason ball speed sometimes get an extra digit added
             if roi == BallMetrics.SPEED and result > 200:
                 logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 200")
-                result = result / 10
+                result = math.floor(result / 10)
             elif roi == BallMetrics.TOTAL_SPIN and result > 15000:
                 logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 15000")
-                result = result / 10
+                result = math.floor(result / 10)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 140")
-                result = result / 10
+                result = math.floor(result / 10)
             setattr(self, roi, result)
             # Check previous ball data if required
             if not self.new_shot:
