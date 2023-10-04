@@ -1,6 +1,8 @@
 # MLM2PRO-GSPro-Connector
 GSPro connector for the MLM2Pro Launch Monitor that includes putting.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X3OXE0L)
+
 ## Highlights:
 
 This connector was built from the ground up to be easy to use, reliable, accurate, and fast.
@@ -35,6 +37,24 @@ This connector was built from the ground up to be easy to use, reliable, accurat
 ### Putting
 ![Putting](images/putting.png)
 
+## Documentation
+
+* For a installation & setup video you can go [here](https://youtu.be/9mhtPu8xs0s)
+
+* For a video on how to setup the Exputt with the connector you can go [here](https://www.youtube.com/watch?v=dV0CH2Vy0Y0)
+
+* For a video on how to setup Webcam putting with the connector you can go [here](https://www.youtube.com/watch?v=6YxTzUPReB0)
+
+* More detailed documentation can be found [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/wiki)
+
+### Joe Lagowski Connector Videos
+
+* [How to connect your Rapsodo MLM2PRO to GS Pro UPDATED!](https://www.youtube.com/watch?v=4iaM1k672ZU&t=1s)
+
+* [THIS CHANGES EVERYTHING! Rapsodo MLM2PRO and EX Putt Playing GS Pro](https://www.youtube.com/watch?v=STaRJjlfda8&t=114s)
+
+
+
 ## Acknowledgments
 
 ### Joe Lagowski Facebook Group
@@ -48,6 +68,8 @@ If you want to join a great golfing community & watch some great golf content I'
 
 To join the Facebook group follow this [link](https://www.facebook.com/groups/771573784649240)\
 You can access Joe's YouTube channel [here](https://www.youtube.com/@JLagGOLF)
+
+### Other Contributors
 
 **[Paul McMahon (wonder99)](https://github.com/wonder99)** for his great work in adding putting to the original connector, also for his testing & valuable feedback.  
 
@@ -70,6 +92,4 @@ You can access Joe's YouTube channel [here](https://www.youtube.com/@JLagGOLF)
 
 The latest release can be downloaded from [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/releases)
 
-## Donations
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X3OXE0L)
