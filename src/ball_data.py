@@ -166,14 +166,16 @@ class BallData:
                 if roi == BallMetrics.SPEED:
                     if result > 40:
                         logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 40")
-                        if result > 100:
-                            result = result /100
-                        else:
-                            result = result / 10
+                        result = self.fix_out_of_bounds_metric(40, result)
                     setattr(self, BallMetrics.CLUB_SPEED, result)
                 elif roi == BallMetrics.HLA and (result > 20 or result < -20):
                     logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 20")
-                    result = result / 10
+                    if result < 0:
+                        sign = -1
+                    else:
+                        sign = 1
+                    result = self.fix_out_of_bounds_metric(20, (result * sign))
+                    result = result * sign
                 setattr(self, roi, result)
                 # Check previous ball data if required
                 if not self.new_shot:
@@ -210,13 +212,13 @@ class BallData:
             # For some reason ball speed sometimes get an extra digit added
             if roi == BallMetrics.SPEED and result > 200:
                 logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 200")
-                result = result / 10
+                result = self.fix_out_of_bounds_metric(200, result)
             elif roi == BallMetrics.TOTAL_SPIN and result > 15000:
                 logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 15000")
-                result = result / 10
+                result = self.fix_out_of_bounds_metric(15000, result)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 140")
-                result = result / 10
+                result = self.fix_out_of_bounds_metric(140, result)
             setattr(self, roi, result)
             # Check previous ball data if required
             if not self.new_shot:
@@ -247,3 +249,9 @@ class BallData:
             if getattr(self, roi) != getattr(other, roi):
                 diff_count = diff_count + 1
         return diff_count
+
+    def fix_out_of_bounds_metric(self, limit, value):
+        corrected_value = value
+        while corrected_value > limit:
+            corrected_value = math.floor(corrected_value / 10)
+        return corrected_value

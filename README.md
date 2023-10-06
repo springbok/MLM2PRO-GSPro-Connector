@@ -49,6 +49,8 @@ This connector was built from the ground up to be easy to use, reliable, accurat
 
 ### Joe Lagowski Connector Videos
 
+* [How to connect your MLM2PRO and Ex Putt to play GS Pro!](https://www.youtube.com/watch?v=9wt06I_euHs&t=664s)
+
 * [How to connect your Rapsodo MLM2PRO to GS Pro UPDATED!](https://www.youtube.com/watch?v=4iaM1k672ZU&t=1s)
 
 * [THIS CHANGES EVERYTHING! Rapsodo MLM2PRO and EX Putt Playing GS Pro](https://www.youtube.com/watch?v=STaRJjlfda8&t=114s)
