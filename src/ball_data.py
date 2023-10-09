@@ -4,8 +4,6 @@ import math
 import re
 from dataclasses import dataclass
 
-from src.putting_settings import PuttingSystems
-
 
 @dataclass
 class PuttType:
@@ -165,19 +163,15 @@ class BallData:
                     raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
                 if roi == BallMetrics.SPEED:
                     if result > 40:
-                        msg = f"Invalid {BallData.properties[roi]} value: {result} > 40"
-                        result = self.fix_out_of_bounds_metric(40, result)
-                        logging.debug(f"{msg}, corrected value: {result}")
+                        result = self.fix_out_of_bounds_metric(40, result, roi)
                     setattr(self, BallMetrics.CLUB_SPEED, result)
                 elif roi == BallMetrics.HLA and (result > 20 or result < -20):
-                    msg = f"Invalid {BallData.properties[roi]} value: {result} > 20"
                     if result < 0:
                         sign = -1
                     else:
                         sign = 1
-                    result = self.fix_out_of_bounds_metric(20, (result * sign))
+                    result = self.fix_out_of_bounds_metric(20, (result * sign), roi)
                     result = result * sign
-                    logging.debug(f"{msg}, corrected value: {result}")
                 setattr(self, roi, result)
                 # Check previous ball data if required
                 if not self.new_shot:
@@ -213,17 +207,11 @@ class BallData:
                 raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             # For some reason ball speed sometimes get an extra digit added
             if roi == BallMetrics.SPEED and result > 200:
-                msg = f"Invalid {BallData.properties[roi]} value: {result} > 200"
-                result = self.fix_out_of_bounds_metric(200, result)
-                logging.debug(f"{msg}, corrected value: {result}")
+                result = self.fix_out_of_bounds_metric(200, result, roi)
             elif roi == BallMetrics.TOTAL_SPIN and result > 15000:
-                msg = f"Invalid {BallData.properties[roi]} value: {result} > 15000"
-                result = self.fix_out_of_bounds_metric(15000, result)
-                logging.debug(f"{msg}, corrected value: {result}")
+                result = self.fix_out_of_bounds_metric(15000, result, roi)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
-                msg = f"Invalid {BallData.properties[roi]} value: {result} > 140"
-                result = self.fix_out_of_bounds_metric(140, result)
-                logging.debug(f"{msg}, corrected value: {result}")
+                result = self.fix_out_of_bounds_metric(140, result, roi)
             setattr(self, roi, result)
             # Check previous ball data if required
             if not self.new_shot:
@@ -255,8 +243,10 @@ class BallData:
                 diff_count = diff_count + 1
         return diff_count
 
-    def fix_out_of_bounds_metric(self, limit, value):
+    def fix_out_of_bounds_metric(self, limit, value, roi):
+        msg = f"Invalid {BallData.properties[roi]} value: {value} > {limit}"
         corrected_value = value
         while corrected_value > limit:
             corrected_value = math.floor(corrected_value / 10)
+        logging.debug(f"{msg}, corrected value: {corrected_value}")
         return corrected_value
