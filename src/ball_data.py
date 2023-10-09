@@ -131,7 +131,7 @@ class BallData:
         return payload
 
     def process_putt_data(self, ocr_result, roi, previous_balldata):
-        self.putt_type = PuttingSystems.EXPUTT
+        self.putt_type = PuttType.EXPUTT
         msg = None
         result = ''
         try:
