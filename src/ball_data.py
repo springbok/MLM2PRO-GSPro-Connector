@@ -163,14 +163,14 @@ class BallData:
                     raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
                 if roi == BallMetrics.SPEED:
                     if result > 40:
-                        result = self.fix_out_of_bounds_metric(40, result, roi)
+                        result = self.__fix_out_of_bounds_metric(40, result, roi)
                     setattr(self, BallMetrics.CLUB_SPEED, result)
                 elif roi == BallMetrics.HLA and (result > 20 or result < -20):
                     if result < 0:
                         sign = -1
                     else:
                         sign = 1
-                    result = self.fix_out_of_bounds_metric(20, (result * sign), roi)
+                    result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
                     result = result * sign
                 setattr(self, roi, result)
                 # Check previous ball data if required
@@ -207,11 +207,11 @@ class BallData:
                 raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             # For some reason ball speed sometimes get an extra digit added
             if roi == BallMetrics.SPEED and result > 200:
-                result = self.fix_out_of_bounds_metric(200, result, roi)
+                result = self.__fix_out_of_bounds_metric(200, result, roi)
             elif roi == BallMetrics.TOTAL_SPIN and result > 15000:
-                result = self.fix_out_of_bounds_metric(15000, result, roi)
+                result = self.__fix_out_of_bounds_metric(15000, result, roi)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
-                result = self.fix_out_of_bounds_metric(140, result, roi)
+                result = self.__fix_out_of_bounds_metric(140, result, roi)
             setattr(self, roi, result)
             # Check previous ball data if required
             if not self.new_shot:
@@ -243,10 +243,30 @@ class BallData:
                 diff_count = diff_count + 1
         return diff_count
 
-    def fix_out_of_bounds_metric(self, limit, value, roi):
+    def __fix_out_of_bounds_metric(self, limit, value, roi):
         msg = f"Invalid {BallData.properties[roi]} value: {value} > {limit}"
         corrected_value = value
         while corrected_value > limit:
             corrected_value = math.floor(corrected_value / 10)
         logging.debug(f"{msg}, corrected value: {corrected_value}")
         return corrected_value
+
+    def __smash_factor(self, club_speed, ball_speed):
+        return math.floor((ball_speed / club_speed)*10)/10
+
+
+    def check_smash_factor(self):
+        club_speed = getattr(self, BallMetrics.CLUB_SPEED)
+        ball_speed = getattr(self, BallMetrics.SPEED)
+        if club_speed > 0:
+            smash_factor = self.__smash_factor(club_speed, ball_speed)
+            if smash_factor > 1.7:
+                corrected_value = math.floor(ball_speed/10)
+                setattr(self, BallMetrics.SPEED, corrected_value)
+                logging.debug(f"Invalid smash factor value: {smash_factor} > 1.7, corrected  {BallData.properties[BallMetrics.SPEED]} value: {corrected_value}")
+            elif smash_factor < 0.8:
+                corrected_value = math.floor(club_speed/10)
+                setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
+                logging.debug(f"Invalid smash factor value: {smash_factor} < 0.8, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
+
+

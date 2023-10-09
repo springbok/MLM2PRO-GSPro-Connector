@@ -132,6 +132,9 @@ class ScreenshotBase(ViewBox):
                 self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
             else:
                 self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata)
+        # Correct metrics if invalid smash factor
+        if self.balldata.putt_type is None:
+            self.balldata.check_smash_factor()
         self.new_shot = self.balldata.new_shot
         if self.new_shot:
             if len(self.balldata.errors) > 0:
