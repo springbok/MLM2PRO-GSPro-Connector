@@ -16,7 +16,8 @@ class Settings(SettingsBase):
                 "units": "Yards",
                 "gspro_path": "",
                 "grspo_window_name": "GSPro",
-                "gspro_api_window_name": "APIv1 Connect"
+                "gspro_api_window_name": "APIv1 Connect",
+                "putting_only": "No"
             }
         )
         # Removed this from the settings file, specifies the

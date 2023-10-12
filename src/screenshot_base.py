@@ -133,8 +133,8 @@ class ScreenshotBase(ViewBox):
             else:
                 self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata)
         # Correct metrics if invalid smash factor
-        if self.balldata.putt_type is None:
-            self.balldata.check_smash_factor()
+        #if self.balldata.putt_type is None:
+        #    self.balldata.check_smash_factor()
         self.new_shot = self.balldata.new_shot
         if self.new_shot:
             if len(self.balldata.errors) > 0:
@@ -159,9 +159,9 @@ class ScreenshotBase(ViewBox):
                     # Good shot
                     self.balldata.good_shot = True
                     self.previous_balldata = self.balldata.__copy__()
-            # Ignore first shot at startup
-            if self.first:
-                self.first = False
-                self.balldata.new_shot = False
-                self.new_shot = False
+        # Ignore first shot at startup
+        if self.first:
+            self.first = False
+            self.balldata.new_shot = False
+            self.new_shot = False
 

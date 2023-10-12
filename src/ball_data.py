@@ -252,7 +252,7 @@ class BallData:
         return corrected_value
 
     def __smash_factor(self, club_speed, ball_speed):
-        return math.floor((ball_speed / club_speed)*10)/10
+        return math.ceil((ball_speed / club_speed)*10)/10
 
 
     def check_smash_factor(self):
@@ -264,9 +264,9 @@ class BallData:
                 corrected_value = math.floor(ball_speed/10)
                 setattr(self, BallMetrics.SPEED, corrected_value)
                 logging.debug(f"Invalid smash factor value: {smash_factor} > 1.7, corrected  {BallData.properties[BallMetrics.SPEED]} value: {corrected_value}")
-            elif smash_factor < 0.8:
+            elif smash_factor < 0.7:
                 corrected_value = math.floor(club_speed/10)
                 setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
-                logging.debug(f"Invalid smash factor value: {smash_factor} < 0.8, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
+                logging.debug(f"Invalid smash factor value: {smash_factor} < 0.7, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
 
 

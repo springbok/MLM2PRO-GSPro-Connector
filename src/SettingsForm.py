@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QWidget, QMessageBox, QFileDialog
 from src.SettingsForm_ui import Ui_SettingsForm
@@ -8,10 +9,14 @@ from src.settings import Settings
 
 class SettingsForm(QWidget, Ui_SettingsForm):
 
+    saved = Signal()
+
     def __init__(self, settings: Settings):
         super().__init__()
         self.settings = settings
         self.setupUi(self)
+        self.putting_only_combo.clear()
+        self.putting_only_combo.addItems(['Yes', 'No'])
         self.close_button.clicked.connect(self.__close)
         self.save_button.clicked.connect(self.__save)
         self.file_browse_button.clicked.connect(self.__file_dialog)
@@ -30,7 +35,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.gspro_path = self.gspro_path_edit.toPlainText()
             self.settings.grspo_window_name = self.gspro_window_name.toPlainText()
             self.settings.gspro_api_window_name = self.gspro_api_window_name.toPlainText()
+            self.settings.putting_only = self.putting_only_combo.currentText()
             self.settings.save()
+            self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.")
 
     def __valid(self):
@@ -49,6 +56,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.gspro_path_edit.setPlainText(str(self.settings.gspro_path))
         self.gspro_window_name.setPlainText(str(self.settings.grspo_window_name))
         self.gspro_api_window_name.setPlainText(str(self.settings.gspro_api_window_name))
+        if not hasattr(self.settings, 'putting_only'):
+            setattr(self.settings, 'putting_only', 'No')
+        self.putting_only_combo.setCurrentText(self.settings.putting_only)
 
     def __file_dialog(self):
         filename, ok = QFileDialog.getOpenFileName(

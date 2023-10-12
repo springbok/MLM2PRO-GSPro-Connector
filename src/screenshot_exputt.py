@@ -15,25 +15,20 @@ class ScreenshotExPutt(ScreenshotBase):
         
 
     def capture_screenshot(self, settings, rois_setup=False):
-        # Check if window minimized, for some reason it has a different hwnd when minimized
-        # so check here first and restore
-        if self.mirror_window and self.mirror_window.is_minimized():
-                # Restore the window
-                self.mirror_window.restore()
         # Find the window using window title in case a new one was started
         try:
-            hwnd = ScreenMirrorWindow.find_window(settings.exputt['window_name'])
+            self.mirror_window = ScreenMirrorWindow(settings.exputt['window_name'])
         except Exception as e:
             raise CameraWindowNotFoundException(format(e))
-        if self.mirror_window is None or hwnd != self.mirror_window.hwnd:
-            self.mirror_window = ScreenMirrorWindow(settings.exputt['window_name'])
-            self.screenshot_image_of_window = ScreenshotOfWindow(
-                hwnd=self.mirror_window.hwnd,
-                client=True,
-                ascontiguousarray=True)
-        # Make sure window is not minimized
+        # Check if window minimized, for some reason it has a different hwnd when minimized
+        # so check here first and restore
         if self.mirror_window.is_minimized():
-            self.mirror_window.restore()
+                # Restore the window
+                self.mirror_window.restore()
+        self.screenshot_image_of_window = ScreenshotOfWindow(
+            hwnd=self.mirror_window.hwnd,
+            client=True,
+            ascontiguousarray=True)
         # Resize to correct size if required
         window_size = self.mirror_window.size()
         if self.resize_window or window_size['h'] != settings.height() or window_size['w'] != settings.width():

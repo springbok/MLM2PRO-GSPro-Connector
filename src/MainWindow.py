@@ -48,7 +48,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self.app_paths.setup()
         self.settings = Settings(self.app_paths)
-        self.screenshot_worker = ScreenshotWorker(self.settings.screenshot_interval)
+        self.screenshot_worker = ScreenshotWorker(self.settings)
         self.putting_settings = PuttingSettings(self.app_paths)
         self.__setup_logging()
         self.gspro_connection = GSProConnection(self, self.settings)
@@ -163,6 +163,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__screenshot_worker_paused()
         self.restart_button.clicked.connect(self.__restart_connector)
         self.restart_button.setEnabled(False)
+        self.settings_form.saved.connect(self.__settings_saved)
         self.putting_settings_form.saved.connect(self.__putting_settings_saved)
         self.putting_settings_form.cancel.connect(self.__putting_settings_cancelled)
         self.putting_server_button.clicked.connect(self.__putting_stop_start)
@@ -171,6 +172,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__find_edit_fields()
         self.__putting_stopped()
         self.__display_putting_system()
+        self.__putting_only()
+
+    def __putting_only(self):
+        if hasattr(self.settings, 'putting_only') and self.settings.putting_only == 'Yes':
+            self.select_device_button.setEnabled(False)
+            self.restart_button.setEnabled(False)
+        else:
+            self.select_device_button.setEnabled(True)
+            self.restart_button.setEnabled(True)
 
     def __club_selected(self, club_data):
         hwnd = None
@@ -250,7 +260,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting_system_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
         QCoreApplication.processEvents()
 
-
     def __putting_settings_saved(self):
         # Reload updated settings
         self.putting_settings.load()
@@ -260,12 +269,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif self.putting_settings.system == PuttingSystems.EXPUTT and self.screenshot_worker.get_putting_active():
             self.screenshot_worker.set_putting_active(False)
             self.screenshot_worker.reload_putting_rois()
-        if not self.current_device is None and self.gspro_connection.connected:
+        if (not self.current_device is None or self.settings.putting_only.lower() == "yes") and self.gspro_connection.connected:
             self.screenshot_worker.resume()
         self.__display_putting_system()
 
+    def __settings_saved(self):
+        # Reload updated settings
+        self.settings.load()
+        self.__putting_only()
+
     def __putting_settings_cancelled(self):
-        if not self.current_device is None and self.gspro_connection.connected:
+        if (not self.current_device is None or self.settings.putting_only.lower() == "yes") and self.gspro_connection.connected:
             self.screenshot_worker.reload_putting_rois()
             self.screenshot_worker.resume()
 
@@ -281,7 +295,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connect_button.setText('Disconnect')
         self.gspro_status_label.setText('Connected')
         self.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        if not self.current_device is None:
+        if not self.current_device is None or self.settings.putting_only.lower() == "yes":
             self.screenshot_worker.resume()
 
     def __screenshot_worker_resumed(self):
