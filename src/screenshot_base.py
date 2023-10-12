@@ -146,21 +146,27 @@ class ScreenshotBase(ViewBox):
                     # New error
                     self.previous_balldata_error = self.balldata.__copy__()
                     self.resize_window = True
+                logging.debug('Errors found in shot data')
                 #filename = time.strftime("%Y%m%d-%H%M%S.jpeg")
                 #path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
                 #im = Image.fromarray(self.screenshot_image)
                 #im.save(path)
             else:
-                if not self.previous_balldata is None and self.balldata.eq(self.previous_balldata) <= 1:
+                if self.balldata.putt_type is None and not self.previous_balldata is None and self.balldata.eq(self.previous_balldata) <= 1:
                     # If there is only 1 metric different then it's likely this is not a new shot
                     # for example if rapsodo times out or someone changes clubs on the rapsodo
                     self.new_shot = False
+                    logging.debug('Only 1 metric different from previous shot, probably not a new shot, ignoring')
                 else:
                     # Good shot
+                    logging.debug(f'New valid shot, data: {self.balldata.to_json()}')
                     self.balldata.good_shot = True
                     self.previous_balldata = self.balldata.__copy__()
+        else:
+            logging.debug('Not a new shot')
         # Ignore first shot at startup
         if self.first:
+            logging.debug('First shot, ignoring')
             self.first = False
             self.balldata.new_shot = False
             self.new_shot = False

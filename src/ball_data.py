@@ -173,11 +173,13 @@ class BallData:
                     result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
                     result = result * sign
                 setattr(self, roi, result)
+                logging.debug(f'Cleaned and corrected value: {result}')
                 # Check previous ball data if required
                 if not self.new_shot:
                     if not previous_balldata is None:
                         previous_metric = getattr(previous_balldata, roi)
-                        if int(previous_metric) != int(result):
+                        logging.debug(f'previous_metric: {previous_metric} result: {result}')
+                        if previous_metric != result:
                             self.new_shot = True
                     else:
                         self.new_shot = True
@@ -213,11 +215,13 @@ class BallData:
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 result = self.__fix_out_of_bounds_metric(140, result, roi)
             setattr(self, roi, result)
+            logging.debug(f'Cleaned and corrected value: {result}')
             # Check previous ball data if required
             if not self.new_shot:
                 if not previous_balldata is None:
                     previous_metric = getattr(previous_balldata, roi)
-                    if int(previous_metric) != int(result):
+                    logging.debug(f'previous_metric: {previous_metric} result: {result}')
+                    if previous_metric != result:
                         self.new_shot = True
                 else:
                     self.new_shot = True

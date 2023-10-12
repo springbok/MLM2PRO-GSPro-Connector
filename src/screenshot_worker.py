@@ -72,12 +72,14 @@ class ScreenshotWorker(QObject):
             screenshot.ocr_image()
             if screenshot.new_shot:
                 if screenshot.balldata.good_shot:
+                    logging.info(f"Process {self.name} good shot send to GSPro")
                     self.shot.emit(screenshot.balldata)
                 else:
                     logging.info(
                         f"Process {self.name} bad shot data: {screenshot.balldata.to_json()}, errors: {screenshot.balldata.errors}")
                     self.bad_shot.emit(screenshot.balldata)
             else:
+                logging.info(f"Process {self.name} same shot do not send to GSPro")
                 self.same_shot.emit()
         else:
             self.same_shot.emit()
