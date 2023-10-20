@@ -29,7 +29,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,0,0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
@@ -153,31 +153,6 @@
             <property name="text">
              <string>Browse</string>
             </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_10">
-          <item>
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Putting Only</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="putting_only_combo">
-            <item>
-             <property name="text">
-              <string>None</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>New Item</string>
-             </property>
-            </item>
            </widget>
           </item>
          </layout>

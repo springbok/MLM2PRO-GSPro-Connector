@@ -15,8 +15,6 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         super().__init__()
         self.settings = settings
         self.setupUi(self)
-        self.putting_only_combo.clear()
-        self.putting_only_combo.addItems(['Yes', 'No'])
         self.close_button.clicked.connect(self.__close)
         self.save_button.clicked.connect(self.__save)
         self.file_browse_button.clicked.connect(self.__file_dialog)
@@ -35,7 +33,6 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.gspro_path = self.gspro_path_edit.toPlainText()
             self.settings.grspo_window_name = self.gspro_window_name.toPlainText()
             self.settings.gspro_api_window_name = self.gspro_api_window_name.toPlainText()
-            self.settings.putting_only = self.putting_only_combo.currentText()
             self.settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.")
@@ -56,9 +53,6 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.gspro_path_edit.setPlainText(str(self.settings.gspro_path))
         self.gspro_window_name.setPlainText(str(self.settings.grspo_window_name))
         self.gspro_api_window_name.setPlainText(str(self.settings.gspro_api_window_name))
-        if not hasattr(self.settings, 'putting_only'):
-            setattr(self.settings, 'putting_only', 'No')
-        self.putting_only_combo.setCurrentText(self.settings.putting_only)
 
     def __file_dialog(self):
         filename, ok = QFileDialog.getOpenFileName(

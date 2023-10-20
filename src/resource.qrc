@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="ico">
+    <file>ico/nav-logo-stroke.ico</file>
     <file>ico/Iconsmind-Outline-Golf-2.ico</file>
     <file>ico/GSPLauncher_32512.ico</file>
     <file>ico/about.ico</file>

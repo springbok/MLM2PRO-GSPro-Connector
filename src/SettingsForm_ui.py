@@ -15,9 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
-    QLayout, QPlainTextEdit, QPushButton, QSizePolicy,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLayout, QPlainTextEdit,
+    QPushButton, QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_SettingsForm(object):
     def setupUi(self, SettingsForm):
@@ -92,23 +91,6 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
-        self.horizontalLayout_10 = QHBoxLayout()
-        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.label_6 = QLabel(self.verticalLayoutWidget_2)
-        self.label_6.setObjectName(u"label_6")
-
-        self.horizontalLayout_10.addWidget(self.label_6)
-
-        self.putting_only_combo = QComboBox(self.verticalLayoutWidget_2)
-        self.putting_only_combo.addItem("")
-        self.putting_only_combo.addItem("")
-        self.putting_only_combo.setObjectName(u"putting_only_combo")
-
-        self.horizontalLayout_10.addWidget(self.putting_only_combo)
-
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout_10)
-
         self.verticalLayout_3.setStretch(0, 1)
         self.verticalLayout_3.setStretch(1, 1)
 
@@ -155,10 +137,6 @@ class Ui_SettingsForm(object):
 #endif // QT_CONFIG(tooltip)
         self.gspro_path_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"GSPro Path", None))
         self.file_browse_button.setText(QCoreApplication.translate("SettingsForm", u"Browse", None))
-        self.label_6.setText(QCoreApplication.translate("SettingsForm", u"Putting Only", None))
-        self.putting_only_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
-        self.putting_only_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
-
 #if QT_CONFIG(tooltip)
         self.save_button.setToolTip(QCoreApplication.translate("SettingsForm", u"New Device", None))
 #endif // QT_CONFIG(tooltip)

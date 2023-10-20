@@ -44,16 +44,13 @@ class ScreenshotWorker(QObject):
             Event().wait(self.settings.screenshot_interval/1000)
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
-            if not self._shutdown.is_set():
+            if not self._shutdown.is_set() and not self.device is None:
                 try:
                     if self.putter and self.putting_active:
                         self.__do_screenshot(self.exputt_screenshot, self.putting_settings, self.putting_rois_reload)
                         self.putting_rois_reload = False
                     else:
-                        if not self.__putting_only() and not self.device is None:
-                            self.__do_screenshot(self.screenshot, self.device, False)
-                        else:
-                            self.same_shot.emit()
+                        self.__do_screenshot(self.screenshot, self.device, False)
                 except Exception as e:
                     if not isinstance(e, ValueError):
                         self.pause()
@@ -122,9 +119,3 @@ class ScreenshotWorker(QObject):
         if not self.putting_settings is None and not self.exputt_screenshot is None:
             self.putting_settings.load()
             self.putting_rois_reload = True
-
-    def __putting_only(self):
-        if hasattr(self.settings, 'putting_only') and self.settings.putting_only == 'Yes':
-            return True
-        else:
-            return False
