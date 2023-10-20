@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import sys
+import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
 from PySide6.QtCore import Qt, QCoreApplication, QThread
@@ -128,6 +129,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionDevices.triggered.connect(self.__devices)
         self.actionSettings.triggered.connect(self.__settings)
         self.actionPuttingSettings.triggered.connect(self.__putting_settings)
+        self.actionDonate.triggered.connect(self.__donate)
         self.select_device_button.clicked.connect(self.__select_device)
         self.gspro_connect_button.clicked.connect(self.__gspro_connect)
         self.main_tab.setCurrentIndex(0)
@@ -350,6 +352,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.__putting_stop_start()
         self.screenshot_worker.pause()
         self.putting_settings_form.show()
+
+    def __donate(self):
+        url = "https://ko-fi.com/springbok_dev"
+        webbrowser.open(url, new=2) # 2 = open in new tab
 
     def __gspro_connect(self):
         if self.gspro_connection.connected:
