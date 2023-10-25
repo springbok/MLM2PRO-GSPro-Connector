@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>340</width>
+    <width>338</width>
     <height>265</height>
    </rect>
   </property>
@@ -156,6 +156,31 @@
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_10">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Launch Monitor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="launch_monitor_combo">
+          <item>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>New Item</string>
+           </property>
+          </item>
+         </widget>
         </item>
        </layout>
       </item>

@@ -28,7 +28,7 @@ class ScreenshotWorker(QObject):
         self.putting_active = False
         self.putting_rois_reload = True
         self.settings = settings
-        self.screenshot = Screenshot()
+        self.screenshot = Screenshot(settings)
         self.exputt_screenshot = ScreenshotExPutt()
         self.putting_settings = None
         self.name = 'ScreenshotWorker'

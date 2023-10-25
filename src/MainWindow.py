@@ -50,14 +50,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app_paths.setup()
         self.settings = Settings(self.app_paths)
         self.screenshot_worker = ScreenshotWorker(self.settings)
-        self.putting_settings = PuttingSettings(self.app_paths)
         self.__setup_logging()
-        self.gspro_connection = GSProConnection(self, self.settings)
+        self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
-        self.select_device = SelectDeviceForm(main_window=self, app_paths=self.app_paths)
+        self.select_device = SelectDeviceForm(main_window=self)
         self.settings_form = SettingsForm(self.settings)
         self.putting_settings = PuttingSettings(self.app_paths)
-        self.putting_settings_form = PuttingForm(main_window=self, settings=self.putting_settings)
+        self.putting_settings_form = PuttingForm(main_window=self)
         self.webcam_putting = None
         self.current_putting_system = None
         self.__setup_ui()

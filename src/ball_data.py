@@ -4,6 +4,8 @@ import math
 import re
 from dataclasses import dataclass
 
+from src.settings import LaunchMonitor
+
 
 @dataclass
 class PuttType:
@@ -97,7 +99,7 @@ class BallData:
     def ballcolor_as_list():
         keys = []
         for key in BallColor.__dict__:
-            if key != '__module__':
+            if key != '__' not in key:
                 keys.append(getattr(BallColor, key))
         return keys
 
@@ -194,7 +196,7 @@ class BallData:
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
 
-    def process_shot_data(self, ocr_result, roi, previous_balldata):
+    def process_shot_data(self, ocr_result, roi, previous_balldata, launch_monitor):
         msg = None
         result = ''
         try:
@@ -214,6 +216,12 @@ class BallData:
                 result = self.__fix_out_of_bounds_metric(15000, result, roi)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 result = self.__fix_out_of_bounds_metric(140, result, roi)
+            if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+                result = result.replace(" ", "")
+                if result.endswith('L'):
+                    result = -float(result[:-1])
+                else:
+                    result = float(result[:-1])
             setattr(self, roi, result)
             logging.debug(f'Cleaned and corrected value: {result}')
             # Check previous ball data if required

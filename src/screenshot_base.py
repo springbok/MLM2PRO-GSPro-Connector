@@ -1,10 +1,6 @@
 import logging
-import os
-import time
-
 import numpy as np
 import pyqtgraph as pg
-from PIL import Image
 from pyqtgraph import ViewBox
 from src.ball_data import BallData
 from src.labeled_roi import LabeledROI
@@ -131,7 +127,7 @@ class ScreenshotBase(ViewBox):
             if self.__class__.__name__ == 'ScreenshotExPutt':
                 self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
             else:
-                self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata)
+                self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
         # Correct metrics if invalid smash factor
         #if self.balldata.putt_type is None:
         #    self.balldata.check_smash_factor()

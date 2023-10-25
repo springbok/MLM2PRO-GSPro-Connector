@@ -4,15 +4,21 @@ import tesserocr
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.device import Device
 from src.screenshot_base import ScreenshotBase
+from src.settings import Settings, LaunchMonitor
 from src.tesserocr_cvimage import TesserocrCVImage
 
 
 class Screenshot(ScreenshotBase):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, settings: Settings, *args, **kwargs):
         ScreenshotBase.__init__(self, *args, **kwargs)
+        self.settings = settings
         self.device = None
-        self.tesserocr_api = TesserocrCVImage(psm=tesserocr.PSM.SINGLE_WORD, lang='train', path='.\\')
+        train_file = 'train'
+        if self.settings.device_id == LaunchMonitor.MEVOPLUS:
+            train_file = 'mevo'
+        logging.debug(f"Using {train_file}_traineddata for OCR")
+        self.tesserocr_api = TesserocrCVImage(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
 
     def capture_screenshot(self, device: Device, rois_setup=False):
         # Check if window minimized, for some reason it has a different hwnd when minimized

@@ -1,5 +1,7 @@
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QMessageBox, QMainWindow
+
+from src import MainWindow
 from src.RoisFormBase import RoisFormBase
 from src.putting_settings import PuttingSettings
 from src.screenshot_exputt import ScreenshotExPutt
@@ -7,9 +9,9 @@ from src.worker_thread import WorkerThread
 
 class RoisExPuttForm(RoisFormBase):
 
-    def __init__(self, main_window: QMainWindow, settings: PuttingSettings):
+    def __init__(self, main_window: MainWindow):
         self.roi_image = ScreenshotExPutt()
-        self.settings = settings
+        self.settings = main_window.putting_settings
         super(RoisExPuttForm, self).__init__(main_window)
         self.setup_ui()
 

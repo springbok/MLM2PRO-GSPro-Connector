@@ -19,13 +19,13 @@ class GSProConnection(QObject):
     club_selected = Signal(object)
     club_selection_error = Signal()
 
-    def __init__(self, main_window: MainWindow, settings: Settings):
+    def __init__(self, main_window: MainWindow):
         super(GSProConnection, self).__init__()
         self.main_window = main_window
         self.worker = None
         self.thread = QThread()
         self.connected = None
-        self.settings = settings
+        self.settings = main_window.settings
         self.gspro_connect = GSProConnect(
             self.settings.device_id,
             self.settings.units,
