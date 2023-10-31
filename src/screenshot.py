@@ -1,6 +1,10 @@
 import logging
 from threading import Event
+
+import numpy as np
 import tesserocr
+from PIL import Image
+
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.device import Device
 from src.screenshot_base import ScreenshotBase
@@ -64,7 +68,7 @@ class Screenshot(ScreenshotBase):
         self.screenshot_image = self.screenshot_image_of_window.screenshot_window()
         #im = Image.fromarray(self.screenshot_image)
         #im.save("c:\\python\\test\\screenshot.jpeg")
-        #self.screenshot_image = np.array(Image.open('C:\python\mlm2pro-gspro-connect-gui\screenshot1.png'))
+        self.screenshot_image = np.array(Image.open('C:\python\mevo1.png'))
 
         # Check if new shot
         self.new_shot = False

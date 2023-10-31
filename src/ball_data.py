@@ -200,11 +200,17 @@ class BallData:
         msg = None
         result = ''
         try:
-            cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)", ocr_result)
+            cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)[LR]?", ocr_result)
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
-            cleaned_result = cleaned_result.strip()
-            result = float(cleaned_result)
+            result = cleaned_result.strip()
+            if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+                if result.endswith('L'):
+                    result = -float(result[:-1])
+                else:
+                    result = float(result[:-1])
+            else:
+                result = float(result)
             # Check values are not 0
             if roi in BallData.must_not_be_zero and result == float(0):
                 logging.debug(f"Value for {BallData.properties[roi]} is 0")
@@ -216,12 +222,6 @@ class BallData:
                 result = self.__fix_out_of_bounds_metric(15000, result, roi)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 result = self.__fix_out_of_bounds_metric(140, result, roi)
-            if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
-                result = result.replace(" ", "")
-                if result.endswith('L'):
-                    result = -float(result[:-1])
-                else:
-                    result = float(result[:-1])
             setattr(self, roi, result)
             logging.debug(f'Cleaned and corrected value: {result}')
             # Check previous ball data if required
