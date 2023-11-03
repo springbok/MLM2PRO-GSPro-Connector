@@ -1,7 +1,14 @@
 # MLM2PRO-GSPro-Connector
-GSPro connector for the MLM2Pro Launch Monitor that includes putting.
+GSPro connector for the MLM2Pro & Mevo+ Launch Monitors that includes Webcam or ExPutt putting.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X3OXE0L)
+### 3 November 23 - Announcement: 
+
+**MEVO+ is now supported.**
+
+We are excited to announce support for the Mevo+ launch monitor has now been added to the connector.
+
+For more details see [here](https://github.com/springbok/MLM2PRO-GSPro-Connector/wiki/Mevo-)
 
 ## Highlights:
 
