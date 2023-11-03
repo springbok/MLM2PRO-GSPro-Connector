@@ -88,3 +88,4 @@ class PuttingWebcamWorker(QObject):
 
     def select_putter(self, selected):
         self.putter = selected
+        logging.debug(f"webcam self.putter: {self.putter}")

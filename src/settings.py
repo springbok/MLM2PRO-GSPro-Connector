@@ -1,4 +1,12 @@
+from dataclasses import dataclass
+
 from src.settings_base import SettingsBase
+
+
+@dataclass
+class LaunchMonitor:
+    MLM2PRO = "Rapsodo MLM2PRO"
+    MEVOPLUS = "MEVO+"
 
 
 class Settings(SettingsBase):

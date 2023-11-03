@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>342</width>
-    <height>242</height>
+    <width>338</width>
+    <height>265</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,14 +22,14 @@
      <x>9</x>
      <y>9</y>
      <width>321</width>
-     <height>221</height>
+     <height>249</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,0,0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
@@ -121,40 +121,65 @@
           </property>
          </widget>
         </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPlainTextEdit" name="gspro_path_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>31</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Application Path(Opyional)</string>
+            </property>
+            <property name="lineWrapMode">
+             <enum>QPlainTextEdit::WidgetWidth</enum>
+            </property>
+            <property name="placeholderText">
+             <string>GSPro Path</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="file_browse_button">
+            <property name="text">
+             <string>Browse</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="horizontalLayout_10">
         <item>
-         <widget class="QPlainTextEdit" name="gspro_path_edit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>31</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Application Path(Opyional)</string>
-          </property>
-          <property name="lineWrapMode">
-           <enum>QPlainTextEdit::WidgetWidth</enum>
-          </property>
-          <property name="placeholderText">
-           <string>GSPro Path</string>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Launch Monitor</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="file_browse_button">
-          <property name="text">
-           <string>Browse</string>
-          </property>
+         <widget class="QComboBox" name="launch_monitor_combo">
+          <item>
+           <property name="text">
+            <string>None</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>New Item</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>

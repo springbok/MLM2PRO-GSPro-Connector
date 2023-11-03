@@ -873,6 +873,7 @@
    <addaction name="actionPuttingSettings"/>
    <addaction name="separator"/>
    <addaction name="actionAbout"/>
+   <addaction name="actionDonate"/>
   </widget>
   <action name="actionExit">
    <property name="icon">
@@ -923,6 +924,18 @@
    </property>
    <property name="toolTip">
     <string>Putting Settings</string>
+   </property>
+  </action>
+  <action name="actionDonate">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/ico/ico/nav-logo-stroke.ico</normaloff>:/ico/ico/nav-logo-stroke.ico</iconset>
+   </property>
+   <property name="text">
+    <string>actionDonate</string>
+   </property>
+   <property name="toolTip">
+    <string>Donate</string>
    </property>
   </action>
  </widget>

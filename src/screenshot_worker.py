@@ -5,6 +5,7 @@ from PySide6.QtCore import QObject, Signal
 from src.device import Device
 from src.screenshot import Screenshot
 from src.screenshot_exputt import ScreenshotExPutt
+from src.settings import Settings
 
 
 class ScreenshotWorker(QObject):
@@ -20,14 +21,14 @@ class ScreenshotWorker(QObject):
     putting_stopped = Signal()
 
 
-    def __init__(self, interval: int):
+    def __init__(self, settings: Settings):
         super(ScreenshotWorker, self).__init__()
         self.device = None
         self.putter = False
         self.putting_active = False
         self.putting_rois_reload = True
-        self.interval = interval
-        self.screenshot = Screenshot()
+        self.settings = settings
+        self.screenshot = Screenshot(settings)
         self.exputt_screenshot = ScreenshotExPutt()
         self.putting_settings = None
         self.name = 'ScreenshotWorker'
@@ -40,7 +41,7 @@ class ScreenshotWorker(QObject):
         logging.debug(f'{self.name} Started')
         # Execute if not shutdown
         while not self._shutdown.is_set():
-            Event().wait(self.interval/1000)
+            Event().wait(self.settings.screenshot_interval/1000)
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
             if not self._shutdown.is_set() and not self.device is None:
@@ -68,12 +69,14 @@ class ScreenshotWorker(QObject):
             screenshot.ocr_image()
             if screenshot.new_shot:
                 if screenshot.balldata.good_shot:
+                    logging.info(f"Process {self.name} good shot send to GSPro")
                     self.shot.emit(screenshot.balldata)
                 else:
                     logging.info(
                         f"Process {self.name} bad shot data: {screenshot.balldata.to_json()}, errors: {screenshot.balldata.errors}")
                     self.bad_shot.emit(screenshot.balldata)
             else:
+                logging.info(f"Process {self.name} same shot do not send to GSPro")
                 self.same_shot.emit()
         else:
             self.same_shot.emit()
@@ -98,8 +101,8 @@ class ScreenshotWorker(QObject):
         self.screenshot.resize_window = True
 
     def select_putter(self, selected):
-        logging.debug(f"self.putter: {self.putter}")
         self.putter = selected
+        logging.debug(f"exputt self.putter: {self.putter}")
 
     def set_putting_active(self, active):
         self.putting_active = active
@@ -116,4 +119,3 @@ class ScreenshotWorker(QObject):
         if not self.putting_settings is None and not self.exputt_screenshot is None:
             self.putting_settings.load()
             self.putting_rois_reload = True
-

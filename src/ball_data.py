@@ -4,7 +4,7 @@ import math
 import re
 from dataclasses import dataclass
 
-from src.putting_settings import PuttingSystems
+from src.settings import LaunchMonitor
 
 
 @dataclass
@@ -99,7 +99,7 @@ class BallData:
     def ballcolor_as_list():
         keys = []
         for key in BallColor.__dict__:
-            if key != '__module__':
+            if key != '__' not in key:
                 keys.append(getattr(BallColor, key))
         return keys
 
@@ -131,7 +131,7 @@ class BallData:
         return payload
 
     def process_putt_data(self, ocr_result, roi, previous_balldata):
-        self.putt_type = PuttingSystems.EXPUTT
+        self.putt_type = PuttType.EXPUTT
         msg = None
         result = ''
         try:
@@ -165,23 +165,23 @@ class BallData:
                     raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
                 if roi == BallMetrics.SPEED:
                     if result > 40:
-                        logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 40")
-                        result = self.fix_out_of_bounds_metric(40, result)
+                        result = self.__fix_out_of_bounds_metric(40, result, roi)
                     setattr(self, BallMetrics.CLUB_SPEED, result)
                 elif roi == BallMetrics.HLA and (result > 20 or result < -20):
-                    logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 20")
                     if result < 0:
                         sign = -1
                     else:
                         sign = 1
-                    result = self.fix_out_of_bounds_metric(20, (result * sign))
+                    result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
                     result = result * sign
                 setattr(self, roi, result)
+                logging.debug(f'Cleaned and corrected value: {result}')
                 # Check previous ball data if required
                 if not self.new_shot:
                     if not previous_balldata is None:
                         previous_metric = getattr(previous_balldata, roi)
-                        if int(previous_metric) != int(result):
+                        logging.debug(f'previous_metric: {previous_metric} result: {result}')
+                        if previous_metric != result:
                             self.new_shot = True
                     else:
                         self.new_shot = True
@@ -196,35 +196,40 @@ class BallData:
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
 
-    def process_shot_data(self, ocr_result, roi, previous_balldata):
+    def process_shot_data(self, ocr_result, roi, previous_balldata, launch_monitor):
         msg = None
         result = ''
         try:
-            cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)", ocr_result)
+            cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)[LR]?", ocr_result)
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
-            cleaned_result = cleaned_result.strip()
-            result = float(cleaned_result)
+            result = cleaned_result.strip()
+            if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+                if result.endswith('L'):
+                    result = -float(result[:-1])
+                else:
+                    result = float(result[:-1])
+            else:
+                result = float(result)
             # Check values are not 0
             if roi in BallData.must_not_be_zero and result == float(0):
                 logging.debug(f"Value for {BallData.properties[roi]} is 0")
                 raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             # For some reason ball speed sometimes get an extra digit added
             if roi == BallMetrics.SPEED and result > 200:
-                logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 200")
-                result = self.fix_out_of_bounds_metric(200, result)
+                result = self.__fix_out_of_bounds_metric(200, result, roi)
             elif roi == BallMetrics.TOTAL_SPIN and result > 15000:
-                logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 15000")
-                result = self.fix_out_of_bounds_metric(15000, result)
+                result = self.__fix_out_of_bounds_metric(15000, result, roi)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
-                logging.debug(f"Invalid {BallData.properties[roi]} value: {result} > 140")
-                result = self.fix_out_of_bounds_metric(140, result)
+                result = self.__fix_out_of_bounds_metric(140, result, roi)
             setattr(self, roi, result)
+            logging.debug(f'Cleaned and corrected value: {result}')
             # Check previous ball data if required
             if not self.new_shot:
                 if not previous_balldata is None:
                     previous_metric = getattr(previous_balldata, roi)
-                    if int(previous_metric) != int(result):
+                    logging.debug(f'previous_metric: {previous_metric} result: {result}')
+                    if previous_metric != result:
                         self.new_shot = True
                 else:
                     self.new_shot = True
@@ -250,8 +255,30 @@ class BallData:
                 diff_count = diff_count + 1
         return diff_count
 
-    def fix_out_of_bounds_metric(self, limit, value):
+    def __fix_out_of_bounds_metric(self, limit, value, roi):
+        msg = f"Invalid {BallData.properties[roi]} value: {value} > {limit}"
         corrected_value = value
         while corrected_value > limit:
             corrected_value = math.floor(corrected_value / 10)
+        logging.debug(f"{msg}, corrected value: {corrected_value}")
         return corrected_value
+
+    def __smash_factor(self, club_speed, ball_speed):
+        return math.ceil((ball_speed / club_speed)*10)/10
+
+
+    def check_smash_factor(self):
+        club_speed = getattr(self, BallMetrics.CLUB_SPEED)
+        ball_speed = getattr(self, BallMetrics.SPEED)
+        if club_speed > 0:
+            smash_factor = self.__smash_factor(club_speed, ball_speed)
+            if smash_factor > 1.7:
+                corrected_value = math.floor(ball_speed/10)
+                setattr(self, BallMetrics.SPEED, corrected_value)
+                logging.debug(f"Invalid smash factor value: {smash_factor} > 1.7, corrected  {BallData.properties[BallMetrics.SPEED]} value: {corrected_value}")
+            elif smash_factor < 0.7:
+                corrected_value = math.floor(club_speed/10)
+                setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
+                logging.debug(f"Invalid smash factor value: {smash_factor} < 0.7, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
+
+

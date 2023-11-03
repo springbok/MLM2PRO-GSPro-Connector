@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import sys
+import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
 from PySide6.QtCore import Qt, QCoreApplication, QThread
@@ -32,7 +33,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.01.06'
+    version = 'V1.01.08'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -48,15 +49,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self.app_paths.setup()
         self.settings = Settings(self.app_paths)
-        self.screenshot_worker = ScreenshotWorker(self.settings.screenshot_interval)
-        self.putting_settings = PuttingSettings(self.app_paths)
+        self.screenshot_worker = ScreenshotWorker(self.settings)
         self.__setup_logging()
-        self.gspro_connection = GSProConnection(self, self.settings)
+        self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
-        self.select_device = SelectDeviceForm(main_window=self, app_paths=self.app_paths)
+        self.select_device = SelectDeviceForm(main_window=self)
         self.settings_form = SettingsForm(self.settings)
         self.putting_settings = PuttingSettings(self.app_paths)
-        self.putting_settings_form = PuttingForm(main_window=self, settings=self.putting_settings)
+        self.putting_settings_form = PuttingForm(main_window=self)
         self.webcam_putting = None
         self.current_putting_system = None
         self.__setup_ui()
@@ -128,6 +128,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionDevices.triggered.connect(self.__devices)
         self.actionSettings.triggered.connect(self.__settings)
         self.actionPuttingSettings.triggered.connect(self.__putting_settings)
+        self.actionDonate.triggered.connect(self.__donate)
         self.select_device_button.clicked.connect(self.__select_device)
         self.gspro_connect_button.clicked.connect(self.__gspro_connect)
         self.main_tab.setCurrentIndex(0)
@@ -163,6 +164,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__screenshot_worker_paused()
         self.restart_button.clicked.connect(self.__restart_connector)
         self.restart_button.setEnabled(False)
+        self.settings_form.saved.connect(self.__settings_saved)
         self.putting_settings_form.saved.connect(self.__putting_settings_saved)
         self.putting_settings_form.cancel.connect(self.__putting_settings_cancelled)
         self.putting_server_button.clicked.connect(self.__putting_stop_start)
@@ -250,7 +252,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting_system_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
         QCoreApplication.processEvents()
 
-
     def __putting_settings_saved(self):
         # Reload updated settings
         self.putting_settings.load()
@@ -263,6 +264,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not self.current_device is None and self.gspro_connection.connected:
             self.screenshot_worker.resume()
         self.__display_putting_system()
+
+    def __settings_saved(self):
+        # Reload updated settings
+        self.settings.load()
 
     def __putting_settings_cancelled(self):
         if not self.current_device is None and self.gspro_connection.connected:
@@ -346,6 +351,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.__putting_stop_start()
         self.screenshot_worker.pause()
         self.putting_settings_form.show()
+
+    def __donate(self):
+        url = "https://ko-fi.com/springbok_dev"
+        webbrowser.open(url, new=2) # 2 = open in new tab
 
     def __gspro_connect(self):
         if self.gspro_connection.connected:

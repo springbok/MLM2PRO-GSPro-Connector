@@ -6,6 +6,8 @@ import cv2
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QWidget, QMessageBox, QProgressDialog, QMainWindow
+
+from src import MainWindow
 from src.PuttingForm_ui import Ui_PuttingForm
 from src.RoisExPuttForm import RoisExPuttForm
 from src.ball_data import BallData
@@ -18,11 +20,11 @@ class PuttingForm(QWidget, Ui_PuttingForm):
     saved = Signal()
     cancel = Signal()
 
-    def __init__(self, main_window: QMainWindow, settings: PuttingSettings):
+    def __init__(self, main_window: MainWindow):
         super().__init__()
         self.main_window = main_window
-        self.settings = settings
-        self.rois_form = RoisExPuttForm(main_window=self.main_window, settings=self.settings)
+        self.settings = main_window.putting_settings
+        self.rois_form = RoisExPuttForm(main_window=self.main_window)
         self.setupUi(self)
         self.__setup_ui()
         self.close_button.clicked.connect(self.__close)
