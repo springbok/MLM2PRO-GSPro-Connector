@@ -205,6 +205,7 @@ class BallData:
                 cleaned_result = cleaned_result[0]
             result = cleaned_result.strip()
             if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+                result = result.upper()
                 if result.endswith('L'):
                     result = -float(result[:-1])
                 else:
