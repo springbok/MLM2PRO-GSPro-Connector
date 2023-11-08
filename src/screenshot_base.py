@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import pyqtgraph as pg
+from PIL import Image
 from pyqtgraph import ViewBox
 from src.ball_data import BallData
 from src.labeled_roi import LabeledROI
@@ -118,10 +119,12 @@ class ScreenshotBase(ViewBox):
     def ocr_image(self):
         self.balldata = BallData()
         self.new_shot = False
+        # Convert image to black & white to improve OCR accuracy
+        sc = np.array(Image.fromarray(self.screenshot_image).convert('1'))
         for roi in self.rois_properties():
-            cropped_img = self.image_rois[roi].getArrayRegion(self.screenshot_image, self.image_item)
-            img = np.uint8(cropped_img)
-            self.tesserocr_api.SetCVImage(img)
+            cropped_img = self.image_rois[roi].getArrayRegion(sc, self.image_item)
+            img = Image.fromarray(np.uint8(cropped_img))
+            self.tesserocr_api.SetImage(img)
             ocr_result = self.tesserocr_api.GetUTF8Text()
             logging.debug(f'ocr {roi}: {ocr_result}')
             if self.__class__.__name__ == 'ScreenshotExPutt':

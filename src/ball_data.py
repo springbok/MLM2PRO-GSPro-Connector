@@ -204,6 +204,8 @@ class BallData:
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
             result = cleaned_result.strip()
+            # Remove any leading '.' sometimes a - is read as a '.'
+            result = result.lstrip('.')
             if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
                 result = result.upper()
                 if result.endswith('L'):
