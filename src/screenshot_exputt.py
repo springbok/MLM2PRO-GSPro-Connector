@@ -4,14 +4,13 @@ import tesserocr
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.custom_exception import CameraWindowNotFoundException
 from src.screenshot_base import ScreenshotBase
-from src.tesserocr_cvimage import TesserocrCVImage
 
 
 class ScreenshotExPutt(ScreenshotBase):
 
     def __init__(self, *args, **kwargs):
         ScreenshotBase.__init__(self, *args, **kwargs)
-        self.tesserocr_api = TesserocrCVImage(psm=tesserocr.PSM.SINGLE_LINE, lang='exputt', path='.\\')
+        self.tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_LINE, lang='exputt', path='.\\')
         
 
     def capture_screenshot(self, settings, rois_setup=False):

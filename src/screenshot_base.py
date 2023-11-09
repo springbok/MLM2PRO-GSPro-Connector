@@ -1,7 +1,10 @@
 import logging
+import os
+import time
+
 import numpy as np
 import pyqtgraph as pg
-from PIL import Image
+from PIL import Image, ImageEnhance
 from pyqtgraph import ViewBox
 from src.ball_data import BallData
 from src.labeled_roi import LabeledROI
@@ -119,8 +122,14 @@ class ScreenshotBase(ViewBox):
     def ocr_image(self):
         self.balldata = BallData()
         self.new_shot = False
-        # Convert image to black & white to improve OCR accuracy
-        sc = np.array(Image.fromarray(self.screenshot_image).convert('1'))
+        # Enhance & convert image to black & white to improve OCR accuracy
+        pil_img = Image.fromarray(self.screenshot_image)
+        #pil_img = ImageEnhance.Contrast(pil_img).enhance(1.5)
+        pil_img = ImageEnhance.Sharpness(pil_img).enhance(2.0).convert('1')
+        #pil_img = ImageEnhance.Brightness(pil_img).enhance(0.5).convert('1')
+        sc = np.array(pil_img)
+        #path = f"{os.getcwd()}\\appdata\\logs\\sc.jpg"
+        #pil_img.save(path)
         for roi in self.rois_properties():
             cropped_img = self.image_rois[roi].getArrayRegion(sc, self.image_item)
             img = Image.fromarray(np.uint8(cropped_img))
