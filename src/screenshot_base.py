@@ -132,12 +132,13 @@ class ScreenshotBase(ViewBox):
             for roi in self.rois_properties():
                 cropped_img = self.image_rois[roi].getArrayRegion(self.screenshot_image, self.image_item)
                 img = Image.fromarray(np.uint8(cropped_img))
-                # Convert to black text on white background, remove background
-                threshold = 180
-                img = img.point(lambda x: 0 if x > threshold else 255)
-                filename = time.strftime(f"{roi}.bmp")
-                path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
-                img.save(path)
+                if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
+                    # Convert to black text on white background, remove background
+                    threshold = 180
+                    img = img.point(lambda x: 0 if x > threshold else 255)
+                #filename = time.strftime(f"{roi}.bmp")
+                #path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
+                #img.save(path)
                 tesserocr_api.SetImage(img)
                 ocr_result = tesserocr_api.GetUTF8Text()
                 logging.debug(f'ocr {roi}: {ocr_result}')
