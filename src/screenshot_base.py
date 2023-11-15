@@ -1,13 +1,14 @@
 import logging
 import os
 import time
-
 import numpy as np
 import pyqtgraph as pg
-from PIL import Image, ImageEnhance
+import tesserocr
+from PIL import Image
 from pyqtgraph import ViewBox
 from src.ball_data import BallData
 from src.labeled_roi import LabeledROI
+from src.settings import LaunchMonitor
 
 
 class ScreenshotBase(ViewBox):
@@ -116,66 +117,72 @@ class ScreenshotBase(ViewBox):
         # the two images are
         return err
 
-    def shutdown(self):
-        self.tesserocr_api.End()
-
     def ocr_image(self):
         self.balldata = BallData()
         self.new_shot = False
-        # Enhance & convert image to black & white to improve OCR accuracy
-        pil_img = Image.fromarray(self.screenshot_image)
-        #pil_img = ImageEnhance.Contrast(pil_img).enhance(1.5)
-        pil_img = ImageEnhance.Sharpness(pil_img).enhance(2.0).convert('1')
-        #pil_img = ImageEnhance.Brightness(pil_img).enhance(0.5).convert('1')
-        sc = np.array(pil_img)
-        #path = f"{os.getcwd()}\\appdata\\logs\\sc.jpg"
-        #pil_img.save(path)
-        for roi in self.rois_properties():
-            cropped_img = self.image_rois[roi].getArrayRegion(sc, self.image_item)
-            img = Image.fromarray(np.uint8(cropped_img))
-            self.tesserocr_api.SetImage(img)
-            ocr_result = self.tesserocr_api.GetUTF8Text()
-            logging.debug(f'ocr {roi}: {ocr_result}')
-            if self.__class__.__name__ == 'ScreenshotExPutt':
-                self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
-            else:
-                self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
-        # Correct metrics if invalid smash factor
-        #if self.balldata.putt_type is None:
-        #    self.balldata.check_smash_factor()
-        self.new_shot = self.balldata.new_shot
-        if self.new_shot:
-            if len(self.balldata.errors) > 0:
-                self.balldata.good_shot = False
-                if not self.previous_balldata_error is None and self.balldata.eq(self.previous_balldata_error) <= 0:
-                    # Duplicate error ignore
-                    self.new_shot = False
-                else:
-                    # New error
-                    self.previous_balldata_error = self.balldata.__copy__()
-                    self.resize_window = True
-                logging.debug('Errors found in shot data')
-                #filename = time.strftime("%Y%m%d-%H%M%S.jpeg")
-                #path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
-                #im = Image.fromarray(self.screenshot_image)
-                #im.save(path)
-            else:
-                if self.balldata.putt_type is None and not self.previous_balldata is None and self.balldata.eq(self.previous_balldata) <= 1:
-                    # If there is only 1 metric different then it's likely this is not a new shot
-                    # for example if rapsodo times out or someone changes clubs on the rapsodo
-                    self.new_shot = False
-                    logging.debug('Only 1 metric different from previous shot, probably not a new shot, ignoring')
-                else:
-                    # Good shot
-                    logging.debug(f'New valid shot, data: {self.balldata.to_json()}')
-                    self.balldata.good_shot = True
-                    self.previous_balldata = self.balldata.__copy__()
+        if self.__class__.__name__ == 'ScreenshotExPutt':
+            train_file = 'exputt'
         else:
-            logging.debug('Not a new shot')
-        # Ignore first shot at startup
-        if self.first:
-            logging.debug('First shot, ignoring')
-            self.first = False
-            self.balldata.new_shot = False
-            self.new_shot = False
+            train_file = 'train'
+            if self.settings.device_id == LaunchMonitor.MEVOPLUS:
+                train_file = 'mevo'
+        logging.debug(f"Using {train_file}_traineddata for OCR")
+        tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
+        try:
+            for roi in self.rois_properties():
+                cropped_img = self.image_rois[roi].getArrayRegion(self.screenshot_image, self.image_item)
+                img = Image.fromarray(np.uint8(cropped_img))
+                # Convert to black text on white background, remove background
+                threshold = 180
+                img = img.point(lambda x: 0 if x > threshold else 255)
+                filename = time.strftime(f"{roi}.bmp")
+                path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
+                img.save(path)
+                tesserocr_api.SetImage(img)
+                ocr_result = tesserocr_api.GetUTF8Text()
+                logging.debug(f'ocr {roi}: {ocr_result}')
+                if self.__class__.__name__ == 'ScreenshotExPutt':
+                    self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
+                else:
+                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
+            # Correct metrics if invalid smash factor
+            #if self.balldata.putt_type is None:
+            #    self.balldata.check_smash_factor()
+            self.new_shot = self.balldata.new_shot
+            if self.new_shot:
+                if len(self.balldata.errors) > 0:
+                    self.balldata.good_shot = False
+                    if not self.previous_balldata_error is None and self.balldata.eq(self.previous_balldata_error) <= 0:
+                        # Duplicate error ignore
+                        self.new_shot = False
+                    else:
+                        # New error
+                        self.previous_balldata_error = self.balldata.__copy__()
+                        self.resize_window = True
+                    logging.debug('Errors found in shot data')
+                    #filename = time.strftime("%Y%m%d-%H%M%S.jpeg")
+                    #path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
+                    #im = Image.fromarray(self.screenshot_image)
+                    #im.save(path)
+                else:
+                    if self.balldata.putt_type is None and not self.previous_balldata is None and self.balldata.eq(self.previous_balldata) <= 1:
+                        # If there is only 1 metric different then it's likely this is not a new shot
+                        # for example if rapsodo times out or someone changes clubs on the rapsodo
+                        self.new_shot = False
+                        logging.debug('Only 1 metric different from previous shot, probably not a new shot, ignoring')
+                    else:
+                        # Good shot
+                        logging.debug(f'New valid shot, data: {self.balldata.to_json()}')
+                        self.balldata.good_shot = True
+                        self.previous_balldata = self.balldata.__copy__()
+            else:
+                logging.debug('Not a new shot')
+            # Ignore first shot at startup
+            if self.first:
+                logging.debug('First shot, ignoring')
+                self.first = False
+                self.balldata.new_shot = False
+                self.new_shot = False
+        finally:
+            tesserocr_api.End()
 
