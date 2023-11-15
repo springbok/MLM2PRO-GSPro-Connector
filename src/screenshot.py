@@ -64,7 +64,7 @@ class Screenshot(ScreenshotBase):
         #im.save("c:\\python\\test\\screenshot.jpeg")
         # See https://holypython.com/python-pil-tutorial/how-to-convert-an-image-to-black-white-in-python-pil/
         #self.screenshot_image = np.array(Image.open('C:\\python\\android.png').convert('1'))
-        self.screenshot_image = np.array(Image.open('C:\\python\\tesseract_training\\images\\android_1.png'))
+        #self.screenshot_image = np.array(Image.open('C:\\python\\tesseract_training\\images\\android_1.png'))
 
         # Check if new shot
         self.new_shot = False
