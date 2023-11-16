@@ -174,7 +174,8 @@ class BallData:
                         sign = 1
                     result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
                     result = result * sign
-                setattr(self, roi, result)
+                # Round all values to one decimal place
+                setattr(self, roi, math.floor(result*10)/10)
                 logging.debug(f'Cleaned and corrected value: {result}')
                 # Check previous ball data if required
                 if not self.new_shot:
@@ -228,7 +229,8 @@ class BallData:
                 result = self.__fix_out_of_bounds_metric(15000, result, roi)
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 result = self.__fix_out_of_bounds_metric(140, result, roi)
-            setattr(self, roi, result)
+            # Round to one decimal place
+            setattr(self, roi, math.floor(result*10)/10)
             logging.debug(f'Cleaned and corrected value: {result}')
             # Check previous ball data if required
             if not self.new_shot:
