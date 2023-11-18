@@ -259,7 +259,9 @@ class BallData:
     def eq(self, other):
         diff_count = 0
         for roi in self.properties:
-            if getattr(self, roi) != getattr(other, roi):
+            if (roi != BallMetrics.BACK_SPIN
+                    and roi != BallMetrics.SIDE_SPIN
+                    and getattr(self, roi) != getattr(other, roi)):
                 diff_count = diff_count + 1
         return diff_count
 
