@@ -28,7 +28,7 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
         self.devices = Devices(self.app_paths)
         self.rois_form = RoisForm(main_window=self.main_window)
         self.close_button.clicked.connect(self.__close)
-        self.select_button.clicked.connect(self.__select_device)
+        self.select_button.clicked.connect(self.select_device)
         self.roi_button.clicked.connect(self.__rois)
         self.devices_table.horizontalHeader().setStretchLastSection(True)
         self.devices_table.setHorizontalHeaderLabels(['Device Name'])
@@ -67,8 +67,11 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
         else:
             self.select_button.setDisabled(False)
 
-    def __select_device(self):
-        self.current_device = self.devices.devices[self.devices_table.currentRow()]
+    def select_device(self, device=None):
+        if device is None:
+            self.current_device = self.devices.devices[self.devices_table.currentRow()]
+        else:
+            self.current_device = device
         if self.__screen_mirror_app_running(self.current_device):
             self.selected.emit(self.current_device)
             self.__close()

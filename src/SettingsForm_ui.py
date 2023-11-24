@@ -24,10 +24,10 @@ class Ui_SettingsForm(object):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(338, 265)
+        SettingsForm.resize(339, 294)
         self.verticalLayoutWidget_2 = QWidget(SettingsForm)
         self.verticalLayoutWidget_2.setObjectName(u"verticalLayoutWidget_2")
-        self.verticalLayoutWidget_2.setGeometry(QRect(9, 9, 321, 249))
+        self.verticalLayoutWidget_2.setGeometry(QRect(9, 9, 321, 279))
         self.verticalLayout_2 = QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -92,6 +92,23 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.label_7 = QLabel(self.verticalLayoutWidget_2)
+        self.label_7.setObjectName(u"label_7")
+
+        self.horizontalLayout_9.addWidget(self.label_7)
+
+        self.default_device_combo = QComboBox(self.verticalLayoutWidget_2)
+        self.default_device_combo.addItem("")
+        self.default_device_combo.addItem("")
+        self.default_device_combo.setObjectName(u"default_device_combo")
+
+        self.horizontalLayout_9.addWidget(self.default_device_combo)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_9)
+
         self.verticalLayout_3.setStretch(0, 1)
         self.verticalLayout_3.setStretch(1, 1)
 
@@ -155,6 +172,10 @@ class Ui_SettingsForm(object):
 #endif // QT_CONFIG(tooltip)
         self.gspro_path_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"GSPro Path", None))
         self.file_browse_button.setText(QCoreApplication.translate("SettingsForm", u"Browse", None))
+        self.label_7.setText(QCoreApplication.translate("SettingsForm", u"Default Device", None))
+        self.default_device_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
+        self.default_device_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
+
         self.label_6.setText(QCoreApplication.translate("SettingsForm", u"Launch Monitor", None))
         self.launch_monitor_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
         self.launch_monitor_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))

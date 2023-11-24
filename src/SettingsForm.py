@@ -3,6 +3,8 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QWidget, QMessageBox, QFileDialog
 from src.SettingsForm_ui import Ui_SettingsForm
+from src.appdata import AppDataPaths
+from src.devices import Devices
 from src.settings import Settings, LaunchMonitor
 
 
@@ -10,8 +12,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
 
     saved = Signal()
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, app_paths: AppDataPaths):
         super().__init__()
+        self.app_paths = app_paths
         self.settings = settings
         self.setupUi(self)
         self.launch_monitor_combo.clear()
@@ -21,6 +24,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.file_browse_button.clicked.connect(self.__file_dialog)
 
     def showEvent(self, event: QShowEvent) -> None:
+        self.devices = Devices(self.app_paths)
+        self.default_device_combo.clear()
+        self.default_device_combo.addItems(self.devices.as_list())
         self.__load_values()
 
     def __close(self):
@@ -42,6 +48,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.grspo_window_name = self.gspro_window_name.toPlainText()
             self.settings.gspro_api_window_name = self.gspro_api_window_name.toPlainText()
             self.settings.device_id = self.launch_monitor_combo.currentText()
+            self.settings.default_device = self.default_device_combo.currentText()
             self.settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.\nPlease exit and restart the Connector for the changes to take effect.")
@@ -63,6 +70,10 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.gspro_window_name.setPlainText(str(self.settings.grspo_window_name))
         self.gspro_api_window_name.setPlainText(str(self.settings.gspro_api_window_name))
         self.launch_monitor_combo.setCurrentText(self.settings.device_id)
+        device = 'None'
+        if hasattr(self.settings, 'default_device') and self.settings.default_device != '':
+            device = self.settings.default_device
+        self.default_device_combo.setCurrentText(device)
 
 
     def __file_dialog(self):

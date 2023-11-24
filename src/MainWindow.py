@@ -16,6 +16,7 @@ from src.SelectDeviceForm import SelectDeviceForm
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
 from src.ctype_screenshot import ScreenMirrorWindow
+from src.devices import Devices
 from src.gspro_connection import GSProConnection
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings, PuttingSystems
@@ -54,7 +55,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
         self.select_device = SelectDeviceForm(main_window=self)
-        self.settings_form = SettingsForm(self.settings)
+        self.settings_form = SettingsForm(settings=self.settings, app_paths=self.app_paths)
         self.putting_settings = PuttingSettings(self.app_paths)
         self.putting_settings_form = PuttingForm(main_window=self)
         self.webcam_putting = None
@@ -173,6 +174,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__find_edit_fields()
         self.__putting_stopped()
         self.__display_putting_system()
+        if hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
+            devices = Devices(self.app_paths)
+            device = devices.find_device(self.settings.default_device)
+            if not device is None:
+                self.select_device.select_device(device)
 
     def __club_selected(self, club_data):
         hwnd = None
