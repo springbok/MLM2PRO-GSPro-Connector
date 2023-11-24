@@ -135,9 +135,15 @@ class BallData:
         msg = None
         result = ''
         try:
+            # Strip non ascii chars
+            ocr_result = re.sub(r'[^\x00-\x7f]',r'', ocr_result)
+            logging.debug(f'remove non ASCII {roi}: {ocr_result}')
             cleaned_result = re.findall(r"[LR]?(?:\d*\.*\d)", ocr_result)
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
+            result = cleaned_result.strip()
+            # Remove any leading '.' sometimes a - is read as a '.'
+            result = result.lstrip('.')
             if len(cleaned_result) > 0:
                 result = cleaned_result.strip()
                 # Check values are not 0
