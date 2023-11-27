@@ -167,14 +167,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__display_putting_system()
 
     def __auto_start(self):
+        # If a default device is specified try and start all components
         if hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
             devices = Devices(self.app_paths)
             device = devices.find_device(self.settings.default_device)
             if not device is None:
                 self.select_device.select_device(device)
-        self.__setup_putting()
-        if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
-            self.gspro_connection.gspro_start(self.settings)
+            self.__setup_putting()
+            if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
+                self.gspro_connection.gspro_start(self.settings, True)
+        else:
+            self.gspro_connection.gspro_start(self.settings, False)
 
 
     def __club_selected(self, club_data):

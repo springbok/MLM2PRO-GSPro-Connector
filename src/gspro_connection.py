@@ -156,7 +156,7 @@ class GSProConnection(QObject):
             running = False
         return running
 
-    def gspro_start(self, settings):
+    def gspro_start(self, settings, auto_start):
         # Start GSPro if not running
         if len(settings.gspro_path) > 0 and len(settings.grspo_window_name) and os.path.exists(settings.gspro_path):
             try:
@@ -165,15 +165,15 @@ class GSProConnection(QObject):
                 self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
                     os.startfile(settings.gspro_path)
-                    self.gspro_start_thread = QThread()
-                    self.gspro_start_worker = GSProStartWorker(settings)
-                    self.gspro_start_worker.moveToThread(self.gspro_start_thread)
-                    self.gspro_start_worker.error.connect(self.__gspro_start_error)
-                    self.gspro_start_thread.started.connect(self.gspro_start_worker.run)
-                    self.gspro_start_worker.gspro_started.connect(self.connect_to_gspro)
-                    self.gspro_start_thread.start()
+                    if auto_start:
+                        self.gspro_start_thread = QThread()
+                        self.gspro_start_worker = GSProStartWorker(settings)
+                        self.gspro_start_worker.moveToThread(self.gspro_start_thread)
+                        self.gspro_start_worker.error.connect(self.__gspro_start_error)
+                        self.gspro_start_thread.started.connect(self.gspro_start_worker.run)
+                        self.gspro_start_worker.gspro_started.connect(self.connect_to_gspro)
+                        self.gspro_start_thread.start()
                 except Exception as e:
-                    print(f'error: {e}')
                     self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {path}.\nException: {format(e)}")
 
     def __gspro_start_error(self, error):
