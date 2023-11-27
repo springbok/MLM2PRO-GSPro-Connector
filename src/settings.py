@@ -25,9 +25,23 @@ class Settings(SettingsBase):
                 "gspro_path": "",
                 "grspo_window_name": "GSPro",
                 "gspro_api_window_name": "APIv1 Connect",
+                "gspro_config_window_name": "GSPro Configuration",
+                "gspro_play_button_label": "Play!",
                 "default_device": "None"
             }
         )
         # Removed this from the settings file, specifies the
         # number of ms between screenshots
         self.screenshot_interval = 250
+
+    def load(self):
+        super().load()
+        save = False
+        if not hasattr(self, 'gspro_config_window_name'):
+            self.gspro_config_window_name = "GSPro Configuration"
+            save = True
+        if not hasattr(self, 'gspro_play_button_label'):
+            self.gspro_play_button_label = "Play!"
+            save = True
+        if save:
+            super().save()

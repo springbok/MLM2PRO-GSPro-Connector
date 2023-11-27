@@ -1,9 +1,15 @@
 import logging
+import os
+from threading import Event
+
 from PySide6.QtCore import QThread, QCoreApplication, Signal, QObject
 from PySide6.QtWidgets import QMessageBox
+
 from src import MainWindow
+from src.auto_click import clickButton
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.gspro_connect import GSProConnect
+from src.gspro_start_worker import GSProStartWorker
 from src.gspro_worker import GsproWorker
 from src.log_message import LogMessageSystems, LogMessageTypes
 from src.settings import Settings
@@ -24,6 +30,8 @@ class GSProConnection(QObject):
         self.main_window = main_window
         self.worker = None
         self.thread = QThread()
+        self.gspro_start_worker = None
+        self.gspro_start_thread = None
         self.connected = None
         self.settings = main_window.settings
         self.gspro_connect = GSProConnect(
@@ -85,7 +93,7 @@ class GSProConnection(QObject):
                 self.worker.result.connect(self.__connected)
                 self.worker.error.connect(self.__error)
                 #self.worker.finished.connect(self.__finished)
-                self.thread.started.connect(self.worker.run())
+                self.thread.started.connect(self.worker.run)
                 self.thread.start()
 
     def disconnect_from_gspro(self):
@@ -129,6 +137,10 @@ class GSProConnection(QObject):
         self.send_shot_thread.wait()
         self.club_selecion_thread.quit()
         self.club_selecion_thread.wait()
+        if not self.gspro_start_thread is None:
+            self.gspro_start_worker.shutdown()
+            self.gspro_start_thread.quit()
+            self.gspro_start_thread.wait()
 
 
     def __log_message(self, types, message):
@@ -144,3 +156,27 @@ class GSProConnection(QObject):
             running = False
         return running
 
+    def gspro_start(self, settings):
+        # Start GSPro if not running
+        if len(settings.gspro_path) > 0 and len(settings.grspo_window_name) and os.path.exists(settings.gspro_path):
+            try:
+                ScreenMirrorWindow.find_window(settings.grspo_window_name)
+            except:
+                self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
+                try:
+                    os.startfile(settings.gspro_path)
+                    self.gspro_start_thread = QThread()
+                    self.gspro_start_worker = GSProStartWorker(settings)
+                    self.gspro_start_worker.moveToThread(self.gspro_start_thread)
+                    self.gspro_start_worker.error.connect(self.__gspro_start_error)
+                    self.gspro_start_thread.started.connect(self.gspro_start_worker.run)
+                    self.gspro_start_worker.gspro_started.connect(self.connect_to_gspro)
+                    self.gspro_start_thread.start()
+                except Exception as e:
+                    print(f'error: {e}')
+                    self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {path}.\nException: {format(e)}")
+
+    def __gspro_start_error(self, error):
+        msg = ("Unable to automatically start GSPro.")
+        self.__log_message(LogMessageTypes.LOGS, f'{msg} Exception: {format(error)}')
+        QMessageBox.warning(self.main_window, "GSPro Start Error", msg)

@@ -112,16 +112,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def showEvent(self, event: QShowEvent) -> None:
         super(QMainWindow, self).showEvent(event)
-        # Start GSPro if not running
-        if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
-            try:
-                ScreenMirrorWindow.find_window(self.settings.grspo_window_name)
-            except:
-                self.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
-                try:
-                    os.startfile(self.settings.gspro_path)
-                except Exception as e:
-                    self.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {self.settings.gspro_path}.\nException: {format(e)}")
 
     def __setup_ui(self):
         self.__update_selected_mirror_app()
@@ -183,6 +173,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if not device is None:
                 self.select_device.select_device(device)
         self.__setup_putting()
+        if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
+            self.gspro_connection.gspro_start(self.settings)
+
 
     def __club_selected(self, club_data):
         hwnd = None
