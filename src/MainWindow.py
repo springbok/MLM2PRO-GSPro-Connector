@@ -62,6 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_putting_system = None
         self.__setup_ui()
         self.__setup_screenshot_thread()
+        self.__auto_start()
 
     def __setup_logging(self):
         level = logging.DEBUG
@@ -174,11 +175,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__find_edit_fields()
         self.__putting_stopped()
         self.__display_putting_system()
+
+    def __auto_start(self):
         if hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
             devices = Devices(self.app_paths)
             device = devices.find_device(self.settings.default_device)
             if not device is None:
                 self.select_device.select_device(device)
+        self.__setup_putting()
 
     def __club_selected(self, club_data):
         hwnd = None
