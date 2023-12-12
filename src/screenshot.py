@@ -1,11 +1,14 @@
 import logging
 from threading import Event
-import tesserocr
+
+import numpy as np
+from PIL import Image
+
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.device import Device
 from src.screenshot_base import ScreenshotBase
 from src.settings import Settings, LaunchMonitor
-from src.tesserocr_cvimage import TesserocrCVImage
+import tesserocr
 
 
 class Screenshot(ScreenshotBase):
@@ -14,11 +17,6 @@ class Screenshot(ScreenshotBase):
         ScreenshotBase.__init__(self, *args, **kwargs)
         self.settings = settings
         self.device = None
-        train_file = 'train'
-        if self.settings.device_id == LaunchMonitor.MEVOPLUS:
-            train_file = 'mevo'
-        logging.debug(f"Using {train_file}_traineddata for OCR")
-        self.tesserocr_api = TesserocrCVImage(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
 
     def capture_screenshot(self, device: Device, rois_setup=False):
         # Check if window minimized, for some reason it has a different hwnd when minimized
@@ -64,7 +62,9 @@ class Screenshot(ScreenshotBase):
         self.screenshot_image = self.screenshot_image_of_window.screenshot_window()
         #im = Image.fromarray(self.screenshot_image)
         #im.save("c:\\python\\test\\screenshot.jpeg")
-        #self.screenshot_image = np.array(Image.open('C:\python\mlm2pro-gspro-connect-gui\screenshot1.png'))
+        # See https://holypython.com/python-pil-tutorial/how-to-convert-an-image-to-black-white-in-python-pil/
+        #self.screenshot_image = np.array(Image.open('C:\\python\\android.png').convert('1'))
+        #self.screenshot_image = np.array(Image.open('C:\\python\\tesseract_training\\images\\android_1.png'))
 
         # Check if new shot
         self.new_shot = False

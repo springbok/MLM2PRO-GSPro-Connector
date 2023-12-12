@@ -1,18 +1,15 @@
 import logging
 from threading import Event
-import tesserocr
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.custom_exception import CameraWindowNotFoundException
 from src.screenshot_base import ScreenshotBase
-from src.tesserocr_cvimage import TesserocrCVImage
 
 
 class ScreenshotExPutt(ScreenshotBase):
 
     def __init__(self, *args, **kwargs):
         ScreenshotBase.__init__(self, *args, **kwargs)
-        self.tesserocr_api = TesserocrCVImage(psm=tesserocr.PSM.SINGLE_LINE, lang='exputt', path='.\\')
-        
+
 
     def capture_screenshot(self, settings, rois_setup=False):
         # Check if window minimized, for some reason it has a different hwnd when minimized
@@ -71,7 +68,8 @@ class ScreenshotExPutt(ScreenshotBase):
         mse = 1
         if not self.previous_screenshot_image is None:
             mse = self.mse(self.previous_screenshot_image, self.screenshot_image)
-        if mse > 0.05:
+        # If mse > 20000 it could be caused by exputt loses it's calibration
+        if mse > 0.05 and mse < 20000:
             self.screenshot_new = True
             self.previous_screenshot_image = self.screenshot_image
             self.image()

@@ -65,7 +65,5 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.main_window.log_message(types, LogMessageSystems.CONNECTOR, message)
 
     def shutdown(self):
-        if self.roi_image:
-            self.roi_image.shutdown()
         self.thread.quit()
         self.thread.wait()

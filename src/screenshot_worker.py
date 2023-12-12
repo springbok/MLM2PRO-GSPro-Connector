@@ -57,9 +57,6 @@ class ScreenshotWorker(QObject):
                     traceback.print_exc()
                     logging.debug(f'Error in process {self.name}: {format(e)}, {traceback.format_exc()}')
                     self.error.emit((e, traceback.format_exc()))
-        self.screenshot.shutdown()
-        if not self.exputt_screenshot is None:
-            self.exputt_screenshot.shutdown()
         self.finished.emit()
 
     def __do_screenshot(self, screenshot, settings, rois_setup):
