@@ -38,6 +38,7 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
 
 
     def showEvent(self, event: PySide6.QtGui.QShowEvent) -> None:
+        self.devices.load_devices()
         # Load data into the table
         self.__load_device_table()
         self.devices_table.selectRow(0)
