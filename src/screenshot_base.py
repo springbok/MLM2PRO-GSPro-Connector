@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+
+import cv2
 import numpy as np
 import pyqtgraph as pg
 import tesserocr
@@ -129,16 +131,28 @@ class ScreenshotBase(ViewBox):
         logging.debug(f"Using {train_file}_traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:
+            pil_img = Image.fromarray(self.screenshot_image).convert('L')
+            sc = np.array(pil_img)
             for roi in self.rois_properties():
-                cropped_img = self.image_rois[roi].getArrayRegion(self.screenshot_image, self.image_item)
+                cropped_img = self.image_rois[roi].getArrayRegion(sc, self.image_item)
+                original_height, original_width = cropped_img.shape[:2]
+                print(f"width: {original_width} height: {original_height}")
+                factor = 3
+                cropped_img = cv2.resize(cropped_img,
+                                           (int(original_height * 12), int(original_width * 2)),
+                                           interpolation=cv2.INTER_LINEAR)
                 img = Image.fromarray(np.uint8(cropped_img))
-                if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
+                #width, height = img.size
+                #img = img.resize(int(width * factor), int(height * factor))
+                #if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
                     # Convert to black text on white background, remove background
-                    threshold = 180
-                    img = img.point(lambda x: 0 if x > threshold else 255)
-                #filename = time.strftime(f"{roi}.bmp")
-                #path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
-                #img.save(path)
+                    #threshold = 150
+                    #img = img.point(lambda x: 0 if x > threshold else 255)
+                #filename = time.strftime(f"{roi}_%Y%m%d-%H%M%S.bmp")
+                filename = time.strftime(f"{roi}.bmp")
+                path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
+                img.save(path)
+
                 tesserocr_api.SetImage(img)
                 ocr_result = tesserocr_api.GetUTF8Text()
                 logging.debug(f'ocr {roi}: {ocr_result}')
