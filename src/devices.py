@@ -13,9 +13,9 @@ class Devices:
         self.app_paths = app_paths
         self.devices = []
         self.__create_default_devices()
-        self.__load_devices()
+        self.load_devices()
 
-    def __load_devices(self):
+    def load_devices(self):
         logging.debug(f'Checking for device config files in {self.app_paths.app_data_path}')
         self.devices = []
         i = 1
