@@ -1,4 +1,6 @@
 import logging
+import os
+
 import numpy as np
 import pyqtgraph as pg
 import tesserocr
@@ -155,16 +157,20 @@ class ScreenshotBase(ViewBox):
                     if bbox is not None:
                         for i in range(len(bbox)):
                             if (i == 0 or i == 1) and bbox[i] > 0: # left & upper
-                                bbox1.append(bbox[i] - 5)
+                                new_value = bbox[i] - 5
+                                if new_value > 0:
+                                    bbox1.append(new_value)
+                                else:
+                                    bbox1.append(0)
                             elif (i == 2 or i == 3): # right & lower
                                 bbox1.append(bbox[i] + 5)
                             else:
                                 bbox1.append(bbox[i])
                         logging.debug(f'ocr {roi} - modified bounding box with a small amount of white space added: {bbox1}')
                         img = img.crop(bbox1)
-                #filename = time.strftime(f"{roi}.bmp")
-                #path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
-                #img.save(path)
+                filename = f"{roi}.bmp"
+                path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
+                img.save(path)
                 tesserocr_api.SetImage(img)
                 ocr_result = tesserocr_api.GetUTF8Text()
                 conf = tesserocr_api.MeanTextConf()
