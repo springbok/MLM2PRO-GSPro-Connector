@@ -117,7 +117,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except:
                 self.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
-                    os.startfile(self.settings.gspro_path)
+                    #os.startfile(self.settings.gspro_path)
+                    subprocess.run(self.settings.gspro_path, creationflags=subprocess.DETACHED_PROCESS)
                 except Exception as e:
                     self.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {self.settings.gspro_path}.\nException: {format(e)}")
 

@@ -30,3 +30,12 @@ class Settings(SettingsBase):
         # Removed this from the settings file, specifies the
         # number of ms between screenshots
         self.screenshot_interval = 250
+
+    def load(self):
+        super().load()
+        save = False
+        if not hasattr(self, 'create_debug_images'):
+            self.create_debug_images = "No"
+            save = True
+        if save:
+            super().save()
