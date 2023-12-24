@@ -33,7 +33,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.01.22'
+    version = 'V1.01.23'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -48,9 +48,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app = app
         self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self.app_paths.setup()
+        self.__setup_logging()
         self.settings = Settings(self.app_paths)
         self.screenshot_worker = ScreenshotWorker(self.settings)
-        self.__setup_logging()
         self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
         self.select_device = SelectDeviceForm(main_window=self)

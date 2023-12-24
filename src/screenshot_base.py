@@ -1,6 +1,7 @@
 import logging
 import os
 
+import cv2
 import numpy as np
 import pyqtgraph as pg
 import tesserocr
@@ -130,28 +131,31 @@ class ScreenshotBase(ViewBox):
         logging.debug(f"Using {train_file}_traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:
-            #pil_img = Image.fromarray(self.screenshot_image).convert('L')
-            #sc = np.array(pil_img)
+            pil_img = Image.fromarray(self.screenshot_image).convert('RGB')
+            sc = np.array(pil_img)
             for roi in self.rois_properties():
-                cropped_img = self.image_rois[roi].getArrayRegion(self.screenshot_image, self.image_item)
-                #original_height, original_width = cropped_img.shape[:2]
-                #print(f"width: {original_width} height: {original_height}")
-                #factor = 3
-                #cropped_img = cv2.resize(cropped_img,
-                #                           (int(original_height * 12), int(original_width * 2)),
-                #                           interpolation=cv2.INTER_LINEAR)
+                cropped_img = self.image_rois[roi].getArrayRegion(sc, self.image_item)
+                if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO and self.settings.zoom_images == "Yes":
+                    logging.debug(f'ocr {roi} - zoom image')
+                    original_height, original_width = cropped_img.shape[:2]
+                    #print(f"width: {original_width} height: {original_height}")
+                    cropped_img = cv2.resize(cropped_img,
+                                               (int(original_height * 6), int(original_width * 2)),
+                                               interpolation=cv2.INTER_LINEAR)
                 img = Image.fromarray(np.uint8(cropped_img))
                 #width, height = img.size
                 #img = img.resize(int(width * factor), int(height * factor))
                 if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
                     # Convert to black text on white background, remove background
-                    threshold = 150
+                    threshold = self.settings.colour_threshold
+                    logging.debug(f'ocr {roi} - using threshold: {threshold}')
                     img = img.point(lambda x: 0 if x > threshold else 255)
                     #filename = time.strftime(f"{roi}_%Y%m%d-%H%M%S.bmp")
                     #filename = time.strftime(f"{roi}.bmp")
                     #path = f"{os.getcwd()}\\appdata\\logs\\original_{filename}"
                     #img.save(path)
-                    bbox = ImageOps.invert(img).getbbox()
+                    #bbox = ImageOps.invert(img).getbbox()
+                    bbox = img.point(lambda x: 255 - x).getbbox()
                     logging.debug(f'ocr {roi} - bounding box for white space removal: {bbox}')
                     bbox1 = []
                     if bbox is not None:

@@ -24,7 +24,10 @@ class Settings(SettingsBase):
                 "units": "Yards",
                 "gspro_path": "",
                 "grspo_window_name": "GSPro",
-                "gspro_api_window_name": "APIv1 Connect"
+                "gspro_api_window_name": "APIv1 Connect",
+                "create_debug_images": "No",
+                "colour_threshold": 180,
+                "zoom_images": "No"
             }
         )
         # Removed this from the settings file, specifies the
@@ -36,6 +39,12 @@ class Settings(SettingsBase):
         save = False
         if not hasattr(self, 'create_debug_images'):
             self.create_debug_images = "No"
+            save = True
+        if not hasattr(self, 'zoom_images'):
+            self.zoom_images = "No"
+            save = True
+        if not hasattr(self, 'colour_threshold'):
+            self.colour_threshold = 180
             save = True
         if save:
             super().save()
