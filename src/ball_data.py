@@ -182,15 +182,6 @@ class BallData:
                 # Round all values to one decimal place
                 setattr(self, roi, math.floor(result*10)/10)
                 logging.debug(f'Cleaned and corrected value: {result}')
-                # Check previous ball data if required
-                if not self.new_shot:
-                    if not previous_balldata is None:
-                        previous_metric = getattr(previous_balldata, roi)
-                        logging.debug(f'previous_metric: {previous_metric} result: {result}')
-                        if previous_metric != result:
-                            self.new_shot = True
-                    else:
-                        self.new_shot = True
         except ValueError as e:
             msg = f'{format(e)}'
         except:
@@ -238,15 +229,6 @@ class BallData:
                 # Round to one decimal place
                 setattr(self, roi, math.floor(result*10)/10)
                 logging.debug(f'Cleaned and corrected value: {result}')
-                # Check previous ball data if required
-                if not self.new_shot:
-                    if not previous_balldata is None:
-                        previous_metric = getattr(previous_balldata, roi)
-                        logging.debug(f'previous_metric: {previous_metric} result: {result}')
-                        if previous_metric != result:
-                            self.new_shot = True
-                    else:
-                        self.new_shot = True
         except ValueError as e:
             msg = f'{format(e)}'
         except:
@@ -265,8 +247,14 @@ class BallData:
     def eq(self, other):
         diff_count = 0
         for roi in self.properties:
-            if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and getattr(self, roi) != getattr(other, roi)):
+            result = getattr(self, roi)
+            previous_result = getattr(other, roi)
+            if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and result != previous_result):
+                logging.debug(f'previous_metric: {previous_result} result: {result}')
                 diff_count = diff_count + 1
+        if diff_count > 0:
+            logging.debug(f'diff count: {diff_count} -> new shot')
+            self.new_shot = True
         return diff_count
 
     def __fix_out_of_bounds_metric(self, limit, value, roi):

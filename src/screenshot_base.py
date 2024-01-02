@@ -193,13 +193,14 @@ class ScreenshotBase(ViewBox):
                 else:
                     self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
             # Correct metrics if invalid smash factor
-            #if self.balldata.putt_type is None:
-            #    self.balldata.check_smash_factor()
-            self.new_shot = self.balldata.new_shot
+            if self.balldata.putt_type is None:
+                self.balldata.check_smash_factor()
+            diff_count = self.balldata.eq(self.previous_balldata)
+            self.new_shot = diff_count > 0
             if self.new_shot:
                 if len(self.balldata.errors) > 0:
                     self.balldata.good_shot = False
-                    if not self.previous_balldata_error is None and self.balldata.eq(self.previous_balldata_error) <= 0:
+                    if not self.previous_balldata_error is None and self.balldata.eq(self.previous_balldata_error) <= 1:
                         # Duplicate error ignore
                         self.new_shot = False
                     else:
@@ -212,7 +213,7 @@ class ScreenshotBase(ViewBox):
                     #im = Image.fromarray(self.screenshot_image)
                     #im.save(path)
                 else:
-                    if self.balldata.putt_type is None and not self.previous_balldata is None and self.balldata.eq(self.previous_balldata) <= 1:
+                    if self.balldata.putt_type is None and not self.previous_balldata is None and diff_count <= 1:
                         # If there is only 1 metric different then it's likely this is not a new shot
                         # for example if rapsodo times out or someone changes clubs on the rapsodo
                         self.new_shot = False
