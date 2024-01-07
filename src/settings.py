@@ -48,3 +48,10 @@ class Settings(SettingsBase):
             save = True
         if save:
             super().save()
+
+    def local_gspro(self):
+        local = False
+        if self.ip_address == '127.0.0.1' or self.ip_address == 'localhost':
+            local = True
+        return local
+

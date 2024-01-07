@@ -137,7 +137,8 @@ class GSProConnection(QObject):
     def __find_gspro_api_app(self):
         running = False
         try:
-            ScreenMirrorWindow.find_window(self.settings.gspro_api_window_name)
+            if self.settings.local_gspro():
+                ScreenMirrorWindow.find_window(self.settings.gspro_api_window_name)
             running = True
         except Exception:
             self.gspro_app_not_found.emit()
