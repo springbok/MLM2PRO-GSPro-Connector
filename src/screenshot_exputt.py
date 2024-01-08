@@ -3,12 +3,14 @@ from threading import Event
 from src.ctype_screenshot import ScreenMirrorWindow, ScreenshotOfWindow
 from src.custom_exception import CameraWindowNotFoundException
 from src.screenshot_base import ScreenshotBase
+from src.settings import Settings
 
 
 class ScreenshotExPutt(ScreenshotBase):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, settings: Settings, *args, **kwargs):
         ScreenshotBase.__init__(self, *args, **kwargs)
+        self.settings = settings
 
 
     def capture_screenshot(self, settings, rois_setup=False):

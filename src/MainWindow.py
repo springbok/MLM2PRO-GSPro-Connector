@@ -77,6 +77,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         logging.getLogger(__name__)
         logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
+        logging.debug(f"App Version: {MainWindow.version}")
+        path = os.getcwd()
+        for file in os.listdir(path):
+            if file.endswith(".traineddata"):
+                dt = datetime.fromtimestamp(os.stat(file).st_ctime)
+                size = os.stat(file).st_size
+                logging.debug(f"Training file name: {file} Date: {dt} Size: {size}")
 
     def __setup_screenshot_thread(self):
         self.screenshot_thread = QThread()
@@ -86,6 +93,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.screenshot_worker.bad_shot.connect(self.__bad_shot)
         self.screenshot_worker.same_shot.connect(self.gspro_connection.club_selecion_worker.run)
         self.screenshot_worker.bad_shot.connect(self.gspro_connection.club_selecion_worker.run)
+        self.screenshot_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
         self.screenshot_worker.putting_started.connect(self.__putting_started)
         self.screenshot_worker.putting_stopped.connect(self.__putting_stopped)
         self.screenshot_worker.error.connect(self.__screenshot_worker_error)
@@ -243,6 +251,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     subprocess.run('start microsoft.windows.camera:', shell=True)
         self.current_putting_system = self.putting_settings.system
         QCoreApplication.processEvents()
+
+    def __too_many_ghost_shots(self):
+        self.screenshot_worker.pause()
+        QMessageBox.warning(self, "Ghost Shots Detected",
+                            "Too many shots were received within a short space of time.\nPlease make sure you have set the Camera option in the Rapsodo Range to 'Stationary', if not set correctly it will generate lots of ghost shots.")
 
     def __display_putting_system(self):
         self.putting_system_label.setText(self.putting_settings.system)

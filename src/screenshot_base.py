@@ -142,36 +142,37 @@ class ScreenshotBase(ViewBox):
                     cropped_img = cv2.resize(cropped_img,
                                                (int(original_height * 6), int(original_width * 2)),
                                                interpolation=cv2.INTER_LINEAR)
-                img = Image.fromarray(np.uint8(cropped_img))
+                # Create PIL image and convert to grey scale
+                img = Image.fromarray(np.uint8(cropped_img)).convert('L')
                 #width, height = img.size
                 #img = img.resize(int(width * factor), int(height * factor))
-                if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
+                #if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
                     # Convert to black text on white background, remove background
-                    threshold = self.settings.colour_threshold
-                    logging.debug(f'ocr {roi} - using threshold: {threshold}')
-                    img = img.point(lambda x: 0 if x > threshold else 255)
+                    #threshold = self.settings.colour_threshold
+                    #logging.debug(f'ocr {roi} - using threshold: {threshold}')
+                    #img = img.point(lambda x: 0 if x > threshold else 255)
                     #filename = time.strftime(f"{roi}_%Y%m%d-%H%M%S.bmp")
                     #filename = time.strftime(f"{roi}.bmp")
                     #path = f"{os.getcwd()}\\appdata\\logs\\original_{filename}"
                     #img.save(path)
                     #bbox = ImageOps.invert(img).getbbox()
-                    bbox = img.point(lambda x: 255 - x).getbbox()
-                    logging.debug(f'ocr {roi} - bounding box for white space removal: {bbox}')
-                    bbox1 = []
-                    if bbox is not None:
-                        for i in range(len(bbox)):
-                            if (i == 0 or i == 1) and bbox[i] > 0: # left & upper
-                                new_value = bbox[i] - 5
-                                if new_value > 0:
-                                    bbox1.append(new_value)
-                                else:
-                                    bbox1.append(0)
-                            elif (i == 2 or i == 3): # right & lower
-                                bbox1.append(bbox[i] + 5)
-                            else:
-                                bbox1.append(bbox[i])
-                        logging.debug(f'ocr {roi} - modified bounding box with a small amount of white space added: {bbox1}')
-                        img = img.crop(bbox1)
+                    #bbox = img.point(lambda x: 255 - x).getbbox()
+                    #logging.debug(f'ocr {roi} - bounding box for white space removal: {bbox}')
+                    #bbox1 = []
+                    #if bbox is not None:
+                    #    for i in range(len(bbox)):
+                    #        if (i == 0 or i == 1) and bbox[i] > 0: # left & upper
+                    #            new_value = bbox[i] - 5
+                    #            if new_value > 0:
+                    #                bbox1.append(new_value)
+                    #            else:
+                    #                bbox1.append(0)
+                    #        elif (i == 2 or i == 3): # right & lower
+                    #            bbox1.append(bbox[i] + 5)
+                    #        else:
+                    #            bbox1.append(bbox[i])
+                    #    logging.debug(f'ocr {roi} - modified bounding box with a small amount of white space added: {bbox1}')
+                    #    img = img.crop(bbox1)
                 if self.settings.create_debug_images == 'Yes':
                     filename = f"{roi}.bmp"
                     path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
@@ -195,7 +196,10 @@ class ScreenshotBase(ViewBox):
             # Correct metrics if invalid smash factor
             if self.balldata.putt_type is None:
                 self.balldata.check_smash_factor()
-            diff_count = self.balldata.eq(self.previous_balldata)
+            if not self.previous_balldata is None:
+                diff_count = self.balldata.eq(self.previous_balldata)
+            else:
+                diff_count = 1
             self.new_shot = diff_count > 0
             if self.new_shot:
                 if len(self.balldata.errors) > 0:

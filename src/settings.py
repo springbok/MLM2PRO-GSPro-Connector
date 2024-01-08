@@ -10,6 +10,7 @@ class LaunchMonitor:
 
 
 class Settings(SettingsBase):
+    version = "2"
 
     def __init__(self, app_paths):
         SettingsBase.__init__(self,
@@ -27,7 +28,8 @@ class Settings(SettingsBase):
                 "gspro_api_window_name": "APIv1 Connect",
                 "create_debug_images": "No",
                 "colour_threshold": 180,
-                "zoom_images": "No"
+                "zoom_images": "No",
+                "settings_version": {Settings.version}
             }
         )
         # Removed this from the settings file, specifies the
@@ -45,6 +47,9 @@ class Settings(SettingsBase):
             save = True
         if not hasattr(self, 'colour_threshold'):
             self.colour_threshold = 180
+            save = True
+        if not hasattr(self, 'settings_version'):
+            self.settings_version = Settings.version
             save = True
         if save:
             super().save()
