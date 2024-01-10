@@ -146,33 +146,33 @@ class ScreenshotBase(ViewBox):
                 img = Image.fromarray(np.uint8(cropped_img)).convert('L')
                 #width, height = img.size
                 #img = img.resize(int(width * factor), int(height * factor))
-                #if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
+                if self.__class__.__name__ != 'ScreenshotExPutt' and self.settings.device_id == LaunchMonitor.MLM2PRO:
                     # Convert to black text on white background, remove background
-                    #threshold = self.settings.colour_threshold
-                    #logging.debug(f'ocr {roi} - using threshold: {threshold}')
-                    #img = img.point(lambda x: 0 if x > threshold else 255)
+                    threshold = self.settings.colour_threshold
+                    logging.debug(f'ocr {roi} - using threshold: {threshold}')
+                    img = img.point(lambda x: 0 if x > threshold else 255)
                     #filename = time.strftime(f"{roi}_%Y%m%d-%H%M%S.bmp")
                     #filename = time.strftime(f"{roi}.bmp")
                     #path = f"{os.getcwd()}\\appdata\\logs\\original_{filename}"
                     #img.save(path)
-                    #bbox = ImageOps.invert(img).getbbox()
-                    #bbox = img.point(lambda x: 255 - x).getbbox()
-                    #logging.debug(f'ocr {roi} - bounding box for white space removal: {bbox}')
-                    #bbox1 = []
-                    #if bbox is not None:
-                    #    for i in range(len(bbox)):
-                    #        if (i == 0 or i == 1) and bbox[i] > 0: # left & upper
-                    #            new_value = bbox[i] - 5
-                    #            if new_value > 0:
-                    #                bbox1.append(new_value)
-                    #            else:
-                    #                bbox1.append(0)
-                    #        elif (i == 2 or i == 3): # right & lower
-                    #            bbox1.append(bbox[i] + 5)
-                    #        else:
-                    #            bbox1.append(bbox[i])
-                    #    logging.debug(f'ocr {roi} - modified bounding box with a small amount of white space added: {bbox1}')
-                    #    img = img.crop(bbox1)
+                    bbox = ImageOps.invert(img).getbbox()
+                    bbox = img.point(lambda x: 255 - x).getbbox()
+                    logging.debug(f'ocr {roi} - bounding box for white space removal: {bbox}')
+                    bbox1 = []
+                    if bbox is not None:
+                        for i in range(len(bbox)):
+                            if (i == 0 or i == 1) and bbox[i] > 0: # left & upper
+                                new_value = bbox[i] - 5
+                                if new_value > 0:
+                                    bbox1.append(new_value)
+                                else:
+                                    bbox1.append(0)
+                            elif (i == 2 or i == 3): # right & lower
+                                bbox1.append(bbox[i] + 5)
+                            else:
+                                bbox1.append(bbox[i])
+                        logging.debug(f'ocr {roi} - modified bounding box with a small amount of white space added: {bbox1}')
+                        img = img.crop(bbox1)
                 if self.settings.create_debug_images == 'Yes':
                     filename = f"{roi}.bmp"
                     path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
