@@ -33,7 +33,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.01.24'
+    version = 'V1.01.25'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
                     #os.startfile(self.settings.gspro_path)
-                    subprocess.run(self.settings.gspro_path, creationflags=subprocess.DETACHED_PROCESS)
+                    subprocess.Popen(self.settings.gspro_path)
                 except Exception as e:
                     self.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {self.settings.gspro_path}.\nException: {format(e)}")
 
