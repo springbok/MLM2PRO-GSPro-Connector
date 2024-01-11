@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 from threading import Event
 
 from PySide6.QtCore import QThread, QCoreApplication, Signal, QObject
@@ -165,7 +166,7 @@ class GSProConnection(QObject):
             except:
                 self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
-                    os.startfile(settings.gspro_path)
+                    subprocess.Popen(settings.gspro_path)
                     if auto_start:
                         self.gspro_start_thread = QThread()
                         self.gspro_start_worker = GSProStartWorker(settings)
