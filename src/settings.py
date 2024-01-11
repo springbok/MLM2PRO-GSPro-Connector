@@ -10,6 +10,7 @@ class LaunchMonitor:
 
 
 class Settings(SettingsBase):
+    version = "2"
 
     def __init__(self, app_paths):
         SettingsBase.__init__(self,
@@ -27,7 +28,11 @@ class Settings(SettingsBase):
                 "gspro_api_window_name": "APIv1 Connect",
                 "gspro_config_window_name": "GSPro Configuration",
                 "gspro_play_button_label": "Play!",
-                "default_device": "None"
+                "default_device": "None",
+                "create_debug_images": "No",
+                "colour_threshold": 180,
+                "zoom_images": "No",
+                "settings_version": {Settings.version}
             }
         )
         # Removed this from the settings file, specifies the
@@ -43,5 +48,23 @@ class Settings(SettingsBase):
         if not hasattr(self, 'gspro_play_button_label'):
             self.gspro_play_button_label = "Play!"
             save = True
+        if not hasattr(self, 'create_debug_images'):
+            self.create_debug_images = "No"
+            save = True
+        if not hasattr(self, 'zoom_images'):
+            self.zoom_images = "No"
+            save = True
+        if not hasattr(self, 'colour_threshold'):
+            self.colour_threshold = 180
+            save = True
+        if not hasattr(self, 'settings_version'):
+            self.settings_version = Settings.version
+            save = True
         if save:
             super().save()
+
+    def local_gspro(self):
+        local = False
+        if self.ip_address == '127.0.0.1' or self.ip_address == 'localhost':
+            local = True
+        return local

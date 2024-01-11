@@ -34,7 +34,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.01.17'
+    version = 'V1.02.00'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -49,9 +49,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app = app
         self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self.app_paths.setup()
+        self.__setup_logging()
         self.settings = Settings(self.app_paths)
         self.screenshot_worker = ScreenshotWorker(self.settings)
-        self.__setup_logging()
         self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
         self.select_device = SelectDeviceForm(main_window=self)
@@ -79,6 +79,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         logging.getLogger(__name__)
         logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
+        logging.debug(f"App Version: {MainWindow.version}")
+        path = os.getcwd()
+        for file in os.listdir(path):
+            if file.endswith(".traineddata"):
+                dt = datetime.fromtimestamp(os.stat(file).st_ctime)
+                size = os.stat(file).st_size
+                logging.debug(f"Training file name: {file} Date: {dt} Size: {size}")
 
     def __setup_screenshot_thread(self):
         self.screenshot_thread = QThread()
@@ -88,6 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.screenshot_worker.bad_shot.connect(self.__bad_shot)
         self.screenshot_worker.same_shot.connect(self.gspro_connection.club_selecion_worker.run)
         self.screenshot_worker.bad_shot.connect(self.gspro_connection.club_selecion_worker.run)
+        self.screenshot_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
         self.screenshot_worker.putting_started.connect(self.__putting_started)
         self.screenshot_worker.putting_stopped.connect(self.__putting_stopped)
         self.screenshot_worker.error.connect(self.__screenshot_worker_error)
@@ -112,6 +120,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def showEvent(self, event: QShowEvent) -> None:
         super(QMainWindow, self).showEvent(event)
+        # Start GSPro if not running
+        if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
+            try:
+                ScreenMirrorWindow.find_window(self.settings.grspo_window_name)
+            except:
+                self.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
+                try:
+                    #os.startfile(self.settings.gspro_path)
+                    subprocess.Popen(self.settings.gspro_path)
+                except Exception as e:
+                    self.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {self.settings.gspro_path}.\nException: {format(e)}")
 
     def __setup_ui(self):
         self.__update_selected_mirror_app()
@@ -248,6 +267,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     subprocess.run('start microsoft.windows.camera:', shell=True)
         self.current_putting_system = self.putting_settings.system
         QCoreApplication.processEvents()
+
+    def __too_many_ghost_shots(self):
+        self.screenshot_worker.pause()
+        QMessageBox.warning(self, "Ghost Shots Detected",
+                            "Too many shots were received within a short space of time.\nPlease make sure you have set the Camera option in the Rapsodo Range to 'Stationary', if not set correctly it will generate lots of ghost shots.")
 
     def __display_putting_system(self):
         self.putting_system_label.setText(self.putting_settings.system)
