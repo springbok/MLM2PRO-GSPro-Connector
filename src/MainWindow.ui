@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1139</width>
+    <width>1163</width>
     <height>642</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
    <double>6.000000000000000</double>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
     <item>
      <widget class="QTabWidget" name="main_tab">
       <property name="currentIndex">
@@ -370,6 +370,13 @@
                      </property>
                      <property name="margin">
                       <number>5</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pause_button">
+                     <property name="text">
+                      <string>Pause</string>
                      </property>
                     </widget>
                    </item>

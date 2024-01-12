@@ -163,7 +163,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connection.club_selected.connect(self.__club_selected)
         self.__screenshot_worker_paused()
         self.restart_button.clicked.connect(self.__restart_connector)
+        self.pause_button.clicked.connect(self.__pause_connector)
         self.restart_button.setEnabled(False)
+        self.pause_button.setEnabled(False)
         self.settings_form.saved.connect(self.__settings_saved)
         self.putting_settings_form.saved.connect(self.__putting_settings_saved)
         self.putting_settings_form.cancel.connect(self.__putting_settings_cancelled)
@@ -260,7 +262,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __too_many_ghost_shots(self):
         self.screenshot_worker.pause()
         QMessageBox.warning(self, "Ghost Shots Detected",
-                            "Too many shots were received within a short space of time.\nPlease make sure you have set the Camera option in the Rapsodo Range to 'Stationary', if not set correctly it will generate lots of ghost shots.")
+                            "Too many shots were received within a short space of time.\nSet the Camera option in the Rapsodo Range to 'Stationary' for a better result.")
 
     def __display_putting_system(self):
         self.putting_system_label.setText(self.putting_settings.system)
@@ -309,17 +311,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.screenshot_worker.resume()
 
     def __screenshot_worker_resumed(self):
+        self.screenshot_worker.ignore_shots_after_restart()
         self.connector_status.setText('Ready')
         self.connector_status.setStyleSheet("QLabel { background-color : green; color : white; }")
         self.restart_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
 
     def __screenshot_worker_paused(self):
         self.connector_status.setText('Not Ready')
         self.connector_status.setStyleSheet("QLabel { background-color : red; color : white; }")
         self.restart_button.setEnabled(True)
+        self.pause_button.setEnabled(False)
 
     def __restart_connector(self):
         self.screenshot_worker.resume()
+
+    def __pause_connector(self):
+        self.screenshot_worker.pause()
 
     def __putting_stopped(self):
         self.putting_server_button.setText('Start')

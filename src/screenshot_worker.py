@@ -81,11 +81,11 @@ class ScreenshotWorker(QObject):
                     self.time_of_last_shot = datetime.now()
                     if self.shot_count >= 1:
                         self.same_shot.emit()
-                        logging.info(f"Process {self.name} shot received within 3 seconds of last shot, assuming ghost shot ignoring")
+                        logging.info(f"Process {self.name} shot received within 5 seconds of last shot, assuming ghost shot ignoring")
                         # Ghost ignore
                         if self.shot_count > 2:
                             # More than 3 ghosts display camera settings warning
-                            logging.info(f"Process {self.name} more than 2 shots received within 3 seconds of last shot, warn user to change camera setting")
+                            logging.info(f"Process {self.name} more than 2 shots received within 5 seconds of last shot, warn user to change camera setting")
                             self.too_many_ghost_shots.emit()
                             self.shot_count = 0
                     else:
@@ -139,3 +139,6 @@ class ScreenshotWorker(QObject):
         if not self.putting_settings is None and not self.exputt_screenshot is None:
             self.putting_settings.load()
             self.putting_rois_reload = True
+
+    def ignore_shots_after_restart(self):
+        self.screenshot.first = True
