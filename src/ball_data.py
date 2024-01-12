@@ -246,12 +246,21 @@ class BallData:
 
     def eq(self, other):
         diff_count = 0
+        non_zero_found = False
         for roi in self.properties:
             result = getattr(self, roi)
+            if result > 0 and not non_zero_found:
+                non_zero_found = True
             previous_result = getattr(other, roi)
             if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and result != previous_result):
                 logging.debug(f'previous_metric: {previous_result} result: {result}')
                 diff_count = diff_count + 1
+        # Check if all values are 0, some users use practice instead of range and there is a screen flicker
+        # that causes an invalid shot with all invalid values so all values are still 0. Check if all values
+        # are zero if so ignore the shot
+        if not non_zero_found:
+            diff_count = 0
+            logging.debug(f'All values are 0: ignoring')
         if diff_count > 0:
             logging.debug(f'diff count: {diff_count} -> new shot')
             self.new_shot = True
