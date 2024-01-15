@@ -129,6 +129,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSettings.triggered.connect(self.__settings)
         self.actionPuttingSettings.triggered.connect(self.__putting_settings)
         self.actionDonate.triggered.connect(self.__donate)
+        self.actionShop.triggered.connect(self.__shop)
         self.select_device_button.clicked.connect(self.__select_device)
         self.gspro_connect_button.clicked.connect(self.__gspro_connect)
         self.main_tab.setCurrentIndex(0)
@@ -179,12 +180,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __auto_start(self):
         # If a default device is specified try and start all components
         if hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
+            self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Default Device specified, attempting to auto start all software')
             devices = Devices(self.app_paths)
             device = devices.find_device(self.settings.default_device)
             if not device is None:
                 self.select_device.select_device(device)
+                self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Selecting Device:{device.name}')
             self.__setup_putting()
             if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
+                self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Starting GSPro')
                 self.gspro_connection.gspro_start(self.settings, True)
         else:
             self.gspro_connection.gspro_start(self.settings, False)
@@ -245,6 +249,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.webcam_putting.error.connect(self.__putting_error)
             self.webcam_putting.putt_shot.connect(self.gspro_connection.send_shot_worker.run)
             if self.putting_settings.webcam['auto_start'] == 'Yes':
+                self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Starting webcam putting')
                 self.webcam_putting.start_server()
                 if not self.webcam_putting.http_server_worker is None and self.putter_selected:
                     self.webcam_putting.http_server_worker.select_putter(self.putter_selected)
@@ -253,6 +258,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.screenshot_worker.putting_settings = self.putting_settings
             if self.putting_settings.exputt['auto_start'] == 'Yes':
                 try:
+                    self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR,
+                                     f'Starting ExPutt')
                     ScreenMirrorWindow.find_window(self.putting_settings.exputt['window_name'])
                 except:
                     subprocess.run('start microsoft.windows.camera:', shell=True)
@@ -381,6 +388,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __donate(self):
         url = "https://ko-fi.com/springbok_dev"
+        webbrowser.open(url, new=2) # 2 = open in new tab
+
+    def __shop(self):
+        url = "https://cascadia3dpd.com"
         webbrowser.open(url, new=2) # 2 = open in new tab
 
     def __gspro_connect(self):
