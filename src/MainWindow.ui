@@ -879,8 +879,10 @@
    <addaction name="actionSettings"/>
    <addaction name="actionPuttingSettings"/>
    <addaction name="separator"/>
-   <addaction name="actionAbout"/>
    <addaction name="actionDonate"/>
+   <addaction name="actionShop"/>
+   <addaction name="separator"/>
+   <addaction name="actionAbout"/>
   </widget>
   <action name="actionExit">
    <property name="icon">
@@ -939,10 +941,22 @@
      <normaloff>:/ico/ico/nav-logo-stroke.ico</normaloff>:/ico/ico/nav-logo-stroke.ico</iconset>
    </property>
    <property name="text">
-    <string>actionDonate</string>
+    <string>Donate</string>
    </property>
    <property name="toolTip">
     <string>Donate</string>
+   </property>
+  </action>
+  <action name="actionShop">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/ico/ico/store_2838968.png</normaloff>:/ico/ico/store_2838968.png</iconset>
+   </property>
+   <property name="text">
+    <string>Shop</string>
+   </property>
+   <property name="toolTip">
+    <string>Shop</string>
    </property>
   </action>
  </widget>
