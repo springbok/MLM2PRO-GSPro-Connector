@@ -69,7 +69,7 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
             self.select_button.setDisabled(False)
 
     def select_device(self, device=None):
-        if device is None:
+        if device is None or not device:
             self.current_device = self.devices.devices[self.devices_table.currentRow()]
         else:
             self.current_device = device
