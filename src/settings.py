@@ -28,8 +28,7 @@ class Settings(SettingsBase):
                 "gspro_api_window_name": "APIv1 Connect",
                 "create_debug_images": "No",
                 "colour_threshold": 180,
-                "zoom_images": "No",
-                "settings_version": {Settings.version}
+                "zoom_images": "No"
             }
         )
         # Removed this from the settings file, specifies the
