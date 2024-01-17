@@ -163,6 +163,8 @@ class GSProConnection(QObject):
         if len(settings.gspro_path) > 0 and len(settings.grspo_window_name) and os.path.exists(settings.gspro_path):
             try:
                 ScreenMirrorWindow.find_window(settings.grspo_window_name)
+                if auto_start:
+                    self.connect_to_gspro()
             except:
                 self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
