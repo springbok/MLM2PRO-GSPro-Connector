@@ -173,10 +173,10 @@ class ScreenshotBase(ViewBox):
                                 bbox1.append(bbox[i])
                         logging.debug(f'ocr {roi} - modified bounding box with a small amount of white space added: {bbox1}')
                         img = img.crop(bbox1)
-                if self.settings.create_debug_images == 'Yes':
-                    filename = f"{roi}.bmp"
-                    path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
-                    img.save(path)
+                    if self.settings.create_debug_images == 'Yes':
+                        filename = f"{roi}.bmp"
+                        path = f"{os.getcwd()}\\appdata\\logs\\{filename}"
+                        img.save(path)
                 tesserocr_api.SetImage(img)
                 ocr_result = tesserocr_api.GetUTF8Text()
                 conf = tesserocr_api.MeanTextConf()
