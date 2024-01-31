@@ -278,6 +278,7 @@ class BallData:
         return math.ceil((ball_speed / club_speed)*10)/10
 
 
+    '''
     def check_smash_factor(self):
         club_speed = getattr(self, BallMetrics.CLUB_SPEED)
         ball_speed = getattr(self, BallMetrics.SPEED)
@@ -291,5 +292,23 @@ class BallData:
                 corrected_value = math.floor(club_speed/10)
                 setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                 logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
+    '''
 
+    def check_smash_factor(self):
+        club_speed = getattr(self, BallMetrics.CLUB_SPEED)
+        ball_speed = getattr(self, BallMetrics.SPEED)
+        if club_speed > 0:
+            smash_factor = self.__smash_factor(club_speed, ball_speed)
+            # Corrects for Club Speed Misreads on the MLM2PRO related to 5-wood thru Driver where ball speed appears correct.
+            if smash_factor > 1.7 and ball_speed > 125.0 and ball_speed < 250:
+                corrected_value = math.floor(ball_speed / 1.48)
+                setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
+                logging.debug(
+                    f"Smash factor: {smash_factor} > 1.7 and ball speed between 125.0 and 250.0, corrected CLUB_SPEED value: {corrected_value}")
 
+            # Corrects for Ball Speed Misreads on the MLM2PRO related to 5-wood thru Driver where Club Speed is correct.
+            elif smash_factor < 0.7 and club_speed > 90 and club_speed < 175:
+                corrected_value = math.floor(club_speed * 1.48)
+                setattr(self, BallMetrics.SPEED, corrected_value)
+                logging.debug(
+                    f"Smash factor: {smash_factor} < 0.7 and club speed between 90 and 175, corrected SPEED value: {corrected_value}")
