@@ -49,6 +49,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.gspro_api_window_name = self.gspro_api_window_name.toPlainText()
             self.settings.device_id = self.launch_monitor_combo.currentText()
             self.settings.default_device = self.default_device_combo.currentText()
+            self.settings.r10_connector_ip_address = self.r10_ip_edit.toPlainText()
+            self.settings.r10_connector_port = int(self.r10_port_edit.toPlainText())
+            self.settings.r10_connector_path = self.r10_path_edit.toPlainText()
             self.settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.\nPlease exit and restart the Connector for the changes to take effect.")
@@ -60,6 +63,12 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             error = False
         if not error and len(self.port_edit.toPlainText()) <= 0:
             QMessageBox.information(self, "Error", "Port is required.")
+            error = False
+        if self.launch_monitor_combo.currentText() == LaunchMonitor.R10 and len(self.r10_ip_edit.toPlainText()) <= 0:
+            QMessageBox.information(self, "Error", "R10 Connector IP Address is required.")
+            error = False
+        if self.launch_monitor_combo.currentText() == LaunchMonitor.R10 and len(self.r10_port_edit.toPlainText()) <= 0:
+            QMessageBox.information(self, "Error", "R10 Connector Port is required.")
             error = False
         return error
 
@@ -74,6 +83,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         if hasattr(self.settings, 'default_device') and self.settings.default_device != '':
             device = self.settings.default_device
         self.default_device_combo.setCurrentText(device)
+        self.r10_ip_edit.setPlainText(self.settings.r10_connector_ip_address)
+        self.r10_port_edit.setPlainText(str(self.settings.r10_connector_port))
+        self.r10_path_edit.setPlainText(str(self.settings.r10_connector_path))
 
 
     def __file_dialog(self):

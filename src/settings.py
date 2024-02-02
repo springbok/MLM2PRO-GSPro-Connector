@@ -7,6 +7,7 @@ from src.settings_base import SettingsBase
 class LaunchMonitor:
     MLM2PRO = "Rapsodo MLM2PRO"
     MEVOPLUS = "MEVO+"
+    R10 = "R10"
 
 
 class Settings(SettingsBase):
@@ -20,7 +21,7 @@ class Settings(SettingsBase):
             ), {
                 "ip_address": "127.0.0.1",
                 "port": 921,
-                "api_version": "1",
+                "api_version": "2",
                 "device_id": "Rapsodo MLM2PRO",
                 "units": "Yards",
                 "gspro_path": "",
@@ -31,7 +32,10 @@ class Settings(SettingsBase):
                 "default_device": "None",
                 "create_debug_images": "No",
                 "colour_threshold": 180,
-                "zoom_images": "No"
+                "zoom_images": "No",
+                "r10_connector_ip_address": "127.0.0.1",
+                "r10_connector_port": 9234,
+                "r10_connector_path": ""
             }
         )
         # Removed this from the settings file, specifies the
@@ -58,6 +62,15 @@ class Settings(SettingsBase):
             save = True
         if not hasattr(self, 'settings_version'):
             self.settings_version = Settings.version
+            save = True
+        if not hasattr(self, 'r10_connector_ip_address'):
+            self.r10_connector_ip_address = "127.0.0.1"
+            save = True
+        if not hasattr(self, 'r10_connector_port'):
+            self.r10_connector_port = 9234
+            save = True
+        if not hasattr(self, 'r10_connector_path'):
+            self.r10_connector_path = ""
             save = True
         if save:
             super().save()
