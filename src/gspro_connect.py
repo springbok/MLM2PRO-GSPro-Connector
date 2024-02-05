@@ -29,7 +29,6 @@ class GSProConnect(QObject):
         super(GSProConnect, self).__init__()
 
     def init_socket(self, ip_address: str, port: int) -> None:
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_address, port))
         self._socket.settimeout(2)
         self._connected = True
