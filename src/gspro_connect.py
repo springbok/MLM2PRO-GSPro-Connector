@@ -23,12 +23,12 @@ class GSProConnect(QObject):
         self._device_id = device_id
         self._units = units
         self._api_version = api_version
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._shot_number = 1
         self._connected = False
         super(GSProConnect, self).__init__()
 
     def init_socket(self, ip_address: str, port: int) -> None:
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_address, port))
         self._socket.settimeout(2)
         self._connected = True
