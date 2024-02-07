@@ -11,11 +11,13 @@ From V1.01.32 the connector now supports GSCloud. This means you can now use the
 
 *Thanks to Paul McMahon for his work on this.*
 
-1. Go to https://golfsimcloud.com/, reserve a timeslot.  
-![Reserve timeslot](images/gscloud order page.png)
+Go to https://golfsimcloud.com/, reserve a timeslot. 
 
-2. And when that time comes, copy the IP settings from the second (player 2 / connector) area into the connector, replacing localhost/921 as shown.
-![Update IP address](images/gscloud IP settings.png)
+![Reserve timeslot](images/gscloud_order_page.png)
+
+And when that time comes, copy the IP settings from the second (player 2 / connector) area into the connector, replacing localhost/921 as shown.
+
+![Update IP address](images/gscloud_ip_settings.png)
 
 
 ### 3 November 23 - Announcement: 
