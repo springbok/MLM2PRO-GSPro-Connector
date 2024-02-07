@@ -266,11 +266,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_putting_system = self.putting_settings.system
         QCoreApplication.processEvents()
 
-    def __too_many_ghost_shots(self):
-        self.screenshot_worker.pause()
-        QMessageBox.warning(self, "Ghost Shots Detected",
-                            "Too many shots were received within a short space of time.\nSet the Camera option in the Rapsodo Range to 'Stationary' for a better result.")
-
     def __display_putting_system(self):
         self.putting_system_label.setText(self.putting_settings.system)
         if self.putting_settings.system == PuttingSystems.NONE:
@@ -465,7 +460,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __shot_sent(self, balldata):
         self.__add_shot_history_row(balldata)
 
-    def __bad_shot(self, balldata):
+    def bad_shot(self, balldata):
         self.__add_shot_history_row(balldata)
 
     def __add_shot_history_row(self, balldata: BallData):

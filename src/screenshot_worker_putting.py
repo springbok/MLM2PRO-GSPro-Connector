@@ -1,20 +1,20 @@
 import logging
 import traceback
 from threading import Event
-from src.device import Device
-from src.screenshot import Screenshot
+from src.putting_settings import PuttingSettings
+from src.screenshot_exputt import ScreenshotExPutt
 from src.screenshot_worker_base import ScreenshotWorkerBase
 from src.settings import Settings
 
 
-class ScreenshotWorker(ScreenshotWorkerBase):
-
-    def __init__(self, settings: Settings):
+class ScreenshotWorkerPutting(ScreenshotWorkerBase):
+    def __init__(self, settings: Settings, putting_settings: PuttingSettings):
         ScreenshotWorkerBase.__init__(self, settings)
-        self.device = None
-        self.screenshot = Screenshot(settings)
-        self.shot_count = 0
-        self.name = 'ScreenshotWorker'
+        self.putting_rois_reload = True
+        self.settings = settings
+        self.putting_settings = putting_settings
+        self.exputt_screenshot = ScreenshotExPutt(settings)
+        self.name = 'ScreenshotWorkerPutting'
 
     def run(self):
         self.started.emit()
@@ -24,9 +24,10 @@ class ScreenshotWorker(ScreenshotWorkerBase):
             Event().wait(self.settings.screenshot_interval/1000)
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
-            if not self._shutdown.is_set() and self.device is not None:
+            if not self._shutdown.is_set():
                 try:
-                    self.do_screenshot(self.screenshot, self.device, False)
+                    self.do_screenshot(self.exputt_screenshot, self.settings, self.putting_rois_reload)
+                    self.putting_rois_reload = False
                 except Exception as e:
                     if not isinstance(e, ValueError):
                         self.pause()
@@ -35,11 +36,7 @@ class ScreenshotWorker(ScreenshotWorkerBase):
                     self.error.emit((e, traceback.format_exc()))
         self.finished.emit()
 
-    def change_device(self, device: Device):
-        self.device = device
-        # In case rois were updated
-        self.screenshot.update_rois(self.device.rois)
-        self.screenshot.resize_window = True
-
-    def ignore_shots_after_restart(self):
-        self.screenshot.first = True
+    def reload_putting_rois(self):
+        if self.putting_settings is not None and self.exputt_screenshot is not None:
+            self.putting_settings.load()
+            self.putting_rois_reload = True
