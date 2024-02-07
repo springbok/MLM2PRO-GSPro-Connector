@@ -15,8 +15,6 @@ Go to https://golfsimcloud.com/, reserve a timeslot.
 
 ![Reserve timeslot](images/gscloud_order_page.png)
 
-Then start the GSCloud app and connect to the connector.
-
 And when that time comes, copy the IP settings from the second (player 2 / connector) area into the connector, replacing localhost/921 as shown.
 
 ![Update IP address](images/gscloud_ip_settings.png)
