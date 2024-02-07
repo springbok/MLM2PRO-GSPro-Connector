@@ -10,7 +10,7 @@ from src.worker_thread import WorkerThread
 class RoisExPuttForm(RoisFormBase):
 
     def __init__(self, main_window: MainWindow):
-        self.roi_image = ScreenshotExPutt()
+        self.roi_image = ScreenshotExPutt(main_window.putting_settings)
         self.settings = main_window.putting_settings
         super(RoisExPuttForm, self).__init__(main_window)
         self.setup_ui()

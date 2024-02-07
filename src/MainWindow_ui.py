@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1139, 642)
+        MainWindow.resize(1163, 642)
         icon = QIcon()
         icon.addFile(u":/ico/ico/connect.ico", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -62,10 +62,15 @@ class Ui_MainWindow(object):
         icon6 = QIcon()
         icon6.addFile(u":/ico/ico/nav-logo-stroke.ico", QSize(), QIcon.Normal, QIcon.Off)
         self.actionDonate.setIcon(icon6)
+        self.actionShop = QAction(MainWindow)
+        self.actionShop.setObjectName(u"actionShop")
+        icon7 = QIcon()
+        icon7.addFile(u":/ico/ico/store_2838968.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionShop.setIcon(icon7)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout_4 = QVBoxLayout(self.centralwidget)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.main_tab = QTabWidget(self.centralwidget)
         self.main_tab.setObjectName(u"main_tab")
         self.connector_tab = QWidget()
@@ -235,6 +240,11 @@ class Ui_MainWindow(object):
         self.connector_status.setMargin(5)
 
         self.verticalLayout_8.addWidget(self.connector_status)
+
+        self.pause_button = QPushButton(self.groupBox_2)
+        self.pause_button.setObjectName(u"pause_button")
+
+        self.verticalLayout_8.addWidget(self.pause_button)
 
         self.restart_button = QPushButton(self.groupBox_2)
         self.restart_button.setObjectName(u"restart_button")
@@ -497,7 +507,7 @@ class Ui_MainWindow(object):
 
         self.main_tab.addTab(self.log_tab, "")
 
-        self.verticalLayout_4.addWidget(self.main_tab)
+        self.horizontalLayout_4.addWidget(self.main_tab)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
@@ -513,8 +523,10 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionSettings)
         self.toolBar.addAction(self.actionPuttingSettings)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.actionAbout)
         self.toolBar.addAction(self.actionDonate)
+        self.toolBar.addAction(self.actionShop)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
 
@@ -537,9 +549,13 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionPuttingSettings.setToolTip(QCoreApplication.translate("MainWindow", u"Putting Settings", None))
 #endif // QT_CONFIG(tooltip)
-        self.actionDonate.setText(QCoreApplication.translate("MainWindow", u"actionDonate", None))
+        self.actionDonate.setText(QCoreApplication.translate("MainWindow", u"Donate", None))
 #if QT_CONFIG(tooltip)
         self.actionDonate.setToolTip(QCoreApplication.translate("MainWindow", u"Donate", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionShop.setText(QCoreApplication.translate("MainWindow", u"Shop", None))
+#if QT_CONFIG(tooltip)
+        self.actionShop.setToolTip(QCoreApplication.translate("MainWindow", u"Shop", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.connector_tab.setToolTip("")
@@ -557,6 +573,7 @@ class Ui_MainWindow(object):
         self.selected_device.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.selected_mirror_app.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.connector_status.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.restart_button.setText(QCoreApplication.translate("MainWindow", u"Restart", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Ball Speed", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Spin Axis", None))

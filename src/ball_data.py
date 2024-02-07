@@ -142,60 +142,54 @@ class BallData:
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
             if len(cleaned_result) > 0:
-                # Remove any leading '.' sometimes a - is read as a '.'
-                result = result.lstrip('.')
-                result = cleaned_result.strip()
-                # Check values are not 0
-                if roi == BallMetrics.SPEED:
-                    result = float(result)
-                if roi == BallMetrics.HLA:
-                    if result[0] == 'L':
-                        result = -float(result[1:])
-                    else:
-                        result = float(result[1:])
-                if roi == BallMetrics.CLUB_PATH and result != '-':
-                    if result[0] == 'L':
-                        # left, negative for GSPRO
-                        result = -float(result[1:])
-                    else:
-                        result = float(result[1:])
-                if roi == BallMetrics.CLUB_FACE_TO_TARGET and result != '-':
-                    if result[0] == 'L':
-                        # left, negative for GSPRO
-                        result = -float(result[1:])
-                    else:
-                        result = float(result[1:])
-                if roi in BallData.must_not_be_zero_putt and result == float(0):
-                    logging.debug(f"Value for {BallData.properties[roi]} is 0")
-                    raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
-                if roi == BallMetrics.SPEED:
-                    if result > 40:
-                        result = self.__fix_out_of_bounds_metric(40, result, roi)
-                    setattr(self, BallMetrics.CLUB_SPEED, result)
-                elif roi == BallMetrics.HLA and (result > 20 or result < -20):
-                    if result < 0:
-                        sign = -1
-                    else:
-                        sign = 1
-                    result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
-                    result = result * sign
-                # Round all values to one decimal place
-                setattr(self, roi, math.floor(result*10)/10)
-                logging.debug(f'Cleaned and corrected value: {result}')
-                # Check previous ball data if required
-                if not self.new_shot:
-                    if not previous_balldata is None:
-                        previous_metric = getattr(previous_balldata, roi)
-                        logging.debug(f'previous_metric: {previous_metric} result: {result}')
-                        if previous_metric != result:
-                            self.new_shot = True
-                    else:
-                        self.new_shot = True
+                cleaned_result = cleaned_result.strip()
+            if len(cleaned_result) <= 0:
+                logging.debug(f"Value for {BallData.properties[roi]} is empty")
+                cleaned_result = '0'
+            # Remove any leading '.' sometimes a - is read as a '.'
+            logging.debug(f'cleaned result {roi}: {cleaned_result}')
+            result = cleaned_result.lstrip('.')
+            logging.debug(f'result {roi}: {result}')
+            # Check values are not 0
+            if roi == BallMetrics.SPEED:
+                result = float(result)
+            if roi == BallMetrics.HLA:
+                if result[0] == 'L':
+                    result = -float(result[1:])
+                else:
+                    result = float(result[1:])
+            if roi == BallMetrics.CLUB_PATH and result != '0':
+                if result[0] == 'L':
+                    # left, negative for GSPRO
+                    result = -float(result[1:])
+                else:
+                    result = float(result[1:])
+            if roi == BallMetrics.CLUB_FACE_TO_TARGET and result != '0':
+                if result[0] == 'L':
+                    # left, negative for GSPRO
+                    result = -float(result[1:])
+                else:
+                    result = float(result[1:])
+            if roi in BallData.must_not_be_zero_putt and result == float(0):
+                raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
+            if roi == BallMetrics.SPEED:
+                if result > 40:
+                    result = self.__fix_out_of_bounds_metric(40, result, roi)
+                setattr(self, BallMetrics.CLUB_SPEED, result)
+            elif roi == BallMetrics.HLA and (result > 20 or result < -20):
+                if result < 0:
+                    sign = -1
+                else:
+                    sign = 1
+                result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
+                result = result * sign
+            # Round all values to one decimal place
+            setattr(self, roi, math.floor(float(result)*10)/10)
+            logging.debug(f'Cleaned and corrected value: {result}')
         except ValueError as e:
             msg = f'{format(e)}'
         except:
             msg = f"Could not convert value {result} for '{BallData.properties[roi]}' to float 0"
-            raise
         finally:
             if not msg is None:
                 logging.debug(msg)
@@ -212,41 +206,40 @@ class BallData:
             cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)[LR]?", ocr_result)
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
+            logging.debug(f'cleaned result {roi}: {cleaned_result}')
             if len(cleaned_result) > 0:
-                result = cleaned_result.strip()
-                # Remove any leading '.' sometimes a - is read as a '.'
-                result = result.lstrip('.')
-                if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
-                    result = result.upper()
-                    if result.endswith('L'):
-                        result = -float(result[:-1])
-                    else:
-                        result = float(result[:-1])
+                cleaned_result = cleaned_result.strip()
+            if len(cleaned_result) <= 0:
+                logging.debug(f"Value for {BallData.properties[roi]} is empty")
+                cleaned_result = '0'
+            # Remove any leading '.' sometimes a - is read as a '.'
+            result = cleaned_result.lstrip('.')
+            if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+                result = result.upper()
+                if result.endswith('L'):
+                    result = -float(result[:-1])
                 else:
-                    result = float(result)
-                # Check values are not 0
-                if roi in BallData.must_not_be_zero and result == float(0):
-                    logging.debug(f"Value for {BallData.properties[roi]} is 0")
-                    raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
-                # For some reason ball speed sometimes get an extra digit added
-                if roi == BallMetrics.SPEED and result > 200:
-                    result = self.__fix_out_of_bounds_metric(200, result, roi)
-                elif roi == BallMetrics.TOTAL_SPIN and result > 15000:
-                    result = self.__fix_out_of_bounds_metric(15000, result, roi)
-                elif roi == BallMetrics.CLUB_SPEED and result > 140:
-                    result = self.__fix_out_of_bounds_metric(140, result, roi)
-                # Round to one decimal place
-                setattr(self, roi, math.floor(result*10)/10)
-                logging.debug(f'Cleaned and corrected value: {result}')
-                # Check previous ball data if required
-                if not self.new_shot:
-                    if not previous_balldata is None:
-                        previous_metric = getattr(previous_balldata, roi)
-                        logging.debug(f'previous_metric: {previous_metric} result: {result}')
-                        if previous_metric != result:
-                            self.new_shot = True
-                    else:
-                        self.new_shot = True
+                    result = float(result[:-1])
+            else:
+                result = float(result)
+            logging.debug(f'result {roi}: {result}')
+            # Check values are not 0
+            if roi in BallData.must_not_be_zero and result == float(0):
+                raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
+            if roi == BallMetrics.VLA and (result <= 0 or result >= 90):
+                raise ValueError(f"Value for {BallData.properties[roi]} is <= 0 or >= 90")
+            if roi == BallMetrics.TOTAL_SPIN and result <= 100:
+                raise ValueError(f"Value for {BallData.properties[roi]} is <= 100")
+            # For some reason ball speed sometimes get an extra digit added
+            if roi == BallMetrics.SPEED and result > 200:
+                result = self.__fix_out_of_bounds_metric(200, result, roi)
+            elif roi == BallMetrics.TOTAL_SPIN and result > 13000:
+                result = self.__fix_out_of_bounds_metric(13000, result, roi)
+            elif roi == BallMetrics.CLUB_SPEED and result > 140:
+                result = self.__fix_out_of_bounds_metric(140, result, roi)
+            # Round to one decimal place
+            setattr(self, roi, math.floor(result*10)/10)
+            logging.debug(f'Cleaned and corrected value: {result}')
         except ValueError as e:
             msg = f'{format(e)}'
         except:
@@ -256,17 +249,27 @@ class BallData:
                 logging.debug(msg)
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
-            else:
-                self.back_spin = round(
-                    self.total_spin * math.cos(math.radians(self.spin_axis)))
-                self.side_spin = round(
-                    self.total_spin * math.sin(math.radians(self.spin_axis)))
 
     def eq(self, other):
         diff_count = 0
+        non_zero_found = False
         for roi in self.properties:
-            if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and getattr(self, roi) != getattr(other, roi)):
+            result = getattr(self, roi)
+            if result > 0 and not non_zero_found:
+                non_zero_found = True
+            previous_result = getattr(other, roi)
+            if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and result != previous_result):
+                logging.debug(f'previous_metric: {previous_result} result: {result}')
                 diff_count = diff_count + 1
+        # Check if all values are 0, some users use practice instead of range and there is a screen flicker
+        # that causes an invalid shot with all invalid values so all values are still 0. Check if all values
+        # are zero if so ignore the shot
+        if not non_zero_found:
+            diff_count = 0
+            logging.debug(f'All values are 0: ignoring')
+        if diff_count > 0:
+            logging.debug(f'diff count: {diff_count} -> new shot')
+            self.new_shot = True
         return diff_count
 
     def __fix_out_of_bounds_metric(self, limit, value, roi):
@@ -281,6 +284,7 @@ class BallData:
         return math.ceil((ball_speed / club_speed)*10)/10
 
 
+    '''
     def check_smash_factor(self):
         club_speed = getattr(self, BallMetrics.CLUB_SPEED)
         ball_speed = getattr(self, BallMetrics.SPEED)
@@ -294,5 +298,27 @@ class BallData:
                 corrected_value = math.floor(club_speed/10)
                 setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                 logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
+    '''
 
+    def check_smash_factor(self):
+        club_speed = getattr(self, BallMetrics.CLUB_SPEED)
+        ball_speed = getattr(self, BallMetrics.SPEED)
+        if club_speed > 0:
+            smash_factor = self.__smash_factor(club_speed, ball_speed)
+            # Corrects for Club Speed Misreads on the MLM2PRO related to 5-wood thru Driver where ball speed appears correct.
+            if smash_factor > 1.7 and ball_speed > 125.0 and ball_speed < 250:
+                corrected_value = math.floor(ball_speed / 1.48)
+                setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
+                logging.debug(
+                    f"Smash factor: {smash_factor} > 1.7 and ball speed between 125.0 and 250.0, corrected CLUB_SPEED value: {corrected_value}")
 
+            # Corrects for Ball Speed Misreads on the MLM2PRO related to 5-wood thru Driver where Club Speed is correct.
+            elif smash_factor <= 0.7 and club_speed > 90 and club_speed < 175:
+                corrected_value = math.floor(club_speed * 1.48)
+                setattr(self, BallMetrics.SPEED, corrected_value)
+                logging.debug(
+                    f"Smash factor: {smash_factor} <= 0.7 and club speed between 90 and 175, corrected SPEED value: {corrected_value}")
+        self.back_spin = round(
+            self.total_spin * math.cos(math.radians(self.spin_axis)))
+        self.side_spin = round(
+            self.total_spin * math.sin(math.radians(self.spin_axis)))

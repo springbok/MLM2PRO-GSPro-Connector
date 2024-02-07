@@ -1,5 +1,6 @@
 import logging
 import traceback
+from datetime import datetime
 from threading import Event
 from PySide6.QtCore import QObject, Signal
 from src.device import Device
@@ -13,6 +14,7 @@ class ScreenshotWorker(QObject):
     error = Signal(tuple)
     shot = Signal(object or None)
     bad_shot = Signal(object or None)
+    too_many_ghost_shots = Signal()
     same_shot = Signal()
     started = Signal()
     paused = Signal()
@@ -29,8 +31,10 @@ class ScreenshotWorker(QObject):
         self.putting_rois_reload = True
         self.settings = settings
         self.screenshot = Screenshot(settings)
-        self.exputt_screenshot = ScreenshotExPutt()
+        self.exputt_screenshot = ScreenshotExPutt(settings)
         self.putting_settings = None
+        self.time_of_last_shot = datetime.now()
+        self.shot_count = 0
         self.name = 'ScreenshotWorker'
         self._shutdown = Event()
         self._pause = Event()
@@ -66,8 +70,27 @@ class ScreenshotWorker(QObject):
             screenshot.ocr_image()
             if screenshot.new_shot:
                 if screenshot.balldata.good_shot:
-                    logging.info(f"Process {self.name} good shot send to GSPro")
-                    self.shot.emit(screenshot.balldata)
+                    # If we receive more than 1 shot in 5 seconds assume it's a ghost shot
+                    # so ignore, if we receive more than 2 shots display warning to user to set
+                    # camera to stationary
+                    last_shot_seconds = (datetime.now() - self.time_of_last_shot).seconds
+                    if last_shot_seconds <= 5:
+                        self.shot_count = self.shot_count + 1
+                    else:
+                        self.shot_count = 0
+                    self.time_of_last_shot = datetime.now()
+                    if self.shot_count >= 1:
+                        self.same_shot.emit()
+                        logging.info(f"Process {self.name} shot received within 5 seconds of last shot, assuming ghost shot ignoring")
+                        # Ghost ignore
+                        if self.shot_count > 2:
+                            # More than 3 ghosts display camera settings warning
+                            logging.info(f"Process {self.name} more than 2 shots received within 5 seconds of last shot, warn user to change camera setting")
+                            self.too_many_ghost_shots.emit()
+                            self.shot_count = 0
+                    else:
+                        logging.info(f"Process {self.name} good shot send to GSPro")
+                        self.shot.emit(screenshot.balldata)
                 else:
                     logging.info(
                         f"Process {self.name} bad shot data: {screenshot.balldata.to_json()}, errors: {screenshot.balldata.errors}")
@@ -116,3 +139,6 @@ class ScreenshotWorker(QObject):
         if not self.putting_settings is None and not self.exputt_screenshot is None:
             self.putting_settings.load()
             self.putting_rois_reload = True
+
+    def ignore_shots_after_restart(self):
+        self.screenshot.first = True

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1139</width>
+    <width>1163</width>
     <height>642</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
    <double>6.000000000000000</double>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
     <item>
      <widget class="QTabWidget" name="main_tab">
       <property name="currentIndex">
@@ -370,6 +370,13 @@
                      </property>
                      <property name="margin">
                       <number>5</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pause_button">
+                     <property name="text">
+                      <string>Pause</string>
                      </property>
                     </widget>
                    </item>
@@ -872,8 +879,10 @@
    <addaction name="actionSettings"/>
    <addaction name="actionPuttingSettings"/>
    <addaction name="separator"/>
-   <addaction name="actionAbout"/>
    <addaction name="actionDonate"/>
+   <addaction name="actionShop"/>
+   <addaction name="separator"/>
+   <addaction name="actionAbout"/>
   </widget>
   <action name="actionExit">
    <property name="icon">
@@ -932,10 +941,22 @@
      <normaloff>:/ico/ico/nav-logo-stroke.ico</normaloff>:/ico/ico/nav-logo-stroke.ico</iconset>
    </property>
    <property name="text">
-    <string>actionDonate</string>
+    <string>Donate</string>
    </property>
    <property name="toolTip">
     <string>Donate</string>
+   </property>
+  </action>
+  <action name="actionShop">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/ico/ico/store_2838968.png</normaloff>:/ico/ico/store_2838968.png</iconset>
+   </property>
+   <property name="text">
+    <string>Shop</string>
+   </property>
+   <property name="toolTip">
+    <string>Shop</string>
    </property>
   </action>
  </widget>

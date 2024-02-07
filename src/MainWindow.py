@@ -33,7 +33,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.01.20'
+    version = 'V1.01.32'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -48,9 +48,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app = app
         self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self.app_paths.setup()
+        self.__setup_logging()
         self.settings = Settings(self.app_paths)
         self.screenshot_worker = ScreenshotWorker(self.settings)
-        self.__setup_logging()
         self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
         self.select_device = SelectDeviceForm(main_window=self)
@@ -77,6 +77,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         logging.getLogger(__name__)
         logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
+        logging.debug(f"App Version: {MainWindow.version}")
+        path = os.getcwd()
+        for file in os.listdir(path):
+            if file.endswith(".traineddata"):
+                dt = datetime.fromtimestamp(os.stat(file).st_ctime)
+                size = os.stat(file).st_size
+                logging.debug(f"Training file name: {file} Date: {dt} Size: {size}")
 
     def __setup_screenshot_thread(self):
         self.screenshot_thread = QThread()
@@ -86,6 +93,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.screenshot_worker.bad_shot.connect(self.__bad_shot)
         self.screenshot_worker.same_shot.connect(self.gspro_connection.club_selecion_worker.run)
         self.screenshot_worker.bad_shot.connect(self.gspro_connection.club_selecion_worker.run)
+        self.screenshot_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
         self.screenshot_worker.putting_started.connect(self.__putting_started)
         self.screenshot_worker.putting_stopped.connect(self.__putting_stopped)
         self.screenshot_worker.error.connect(self.__screenshot_worker_error)
@@ -117,7 +125,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except:
                 self.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
-                    os.startfile(self.settings.gspro_path)
+                    #os.startfile(self.settings.gspro_path)
+                    subprocess.Popen(self.settings.gspro_path)
                 except Exception as e:
                     self.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, "Could not start GSPro at {self.settings.gspro_path}.\nException: {format(e)}")
 
@@ -129,6 +138,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSettings.triggered.connect(self.__settings)
         self.actionPuttingSettings.triggered.connect(self.__putting_settings)
         self.actionDonate.triggered.connect(self.__donate)
+        self.actionShop.triggered.connect(self.__shop)
         self.select_device_button.clicked.connect(self.__select_device)
         self.gspro_connect_button.clicked.connect(self.__gspro_connect)
         self.main_tab.setCurrentIndex(0)
@@ -163,7 +173,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connection.club_selected.connect(self.__club_selected)
         self.__screenshot_worker_paused()
         self.restart_button.clicked.connect(self.__restart_connector)
+        self.pause_button.clicked.connect(self.__pause_connector)
         self.restart_button.setEnabled(False)
+        self.pause_button.setEnabled(False)
         self.settings_form.saved.connect(self.__settings_saved)
         self.putting_settings_form.saved.connect(self.__putting_settings_saved)
         self.putting_settings_form.cancel.connect(self.__putting_settings_cancelled)
@@ -229,6 +241,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.webcam_putting.error.connect(self.__putting_error)
             self.webcam_putting.putt_shot.connect(self.gspro_connection.send_shot_worker.run)
             if self.putting_settings.webcam['auto_start'] == 'Yes':
+                self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Starting webcam putting')
                 self.webcam_putting.start_server()
                 if not self.webcam_putting.http_server_worker is None and self.putter_selected:
                     self.webcam_putting.http_server_worker.select_putter(self.putter_selected)
@@ -237,11 +250,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.screenshot_worker.putting_settings = self.putting_settings
             if self.putting_settings.exputt['auto_start'] == 'Yes':
                 try:
+                    self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR,
+                                     f'Starting ExPutt')
                     ScreenMirrorWindow.find_window(self.putting_settings.exputt['window_name'])
                 except:
                     subprocess.run('start microsoft.windows.camera:', shell=True)
         self.current_putting_system = self.putting_settings.system
         QCoreApplication.processEvents()
+
+    def __too_many_ghost_shots(self):
+        self.screenshot_worker.pause()
+        QMessageBox.warning(self, "Ghost Shots Detected",
+                            "Too many shots were received within a short space of time.\nSet the Camera option in the Rapsodo Range to 'Stationary' for a better result.")
 
     def __display_putting_system(self):
         self.putting_system_label.setText(self.putting_settings.system)
@@ -290,17 +310,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.screenshot_worker.resume()
 
     def __screenshot_worker_resumed(self):
+        self.screenshot_worker.ignore_shots_after_restart()
         self.connector_status.setText('Ready')
         self.connector_status.setStyleSheet("QLabel { background-color : green; color : white; }")
         self.restart_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
 
     def __screenshot_worker_paused(self):
         self.connector_status.setText('Not Ready')
         self.connector_status.setStyleSheet("QLabel { background-color : red; color : white; }")
         self.restart_button.setEnabled(True)
+        self.pause_button.setEnabled(False)
 
     def __restart_connector(self):
         self.screenshot_worker.resume()
+
+    def __pause_connector(self):
+        self.screenshot_worker.pause()
 
     def __putting_stopped(self):
         self.putting_server_button.setText('Start')
@@ -354,6 +380,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __donate(self):
         url = "https://ko-fi.com/springbok_dev"
+        webbrowser.open(url, new=2) # 2 = open in new tab
+
+    def __shop(self):
+        url = "https://cascadia3dpd.com"
         webbrowser.open(url, new=2) # 2 = open in new tab
 
     def __gspro_connect(self):

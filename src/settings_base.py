@@ -21,7 +21,7 @@ class SettingsBase:
                 settings = json.loads(cleaned_json)
         else:
             raise RuntimeError(f"Could not open settings file: {self.path}")
-        logging.debug(f"Setting: {settings}")
+        logging.debug(f"Setting in {self.path}: {settings}")
         # Create dynamic attributes
         for key in settings:
             setattr(self, key, settings[key])
