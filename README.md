@@ -2,6 +2,24 @@
 GSPro connector for the MLM2Pro & Mevo+ Launch Monitors that includes Webcam or ExPutt putting.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X3OXE0L)
+
+### 7 February 24 - Announcement:
+
+**GSCloud Support**
+
+From V1.01.32 the connector now supports GSCloud. This means you can now use the connector with the GSCloud app.
+
+*Thanks to Paul McMahon for his work on this.*
+
+Go to https://golfsimcloud.com/, reserve a timeslot. 
+
+![Reserve timeslot](images/gscloud_order_page.png)
+
+And when that time comes, copy the IP settings from the second (player 2 / connector) area into the connector, replacing localhost/921 as shown.
+
+![Update IP address](images/gscloud_ip_settings.png)
+
+
 ### 3 November 23 - Announcement: 
 
 **MEVO+ is now supported.**
