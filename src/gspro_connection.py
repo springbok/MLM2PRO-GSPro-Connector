@@ -89,7 +89,7 @@ class GSProConnection(QObject):
                 self.worker.result.connect(self.__connected)
                 self.worker.error.connect(self.__error)
                 #self.worker.finished.connect(self.__finished)
-                self.thread.started.connect(self.worker.run)
+                self.thread.started.connect(self.worker.run())
                 self.thread.start()
 
     def disconnect_from_gspro(self):
