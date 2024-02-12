@@ -286,22 +286,21 @@ class BallData:
         return math.ceil((ball_speed / club_speed)*10)/10
 
 
-    '''
     def check_smash_factor(self):
         club_speed = getattr(self, BallMetrics.CLUB_SPEED)
         ball_speed = getattr(self, BallMetrics.SPEED)
         if club_speed > 0:
             smash_factor = self.__smash_factor(club_speed, ball_speed)
-            if smash_factor > 1.7:
+            if smash_factor >= 1.7:
                 corrected_value = math.floor(ball_speed/10)
                 setattr(self, BallMetrics.SPEED, corrected_value)
                 logging.debug(f"Invalid smash factor value: {smash_factor} > 1.7, corrected  {BallData.properties[BallMetrics.SPEED]} value: {corrected_value}")
-            elif smash_factor < 0.6:
+            elif smash_factor <= 0.6:
                 corrected_value = math.floor(club_speed/10)
                 setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                 logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
-    '''
 
+    '''
     def check_smash_factor(self):
         club_speed = getattr(self, BallMetrics.CLUB_SPEED)
         ball_speed = getattr(self, BallMetrics.SPEED)
@@ -324,3 +323,4 @@ class BallData:
             self.total_spin * math.cos(math.radians(self.spin_axis)))
         self.side_spin = round(
             self.total_spin * math.sin(math.radians(self.spin_axis)))
+    '''
