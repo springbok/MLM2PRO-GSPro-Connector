@@ -27,6 +27,7 @@ class ScreenshotWorker(QObject):
         super(ScreenshotWorker, self).__init__()
         self.device = None
         self.putter = False
+        self.selected_club = None
         self.putting_active = False
         self.putting_rois_reload = True
         self.settings = settings
@@ -67,6 +68,7 @@ class ScreenshotWorker(QObject):
         # Grab sreenshot and process data, checks if this is a new shot
         screenshot.capture_screenshot(settings, rois_setup)
         if screenshot.screenshot_new:
+            screenshot.selected_club = self.selected_club
             screenshot.ocr_image()
             if screenshot.new_shot:
                 if screenshot.balldata.good_shot:
@@ -123,6 +125,10 @@ class ScreenshotWorker(QObject):
     def select_putter(self, selected):
         self.putter = selected
         logging.debug(f"exputt self.putter: {self.putter}")
+
+    def club_selected(self, club):
+        self.selected_club = club
+        logging.debug(f"club selected: {self.selected_club}")
 
     def set_putting_active(self, active):
         self.putting_active = active
