@@ -20,6 +20,7 @@ class ScreenshotBase(ViewBox):
     def __init__(self, *args, **kwargs):
         ViewBox.__init__(self, *args, **kwargs)
         pg.setConfigOptions(imageAxisOrder='row-major')
+        self.selected_club = None
         self.resize_window = False
         self.screenshot_new = False
         self.image_rois = {}
@@ -194,7 +195,7 @@ class ScreenshotBase(ViewBox):
                     self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
             # Correct metrics if invalid smash factor
             if self.balldata.putt_type is None:
-                self.balldata.check_smash_factor()
+                self.balldata.check_smash_factor(self.selected_club)
             if not self.previous_balldata is None:
                 diff_count = self.balldata.eq(self.previous_balldata)
             else:
