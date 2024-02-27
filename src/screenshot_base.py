@@ -128,6 +128,8 @@ class ScreenshotBase(ViewBox):
             train_file = 'train'
             if self.settings.device_id == LaunchMonitor.MEVOPLUS:
                 train_file = 'mevo'
+            elif self.settings.device_id == LaunchMonitor.FSKIT:
+                train_file = 'fskit'
         logging.debug(f"Using {train_file}_traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:

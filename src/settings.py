@@ -7,6 +7,7 @@ from src.settings_base import SettingsBase
 class LaunchMonitor:
     MLM2PRO = "Rapsodo MLM2PRO"
     MEVOPLUS = "MEVO+"
+    FSKIT = "Fullswing Kit"
 
 
 class Settings(SettingsBase):
