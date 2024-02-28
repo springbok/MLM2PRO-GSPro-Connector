@@ -306,7 +306,7 @@ class BallData:
                         f"Smash factor: {smash_factor} <= 0.7 and club speed between 90 and 175, corrected SPEED value: {corrected_value}")
             else:
                 logging.debug(f'Selected club {selected_club} is not a driver, apply non driver smash factor correction')
-                if smash_factor >= 1.7:
+                if smash_factor >= 1.7 and ball_speed >= 100:
                     corrected_value = math.floor(ball_speed/10)
                     setattr(self, BallMetrics.SPEED, corrected_value)
                     logging.debug(f"Invalid smash factor value: {smash_factor} > 1.7, corrected  {BallData.properties[BallMetrics.SPEED]} value: {corrected_value}")
