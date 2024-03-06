@@ -8,6 +8,7 @@ class LaunchMonitor:
     MLM2PRO = "Rapsodo MLM2PRO"
     MEVOPLUS = "MEVO+"
     R10 = "R10"
+    FSKIT = "Fullswing Kit"
 
 
 class Settings(SettingsBase):

@@ -34,7 +34,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.02.00'
+    version = 'V1.02.03'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -215,6 +215,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 ScreenMirrorWindow.bring_to_front(self.settings.grspo_window_name)
             elif self.current_putting_system == PuttingSystems.EXPUTT:
                 self.screenshot_worker.select_putter(False)
+        self.screenshot_worker.club_selected(club_data['Player']['Club'])
         QCoreApplication.processEvents()
 
     def __putting_stop_start(self):

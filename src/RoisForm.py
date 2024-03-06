@@ -51,5 +51,5 @@ class RoisForm(RoisFormBase):
         self.worker.moveToThread(self.thread)
         self.worker.started.connect(super().in_progress)
         self.worker.error.connect(super().error)
-        self.thread.started.connect(self.worker.run)
+        self.thread.started.connect(self.worker.run())
         self.thread.start()
