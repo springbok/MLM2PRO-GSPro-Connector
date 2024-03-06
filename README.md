@@ -2,6 +2,24 @@
 GSPro connector for the MLM2Pro & Mevo+ Launch Monitors that includes Webcam or ExPutt putting.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X3OXE0L)
+
+### 7 February 24 - Announcement:
+
+**GSCloud Support**
+
+From V1.01.32 the connector now supports GSCloud. This means you can now use the connector with the GSCloud app.
+
+*Thanks to Paul McMahon for his work on this.*
+
+Go to https://golfsimcloud.com/, reserve a timeslot. 
+
+![Reserve timeslot](images/gscloud_order_page.png)
+
+And when that time comes, copy the IP settings from the second (player 2 / connector) area into the connector, replacing localhost/921 as shown.
+
+![Update IP address](images/gscloud_ip_settings.png)
+
+
 ### 3 November 23 - Announcement: 
 
 **MEVO+ is now supported.**
@@ -56,13 +74,21 @@ This connector was built from the ground up to be easy to use, reliable, accurat
 
 ### Joe Lagowski Connector Videos
 
+Subscribe to Joe's YT channel [here](https://www.youtube.com/@JLagGOLF) 
+
 * [How to connect your MLM2PRO and Ex Putt to play GS Pro!](https://www.youtube.com/watch?v=9wt06I_euHs&t=664s)
 
 * [How to connect your Rapsodo MLM2PRO to GS Pro UPDATED!](https://www.youtube.com/watch?v=4iaM1k672ZU&t=1s)
 
 * [THIS CHANGES EVERYTHING! Rapsodo MLM2PRO and EX Putt Playing GS Pro](https://www.youtube.com/watch?v=STaRJjlfda8&t=114s)
 
+### Ben Rinken Videos
 
+Ben has some great content on his YT channel, you can find it [here](https://www.youtube.com/@trpl_bgy) 
+
+* [MLM2PRO GSPRO CONNECTOR - How to set up and configure](https://www.youtube.com/watch?v=-W3tzu48Ad0&t=366s)
+* [No More MIS-READS! PERFECT ROI Settings for the MLM2Pro to GSPro Connector!](https://www.youtube.com/watch?v=gPnbO8ycCRY&t=219s)
+* [#1 FATAL MISTAKE when Setting ROI's for MLM2Pro to GSPro Connector! HD-ROI's - How did I miss this!](https://www.youtube.com/watch?v=suuIaPTU70I&t=331s)
 
 ## Acknowledgments
 
