@@ -5,16 +5,16 @@ from src.DevicesForm import DevicesForm
 from src.SelectDeviceForm import SelectDeviceForm
 from src.custom_exception import WindowNotFoundException, CameraWindowNotFoundException
 from src.log_message import LogMessageTypes, LogMessageSystems
-from src.screenshot_worker import ScreenshotWorker
+from src.screenshot_worker_launch_monitor import ScreenshotWorkerLaunchMonitor
 from src import MainWindow
 
 class LaunchMonitorMLM2PRO:
 
     def __init__(self, main_window: MainWindow):
         self.current_device = None
-        self.app_paths = self.main_window.app_paths
+        self.screenshot_thread = None
         self.main_window = main_window
-        self.screenshot_worker = ScreenshotWorker(self.main_window.settings)
+        self.screenshot_worker = ScreenshotWorkerLaunchMonitor(self.main_window.settings)
         self.devices = DevicesForm(self.main_window.app_paths)
         self.select_device = SelectDeviceForm(main_window=self.main_window)
 
