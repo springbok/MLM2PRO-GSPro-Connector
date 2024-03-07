@@ -9,7 +9,6 @@ from src.gspro_messages_worker import GSProMessagesWorker
 from src.gspro_start_worker import GSProStartWorker
 from src.gspro_worker import GsproWorker
 from src.log_message import LogMessageSystems, LogMessageTypes
-from src.worker_thread import WorkerThread
 
 
 class GSProConnection(QObject):
@@ -24,10 +23,10 @@ class GSProConnection(QObject):
     def __init__(self, main_window: MainWindow):
         super(GSProConnection, self).__init__()
         self.main_window = main_window
-        self.worker = None
-        self.thread = QThread()
         self.gspro_messages_thread = None
         self.gspro_messages_worker = None
+        self.send_shot_thread = None
+        self.send_shot_worker = None
         self.gspro_start_worker = None
         self.gspro_start_thread = None
         self.connected = None
@@ -40,7 +39,7 @@ class GSProConnection(QObject):
         self.main_window.gspro_status_label.setText('Not Connected')
         self.main_window.gspro_status_label.setStyleSheet("QLabel { background-color : red; color : white; }")
         self.__setup_send_shot_thread()
-        #self.__setup_gspro_messages_thread()
+        self.__setup_gspro_messages_thread()
 
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
@@ -86,25 +85,21 @@ class GSProConnection(QObject):
     def connect_to_gspro(self):
         if not self.connected:
             if self.__find_gspro_api_app():
-                self.worker = WorkerThread(
-                    self.gspro_connect.init_socket,
-                    self.settings.ip_address,
-                    self.settings.port)
-                self.worker.moveToThread(self.thread)
-                self.worker.started.connect(self.__in_progress)
-                self.worker.result.connect(self.__connected)
-                self.worker.error.connect(self.__error)
-                #self.worker.finished.connect(self.__finished)
-                self.thread.started.connect(self.worker.run())
-                self.thread.start()
+                print('connect')
+                self.gspro_connect.init_socket(self.settings.ip_address, self.settings.port)
+                self.__setup_gspro_messages_thread()
 
     def disconnect_from_gspro(self):
         if self.connected:
             self.main_window.gspro_connect_button.setEnabled(False)
+            if self.gspro_messages_thread is not None:
+                print('kill thread')
+                self.gspro_messages_thread.quit()
+                self.gspro_messages_thread.wait()
+                self.gspro_messages_thread = None
+                self.gspro_messages_worker = None
             self.gspro_connect.terminate_session()
             self.connected = False
-            self.thread.quit()
-            self.thread.wait()
             self.disconnected_from_gspro.emit()
 
     def __sent(self, balldata):
@@ -135,11 +130,11 @@ class GSProConnection(QObject):
     def shutdown(self):
         self.gspro_connect.terminate_session()
         self.connected = False
-        self.thread.quit()
-        self.thread.wait()
-        self.send_shot_thread.quit()
-        self.send_shot_thread.wait()
+        if self.send_shot_thread is not None:
+            self.send_shot_thread.quit()
+            self.send_shot_thread.wait()
         if self.gspro_messages_thread is not None:
+            print('shutdown')
             self.gspro_messages_thread.quit()
             self.gspro_messages_thread.wait()
         if self.gspro_start_thread is not None:

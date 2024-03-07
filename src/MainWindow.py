@@ -12,13 +12,11 @@ from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
-from src.ctype_screenshot import ScreenMirrorWindow
 from src.devices import Devices
 from src.gspro_connection import GSProConnection
 from src.launch_monitor_screenshot import LaunchMonitorScreenshot
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings, PuttingSystems
-from src.putting_webcam import PuttingWebcam
 from src.settings import Settings, LaunchMonitor
 from src.custom_exception import PutterNotSelected
 
