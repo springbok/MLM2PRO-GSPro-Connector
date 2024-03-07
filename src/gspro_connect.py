@@ -16,6 +16,7 @@ class GSProConnect(QObject):
     successful_send = 200
 
     def __init__(self, device_id, units, api_version) -> None:
+        self._socket = None
         self._device_id = device_id
         self._units = units
         self._api_version = api_version

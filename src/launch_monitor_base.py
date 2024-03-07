@@ -19,7 +19,7 @@ class LaunchMonitorBase:
         self.setup()
 
     def setup(self):
-        pass
+        return
 
     def resume(self):
         if self.launch_monitor_worker is not None:
@@ -30,7 +30,7 @@ class LaunchMonitorBase:
             self.launch_monitor_worker.pause()
 
     def shutdown(self):
-        if self.launch_monitor_worker is not None:
+        if self.launch_monitor_worker is not None and self.launch_monitor_thread is not None:
             self.launch_monitor_worker.shutdown()
             self.launch_monitor_thread.quit()
             self.launch_monitor_thread.wait()

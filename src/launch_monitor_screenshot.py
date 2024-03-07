@@ -17,12 +17,13 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
         self.current_device = None
         self.devices = None
         self.select_device = None
+        self.__setup()
 
-    def setup(self):
+    def __setup(self):
         super().setup()
         self.launch_monitor_worker = ScreenshotWorkerLaunchMonitor(self.main_window.settings)
         self.devices = DevicesForm(self.main_window.app_paths)
-        self.select_device = SelectDeviceForm(main_window=self)
+        self.select_device = SelectDeviceForm(self.main_window)
         self.__setup_launch_monitor_thread()
         self.__setup_signals()
         self.__update_selected_mirror_app()
@@ -33,15 +34,15 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
         self.launch_monitor_thread.started.connect(self.launch_monitor_worker.run)
         self.launch_monitor_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
         self.launch_monitor_worker.bad_shot.connect(self.main_window.bad_shot)
-        self.launch_monitor_worker.same_shot.connect(self.main_window.gspro_connection.club_selecion_worker.run)
-        self.launch_monitor_worker.bad_shot.connect(self.main_window.gspro_connection.club_selecion_worker.run)
+        #self.launch_monitor_worker.same_shot.connect(self.main_window.gspro_connection.club_selecion_worker.run)
+        #self.launch_monitor_worker.bad_shot.connect(self.main_window.gspro_connection.club_selecion_worker.run)
         self.launch_monitor_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
         self.launch_monitor_worker.error.connect(self.__launch_monitor_worker_error)
         self.launch_monitor_worker.paused.connect(self.__launch_monitor_worker_paused)
         self.launch_monitor_worker.resumed.connect(self.__launch_monitor_worker_resumed)
         self.launch_monitor_thread.start()
-        super().pause()
-        
+        self.pause()
+
     def __setup_signals(self):
         self.select_device.selected.connect(self.__device_selected)
         self.select_device.cancel.connect(self.__device_select_cancelled)
@@ -49,7 +50,7 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
 
 
     def __too_many_ghost_shots(self):
-        super().pause()
+        self.pause()
         QMessageBox.warning(self.main_window, "Ghost Shots Detected",
                             "Too many shots were received within a short space of time.\nSet the Camera option in the Rapsodo Range to 'Stationary' for a better result.")
 
@@ -82,14 +83,14 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
     def __device_select_cancelled(self):
         if not self.current_device is None and self.main_window.gspro_connection.connected:
             self.launch_monitor_worker.change_device(self.current_device)
-            super().resume()
+            self.resume()
 
     def __device_selected(self, device):
         self.current_device = device
         self.__update_selected_mirror_app()
         self.launch_monitor_worker.change_device(device)
         if self.main_window.gspro_connection.connected:
-            super().resume()
+            self.resume()
 
     def __update_selected_mirror_app(self):
         if not self.current_device is None:
@@ -105,5 +106,9 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
         QCoreApplication.processEvents()
 
     def __select_device(self):
-        super().pause()
+        self.pause()
         self.select_device.show()
+
+    def shutdown(self):
+        self.select_device.shutdown()
+        super().shutdown()

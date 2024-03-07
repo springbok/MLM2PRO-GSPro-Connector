@@ -55,9 +55,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting_settings_form = PuttingForm(main_window=self)
         self.webcam_putting = None
         self.current_putting_system = None
-        self.__setup()
-
-    def __setup(self):
         if self.settings.device_id != LaunchMonitor.R10:
             self.launch_monitor = LaunchMonitorScreenshot(self)
         self.__setup_ui()
@@ -312,14 +309,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.close()
 
     def closeEvent(self, event: QShowEvent) -> None:
-        if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
-            ScreenMirrorWindow.not_top_window(self.putting_settings.webcam['window_name'])
+        #if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
+        #    ScreenMirrorWindow.not_top_window(self.putting_settings.webcam['window_name'])
         self.gspro_connection.shutdown()
-        self.select_device.shutdown()
         self.putting_settings_form.shutdown()
         self.launch_monitor.shutdown()
-        if not self.webcam_putting is None:
-            self.webcam_putting.shutdown()
+        #if not self.webcam_putting is None:
+        #    self.webcam_putting.shutdown()
         sys.exit()
 
     def __settings(self):
