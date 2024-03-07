@@ -4,7 +4,7 @@ import os
 from PySide6.QtCore import QThread, QObject, Signal
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.putting_settings import PuttingSettings
-from src.server_putting_webcam import PuttingRequestHandler, PuttingWebcamWorker
+from src.putting_webcam_server import PuttingWebcamWorker
 
 
 class PuttingWebcam(QObject):

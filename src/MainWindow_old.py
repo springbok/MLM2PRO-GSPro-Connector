@@ -1,26 +1,29 @@
 import logging
 import os
+import subprocess
 import sys
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
-from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtCore import Qt, QCoreApplication, QThread
 from PySide6.QtGui import QShowEvent, QFont, QColor, QPalette
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QTextEdit, QHBoxLayout
+from src.DevicesForm import DevicesForm
 from src.PuttingForm import PuttingForm
 from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
+from src.SelectDeviceForm import SelectDeviceForm
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.devices import Devices
 from src.gspro_connection import GSProConnection
-from src.launch_monitor_screenshot import LaunchMonitorScreenshot
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings, PuttingSystems
 from src.putting_webcam import PuttingWebcam
-from src.settings import Settings, LaunchMonitor
-from src.custom_exception import PutterNotSelected
+from src.screenshot_worker_launch_monitor import ScreenshotWorkerLaunchMonitor
+from src.settings import Settings
+from src.custom_exception import WindowNotFoundException, PutterNotSelected, CameraWindowNotFoundException
 
 
 @dataclass
@@ -40,8 +43,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, app):
         super().__init__()
         self.setupUi(self)
-        self.launch_monitor = None
-
+        self.current_device = None
         self.putter_selected = False
         self.edit_fields = {}
         self.app = app
@@ -49,18 +51,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app_paths.setup()
         self.__setup_logging()
         self.settings = Settings(self.app_paths)
+        self.screenshot_worker = ScreenshotWorkerLaunchMonitor(self.settings)
         self.gspro_connection = GSProConnection(self)
+        self.devices = DevicesForm(self.app_paths)
+        self.select_device = SelectDeviceForm(main_window=self)
         self.settings_form = SettingsForm(settings=self.settings, app_paths=self.app_paths)
         self.putting_settings = PuttingSettings(self.app_paths)
         self.putting_settings_form = PuttingForm(main_window=self)
         self.webcam_putting = None
         self.current_putting_system = None
-        self.__setup()
-
-    def __setup(self):
-        if self.settings.device_id != LaunchMonitor.R10:
-            self.launch_monitor = LaunchMonitorScreenshot(self)
         self.__setup_ui()
+        self.__setup_screenshot_thread()
         self.__auto_start()
 
     def __setup_logging(self):
@@ -86,10 +87,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 size = os.stat(file).st_size
                 logging.debug(f"Training file name: {file} Date: {dt} Size: {size}")
 
+    def __setup_screenshot_thread(self):
+        self.screenshot_thread = QThread()
+        self.screenshot_worker.moveToThread(self.screenshot_thread)
+        self.screenshot_thread.started.connect(self.screenshot_worker.run)
+        self.screenshot_worker.shot.connect(self.gspro_connection.send_shot_worker.run)
+        self.screenshot_worker.bad_shot.connect(self.__bad_shot)
+        self.screenshot_worker.same_shot.connect(self.gspro_connection.club_selecion_worker.run)
+        self.screenshot_worker.bad_shot.connect(self.gspro_connection.club_selecion_worker.run)
+        self.screenshot_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
+        self.screenshot_worker.putting_started.connect(self.__putting_started)
+        self.screenshot_worker.putting_stopped.connect(self.__putting_stopped)
+        self.screenshot_worker.error.connect(self.__screenshot_worker_error)
+        self.screenshot_worker.paused.connect(self.__screenshot_worker_paused)
+        self.screenshot_worker.resumed.connect(self.__screenshot_worker_resumed)
+        self.screenshot_thread.start()
+
+    def __screenshot_worker_error(self, error):
+        msg = ''
+        if isinstance(error[0], WindowNotFoundException):
+            msg = f"Screen capture application ' {self.current_device.window_name}' does not seem to be running.\nPlease start the app, then press the 'Restart' button to restart the connector."
+            self.__screenshot_worker_paused()
+        elif isinstance(error[0], CameraWindowNotFoundException):
+            msg = f"Windows Camera application ' {self.putting_settings.exputt['window_name']}' does not seem to be running.\nPlease start the app, then press the 'Start' button to restart the putting."
+            if self.screenshot_worker.get_putting_active():
+                self.__putting_stop_start()
+        else:
+            msg = f"An unexpected error has occurred.\nException: {format(error[0])}"
+            self.__screenshot_worker_paused()
+        self.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, msg)
+        QMessageBox.warning(self, "Connector Error", msg)
+
     def showEvent(self, event: QShowEvent) -> None:
         super(QMainWindow, self).showEvent(event)
 
     def __setup_ui(self):
+        self.__update_selected_mirror_app()
         self.actionExit.triggered.connect(self.__exit)
         self.actionAbout.triggered.connect(self.__about)
         self.actionDevices.triggered.connect(self.__devices)
@@ -97,6 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionPuttingSettings.triggered.connect(self.__putting_settings)
         self.actionDonate.triggered.connect(self.__donate)
         self.actionShop.triggered.connect(self.__shop)
+        self.select_device_button.clicked.connect(self.__select_device)
         self.gspro_connect_button.clicked.connect(self.__gspro_connect)
         self.main_tab.setCurrentIndex(0)
         #self.log_table.horizontalHeader().setStretchLastSection(True)
@@ -121,11 +155,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         font.setBold(True)
         self.shot_history_table.horizontalHeader().setFont(font)
         self.shot_history_table.selectionModel().selectionChanged.connect(self.__shot_history_changed)
+        self.select_device.selected.connect(self.__device_selected)
+        self.select_device.cancel.connect(self.__device_select_cancelled)
         self.gspro_connection.connected_to_gspro.connect(self.__gspro_connected)
         self.gspro_connection.disconnected_from_gspro.connect(self.__gspro_disconnected)
         self.gspro_connection.shot_sent.connect(self.__shot_sent)
         self.gspro_connection.gspro_app_not_found.connect(self.__gspro_app_not_found)
         self.gspro_connection.club_selected.connect(self.__club_selected)
+        self.__screenshot_worker_paused()
         self.restart_button.clicked.connect(self.__restart_connector)
         self.pause_button.clicked.connect(self.__pause_connector)
         self.restart_button.setEnabled(False)
@@ -158,8 +195,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def __club_selected(self, club_data):
-        return
-        '''
         hwnd = None
         logging.debug(f'__club_selected: {club_data}')
         if club_data['Player']['Club'] == "PT":
@@ -182,11 +217,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.screenshot_worker.select_putter(False)
         self.screenshot_worker.club_selected(club_data['Player']['Club'])
         QCoreApplication.processEvents()
-        '''
 
     def __putting_stop_start(self):
-        return
-        '''
         running = False
         if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
             self.putter_selected = False
@@ -202,7 +234,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         logging.debug(f'putting running: {running} self.current_putting_system: {self.current_putting_system} self.screenshot_worker.get_putting_active(): {self.screenshot_worker.get_putting_active()}')
         if not running:
             self.__setup_putting()
-        '''
 
     def __putting_error(self, error):
         self.log_message(LogMessageTypes.LOGS, LogMessageSystems.WEBCAM_PUTTING, f'Putting Error: {format(error)}')
@@ -210,8 +241,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, "Putting Error", f'{format(error)}')
 
     def __setup_putting(self):
-        return
-        '''
         self.__display_putting_system()
         if self.putting_settings.system == PuttingSystems.WEBCAM:
             self.putting_server_button.setEnabled(True)
@@ -237,7 +266,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     subprocess.run('start microsoft.windows.camera:', shell=True)
         self.current_putting_system = self.putting_settings.system
         QCoreApplication.processEvents()
-        '''
 
     def __display_putting_system(self):
         self.putting_system_label.setText(self.putting_settings.system)
@@ -249,8 +277,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QCoreApplication.processEvents()
 
     def __putting_settings_saved(self):
-        return
-        '''
         # Reload updated settings
         self.putting_settings.load()
         if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
@@ -259,20 +285,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif self.putting_settings.system == PuttingSystems.EXPUTT and self.screenshot_worker.get_putting_active():
             self.screenshot_worker.set_putting_active(False)
             self.screenshot_worker.reload_putting_rois()
-        self.launch_monitor.resume()
+        if not self.current_device is None and self.gspro_connection.connected:
+            self.screenshot_worker.resume()
         self.__display_putting_system()
-        '''
 
     def __settings_saved(self):
         # Reload updated settings
         self.settings.load()
 
     def __putting_settings_cancelled(self):
-        pass
-        #if not self.current_device is None and self.gspro_connection.connected:
-        #    self.screenshot_worker.reload_putting_rois()
-        #    self.screenshot_worker.resume()
+        if not self.current_device is None and self.gspro_connection.connected:
+            self.screenshot_worker.reload_putting_rois()
+            self.screenshot_worker.resume()
 
+
+    def __device_select_cancelled(self):
+        if not self.current_device is None and self.gspro_connection.connected:
+            self.screenshot_worker.change_device(self.current_device)
+            self.screenshot_worker.resume()
 
     def __gspro_connected(self):
         self.gspro_connect_button.setEnabled(True)
@@ -280,13 +310,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connect_button.setText('Disconnect')
         self.gspro_status_label.setText('Connected')
         self.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        self.launch_monitor.resume()
+        if not self.current_device is None:
+            self.screenshot_worker.resume()
+
+    def __screenshot_worker_resumed(self):
+        self.screenshot_worker.ignore_shots_after_restart()
+        self.connector_status.setText('Ready')
+        self.connector_status.setStyleSheet("QLabel { background-color : green; color : white; }")
+        self.restart_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
+
+    def __screenshot_worker_paused(self):
+        self.connector_status.setText('Not Ready')
+        self.connector_status.setStyleSheet("QLabel { background-color : red; color : white; }")
+        self.restart_button.setEnabled(True)
+        self.pause_button.setEnabled(False)
 
     def __restart_connector(self):
-        self.launch_monitor.resume()
+        self.screenshot_worker.resume()
 
     def __pause_connector(self):
-        self.launch_monitor.pause()
+        self.screenshot_worker.pause()
 
     def __putting_stopped(self):
         self.putting_server_button.setText('Start')
@@ -301,7 +345,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QCoreApplication.processEvents()
 
     def __gspro_disconnected(self):
-        self.launch_monitor.pause()
+        self.screenshot_worker.pause()
         self.gspro_connect_button.setEnabled(True)
         self.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, 'Disconnected from GSPro')
         self.gspro_connect_button.setText('Connect')
@@ -317,23 +361,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connection.shutdown()
         self.select_device.shutdown()
         self.putting_settings_form.shutdown()
-        self.launch_monitor.shutdown()
+        self.screenshot_worker.shutdown()
+        self.screenshot_thread.quit()
+        self.screenshot_thread.wait()
         if not self.webcam_putting is None:
             self.webcam_putting.shutdown()
         sys.exit()
+
+    def __select_device(self):
+        self.screenshot_worker.pause()
+        self.select_device.show()
 
     def __settings(self):
         self.settings_form.show()
 
     def __putting_settings(self):
-        return
-        '''
         if (not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM) or \
             (self.current_putting_system == PuttingSystems.EXPUTT and self.screenshot_worker.get_putting_active()):
             self.__putting_stop_start()
         self.screenshot_worker.pause()
         self.putting_settings_form.show()
-        '''
 
     def __donate(self):
         url = "https://ko-fi.com/springbok_dev"
@@ -390,6 +437,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             logging.log(logging.INFO, message.message_string())
         if message.display_on(LogMessageTypes.STATUS_BAR):
             self.statusbar.showMessage(message.message, 2000)
+
+    def __update_selected_mirror_app(self):
+        if not self.current_device is None:
+            self.selected_device.setText(self.current_device.name)
+            self.selected_device.setStyleSheet("QLabel { background-color : green; color : white; }")
+            self.selected_mirror_app.setText(self.current_device.window_name)
+            self.selected_mirror_app.setStyleSheet("QLabel { background-color : green; color : white; }")
+        else:
+            self.selected_device.setText('No Device')
+            self.selected_device.setStyleSheet("QLabel { background-color : red; color : white; }")
+            self.selected_mirror_app.setText('No Mirror App')
+            self.selected_mirror_app.setStyleSheet("QLabel { background-color : red; color : white; }")
+        QCoreApplication.processEvents()
+
+    def __device_selected(self, device):
+        self.current_device = device
+        self.__update_selected_mirror_app()
+        self.screenshot_worker.change_device(device)
+        if self.gspro_connection.connected:
+            self.screenshot_worker.resume()
 
     def __shot_sent(self, balldata):
         self.__add_shot_history_row(balldata)
