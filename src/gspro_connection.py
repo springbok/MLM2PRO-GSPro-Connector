@@ -194,6 +194,7 @@ class GSProConnection(QObject):
 
     def __shutdown_threads(self):
         if self.gspro_messages_thread is not None:
+            self.gspro_messages_worker.shutdown()
             self.gspro_messages_thread.quit()
             self.gspro_messages_thread.wait()
             self.gspro_messages_thread = None

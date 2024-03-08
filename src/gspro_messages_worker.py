@@ -26,14 +26,17 @@ class GSProMessagesWorker(QObject):
         self.pause()
 
     def run(self):
-        return
+        print('messages run')
         self.started.emit()
+        print('messages after started emit')
         logging.debug(f'{self.name} Started')
         # Execute if not shutdown
         while not self._shutdown.is_set():
             Event().wait(100/1000)
+            print('after wait')
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
+            print('after pause')
             if not self._shutdown.is_set() and self.gspro_connection is not None and self.gspro_connection.connected:
                 try:
                     message = self.gspro_connection.check_for_message()

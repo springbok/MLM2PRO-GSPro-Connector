@@ -46,7 +46,13 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
         self.select_device.selected.connect(self.__device_selected)
         self.select_device.cancel.connect(self.__device_select_cancelled)
         self.main_window.select_device_button.clicked.connect(self.__select_device)
+        self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
 
+    def __club_selected(self, club_data):
+        if club_data['Player']['Club'] == "PT":
+            self.launch_monitor_worker.pause()
+        else:
+            self.launch_monitor_worker.resume()
 
     def __too_many_ghost_shots(self):
         self.pause()
