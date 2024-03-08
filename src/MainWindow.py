@@ -39,7 +39,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.launch_monitor = None
-
         self.putter_selected = False
         self.edit_fields = {}
         self.app = app
