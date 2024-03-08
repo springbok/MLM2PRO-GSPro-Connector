@@ -17,9 +17,8 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
         self.current_device = None
         self.devices = None
         self.select_device = None
-        self.__setup()
 
-    def __setup(self):
+    def setup(self):
         super().setup()
         self.launch_monitor_worker = ScreenshotWorkerLaunchMonitor(self.main_window.settings)
         self.devices = DevicesForm(self.main_window.app_paths)

@@ -9,6 +9,7 @@ from src.gspro_messages_worker import GSProMessagesWorker
 from src.gspro_start_worker import GSProStartWorker
 from src.gspro_worker import GsproWorker
 from src.log_message import LogMessageSystems, LogMessageTypes
+from src.worker_thread import WorkerThread
 
 
 class GSProConnection(QObject):
@@ -23,6 +24,8 @@ class GSProConnection(QObject):
     def __init__(self, main_window: MainWindow):
         super(GSProConnection, self).__init__()
         self.main_window = main_window
+        self.worker = None
+        self.thread = None
         self.gspro_messages_thread = None
         self.gspro_messages_worker = None
         self.send_shot_thread = None
@@ -43,7 +46,7 @@ class GSProConnection(QObject):
 
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
-        self.send_shot_worker = GsproWorker(self.gspro_connect.launch_ball)
+        self.send_shot_worker = GsproWorker(self.gspro_connect)
         self.send_shot_worker.moveToThread(self.send_shot_thread)
         self.send_shot_worker.started.connect(self.__sending_shot)
         self.send_shot_worker.sent.connect(self.__sent)
@@ -59,6 +62,20 @@ class GSProConnection(QObject):
         self.gspro_messages_worker.error.connect(self.__gspro_messages_error)
         self.gspro_messages_thread.started.connect(self.gspro_messages_worker.run)
         self.gspro_messages_thread.start()
+
+    def __setup_connection_thread(self):
+        self.thread = QThread()
+        self.worker = WorkerThread(
+            self.gspro_connect.init_socket,
+        self.settings.ip_address,
+            self.settings.port)
+        self.worker.moveToThread(self.thread)
+        self.worker.started.connect(self.__in_progress)
+        self.worker.result.connect(self.__connected)
+        self.worker.error.connect(self.__error)
+        # self.worker.finished.connect(self.__finished)
+        self.thread.started.connect(self.worker.run())
+        self.thread.start()
 
     def __club_selecion_error(self, error):
         self.club_selection_error.emit()
@@ -85,19 +102,17 @@ class GSProConnection(QObject):
     def connect_to_gspro(self):
         if not self.connected:
             if self.__find_gspro_api_app():
-                print('connect')
-                self.gspro_connect.init_socket(self.settings.ip_address, self.settings.port)
-                self.__setup_gspro_messages_thread()
+                if self.thread is None:
+                    self.__setup_connection_thread()
+                if self.gspro_messages_thread is None:
+                    self.__setup_gspro_messages_thread()
+                if self.send_shot_thread is None:
+                    self.__setup_send_shot_thread()
 
     def disconnect_from_gspro(self):
         if self.connected:
             self.main_window.gspro_connect_button.setEnabled(False)
-            if self.gspro_messages_thread is not None:
-                print('kill thread')
-                self.gspro_messages_thread.quit()
-                self.gspro_messages_thread.wait()
-                self.gspro_messages_thread = None
-                self.gspro_messages_worker = None
+            self.__shutdown_threads()
             self.gspro_connect.terminate_session()
             self.connected = False
             self.disconnected_from_gspro.emit()
@@ -130,18 +145,7 @@ class GSProConnection(QObject):
     def shutdown(self):
         self.gspro_connect.terminate_session()
         self.connected = False
-        if self.send_shot_thread is not None:
-            self.send_shot_thread.quit()
-            self.send_shot_thread.wait()
-        if self.gspro_messages_thread is not None:
-            print('shutdown')
-            self.gspro_messages_thread.quit()
-            self.gspro_messages_thread.wait()
-        if self.gspro_start_thread is not None:
-            self.gspro_start_worker.shutdown()
-            self.gspro_start_thread.quit()
-            self.gspro_start_thread.wait()
-
+        self.__shutdown_threads()
 
     def __log_message(self, types, message):
         self.main_window.log_message(types, LogMessageSystems.GSPRO_CONNECT, message)
@@ -188,4 +192,25 @@ class GSProConnection(QObject):
         self.__log_message(LogMessageTypes.LOGS, f'{msg} Exception: {format(error)}')
         QMessageBox.warning(self.main_window, "GSPro Start Error", msg)
 
-
+    def __shutdown_threads(self):
+        if self.gspro_messages_thread is not None:
+            self.gspro_messages_thread.quit()
+            self.gspro_messages_thread.wait()
+            self.gspro_messages_thread = None
+            self.gspro_messages_worker = None
+        if self.send_shot_thread is not None:
+            self.send_shot_thread.quit()
+            self.send_shot_thread.wait()
+            self.send_shot_thread = None
+            self.send_shot_worker = None
+        if self.gspro_start_thread is not None:
+            self.gspro_start_worker.shutdown()
+            self.gspro_start_thread.quit()
+            self.gspro_start_thread.wait()
+            self.gspro_start_thread = None
+            self.gspro_start_worker = None
+        if self.thread is not None:
+            self.thread.quit()
+            self.thread.wait()
+            self.thread = None
+            self.worker = None

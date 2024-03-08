@@ -55,6 +55,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_putting_system = None
         if self.settings.device_id != LaunchMonitor.R10:
             self.launch_monitor = LaunchMonitorScreenshot(self)
+            self.launch_monitor.setup()
         self.__setup_ui()
         self.__auto_start()
 

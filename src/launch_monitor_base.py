@@ -16,7 +16,6 @@ class LaunchMonitorBase:
         self.current_device = None
         self.launch_monitor_worker = None
         self.main_window = main_window
-        self.setup()
 
     def setup(self):
         return

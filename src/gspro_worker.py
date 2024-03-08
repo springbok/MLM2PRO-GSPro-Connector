@@ -1,6 +1,8 @@
 import traceback
 from PySide6.QtCore import QObject, Signal
 
+from src.gspro_connect import GSProConnect
+
 
 class GsproWorker(QObject):
     finished = Signal()
@@ -9,15 +11,15 @@ class GsproWorker(QObject):
     progress = Signal(int)
     started = Signal(object)
 
-    def __init__(self, launch_ball):
+    def __init__(self, gspro_connection: GSProConnect):
         super(GsproWorker, self).__init__()
-        self.launch_ball = launch_ball
+        self.gspro_connection = gspro_connection
 
     def run(self, balldata=None):
         if not balldata is None:
             try:
                 self.started.emit(balldata)
-                self.launch_ball(balldata)
+                self.gspro_connection.launch_ball(balldata)
             except Exception as e:
                 traceback.print_exc()
                 self.error.emit((e, traceback.format_exc()))
