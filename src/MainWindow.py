@@ -154,27 +154,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def __club_selected(self, club_data):
-        logging.debug(f'__club_selected: {club_data}')
-        self.log_message(LogMessageTypes.LOGS, LogMessageSystems.GSPRO_CONNECT, f"Change of Club: {club_data['Player']['Club']}")
-        if club_data['Player']['Club'] == "PT":
-            self.club_selection.setText('Putter')
-            self.club_selection.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-            #if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
-            #    self.webcam_putting.select_putter(True)
-            #    self.webcam_putting.start_putting_app()
-            #    ScreenMirrorWindow.top_window(self.putting_settings.webcam['window_name'])
-            #elif self.current_putting_system == PuttingSystems.EXPUTT:
-            #    self.screenshot_worker.select_putter(True)
-        else:
-            self.club_selection.setText(club_data['Player']['Club'])
-            self.club_selection.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
-            #if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
-            #    self.webcam_putting.select_putter(False)
-            #    ScreenMirrorWindow.not_top_window(self.putting_settings.webcam['window_name'])
-            #    ScreenMirrorWindow.bring_to_front(self.settings.grspo_window_name)
-            #elif self.current_putting_system == PuttingSystems.EXPUTT:
-            #    self.screenshot_worker.select_putter(False)
-        QCoreApplication.processEvents()
+        if (self.club_selection.text() != club_data['Player']['Club'] and
+                (club_data['Player']['Club'] != "PT" or (club_data['Player']['Club'] == "PT" and self.club_selection.text() != 'Putter'))):
+            self.log_message(LogMessageTypes.LOGS, LogMessageSystems.GSPRO_CONNECT, f"Change of Club: {club_data['Player']['Club']}")
+            if club_data['Player']['Club'] == "PT":
+                self.club_selection.setText('Putter')
+                self.club_selection.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
+                #if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
+                #    self.webcam_putting.select_putter(True)
+                #    self.webcam_putting.start_putting_app()
+                #    ScreenMirrorWindow.top_window(self.putting_settings.webcam['window_name'])
+                #elif self.current_putting_system == PuttingSystems.EXPUTT:
+                #    self.screenshot_worker.select_putter(True)
+            else:
+                self.club_selection.setText(club_data['Player']['Club'])
+                self.club_selection.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
+                #if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
+                #    self.webcam_putting.select_putter(False)
+                #    ScreenMirrorWindow.not_top_window(self.putting_settings.webcam['window_name'])
+                #    ScreenMirrorWindow.bring_to_front(self.settings.grspo_window_name)
+                #elif self.current_putting_system == PuttingSystems.EXPUTT:
+                #    self.screenshot_worker.select_putter(False)
+            QCoreApplication.processEvents()
 
     def __putting_stop_start(self):
         return

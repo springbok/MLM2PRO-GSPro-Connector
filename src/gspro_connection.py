@@ -108,6 +108,7 @@ class GSProConnection(QObject):
                     self.__setup_gspro_messages_thread()
                 if self.send_shot_thread is None:
                     self.__setup_send_shot_thread()
+                self.gspro_messages_worker.resume()
 
     def disconnect_from_gspro(self):
         if self.connected:

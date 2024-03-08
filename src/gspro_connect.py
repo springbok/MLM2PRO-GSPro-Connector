@@ -71,14 +71,13 @@ class GSProConnect(QObject):
         self._shot_number += 1
 
     def check_for_message(self):
-        messages = {}
+        message = bytes(0)
         if self._connected:
             read_socket, write_socket, error_socket = select.select([self._socket], [], [], 0)
-            message = bytes(0)
             while read_socket:
                 message = message + self._socket.recv(1024)
                 read_socket, write_socket, error_socket = select.select([self._socket], [], [], 0)
-            return messages
+        return message
 
     def terminate_session(self):
         if self._socket:

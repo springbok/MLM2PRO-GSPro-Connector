@@ -1,3 +1,5 @@
+import logging
+
 from PySide6.QtCore import QThread, QCoreApplication
 from PySide6.QtWidgets import QMessageBox
 
@@ -50,8 +52,10 @@ class LaunchMonitorScreenshot(LaunchMonitorBase):
 
     def __club_selected(self, club_data):
         if club_data['Player']['Club'] == "PT":
+            logging.debug('Putter selected pausing screenshot processing')
             self.launch_monitor_worker.pause()
         else:
+            logging.debug('Club other than putter selected resuming screenshot processing')
             self.launch_monitor_worker.resume()
 
     def __too_many_ghost_shots(self):
