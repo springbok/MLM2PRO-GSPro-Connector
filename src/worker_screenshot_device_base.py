@@ -1,30 +1,23 @@
 import logging
 from datetime import datetime
-from threading import Event
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 from src.settings import Settings
+from src.worker_base import WorkerBase
 
 
-class ScreenshotWorkerBase(QObject):
-    finished = Signal()
-    error = Signal(tuple)
+class WorkerScreenshotBase(WorkerBase):
     shot = Signal(object or None)
     bad_shot = Signal(object or None)
     too_many_ghost_shots = Signal()
     same_shot = Signal()
-    started = Signal()
-    paused = Signal()
-    resumed = Signal()
 
 
     def __init__(self, settings: Settings):
-        super(ScreenshotWorkerBase, self).__init__()
+        super(WorkerScreenshotBase, self).__init__()
+        self.shot_count = 0
         self.settings = settings
         self.time_of_last_shot = datetime.now()
-        self.name = ''
-        self._shutdown = Event()
-        self._pause = Event()
-        self.pause()
+        self.name = 'WorkerScreenshotDeviceBase'
 
     def do_screenshot(self, screenshot, settings, rois_setup):
         # Grab sreenshot and process data, checks if this is a new shot
@@ -63,16 +56,3 @@ class ScreenshotWorkerBase(QObject):
                 self.same_shot.emit()
         else:
             self.same_shot.emit()
-
-    def shutdown(self):
-        self.resume()
-        self._shutdown.set()
-        self.finished.emit()
-
-    def pause(self):
-        self._pause.clear()
-        self.paused.emit()
-
-    def resume(self):
-        self._pause.set()
-        self.resumed.emit()

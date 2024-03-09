@@ -3,14 +3,14 @@ import traceback
 from threading import Event
 from src.device import Device
 from src.screenshot import Screenshot
-from src.screenshot_worker_base import ScreenshotWorkerBase
+from src.worker_screenshot_device_base import WorkerScreenshotBase
 from src.settings import Settings
 
 
-class ScreenshotWorkerLaunchMonitor(ScreenshotWorkerBase):
+class WorkerScreenshotDeviceLaunchMonitor(WorkerScreenshotBase):
 
     def __init__(self, settings: Settings):
-        ScreenshotWorkerBase.__init__(self, settings)
+        WorkerScreenshotBase.__init__(self, settings)
         self.device = None
         self.screenshot = Screenshot(settings)
         self.shot_count = 0

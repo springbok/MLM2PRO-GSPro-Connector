@@ -5,25 +5,17 @@ import traceback
 from threading import Event
 from PySide6.QtCore import QObject, Signal
 from src.gspro_connect import GSProConnect
+from src.worker_screenshot_device_base import WorkerScreenshotBase
 
 
-class GSProMessagesWorker(QObject):
+class WorkerGSProMessages(WorkerScreenshotBase):
     player_info = 201
-
-    finished = Signal()
-    error = Signal(tuple)
-    started = Signal()
-    paused = Signal()
-    resumed = Signal()
     club_selected = Signal(object)
 
     def __init__(self, gspro_connection: GSProConnect):
-        super(GSProMessagesWorker, self).__init__()
+        super(WorkerScreenshotBase, self).__init__()
         self.gspro_connection = gspro_connection
-        self.name = 'GSProMessagesWorker'
-        self._shutdown = Event()
-        self._pause = Event()
-        self.pause()
+        self.name = 'WorkerGSProMessages'
 
     def run(self):
         self.started.emit()
@@ -56,19 +48,6 @@ class GSProMessagesWorker(QObject):
                 msg = json.loads(json_message)
                 messages[str(msg['Code'])] = msg
                 # Check if club selection message
-                if msg['Code'] == GSProMessagesWorker.player_info:
+                if msg['Code'] == WorkerGSProMessages.player_info:
                     self.club_selected.emit(msg)
         return messages
-
-    def shutdown(self):
-        self.resume()
-        self._shutdown.set()
-        self.finished.emit()
-
-    def pause(self):
-        self._pause.clear()
-        self.paused.emit()
-
-    def resume(self):
-        self._pause.set()
-        self.resumed.emit()

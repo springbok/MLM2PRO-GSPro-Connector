@@ -5,9 +5,9 @@ from PySide6.QtWidgets import QMessageBox
 from src import MainWindow
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.gspro_connect import GSProConnect
-from src.gspro_messages_worker import GSProMessagesWorker
-from src.gspro_start_worker import GSProStartWorker
-from src.gspro_worker import GsproWorker
+from src.worker_gspro_messages import WorkerGSProMessages
+from src.worker_gspro_start import WorkerGSProStart
+from src.worker_gspro import WorkerGspro
 from src.log_message import LogMessageSystems, LogMessageTypes
 from src.worker_thread import WorkerThread
 
@@ -46,7 +46,7 @@ class GSProConnection(QObject):
 
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
-        self.send_shot_worker = GsproWorker(self.gspro_connect)
+        self.send_shot_worker = WorkerGspro(self.gspro_connect)
         self.send_shot_worker.moveToThread(self.send_shot_thread)
         self.send_shot_worker.started.connect(self.__sending_shot)
         self.send_shot_worker.sent.connect(self.__sent)
@@ -56,7 +56,7 @@ class GSProConnection(QObject):
 
     def __setup_gspro_messages_thread(self):
         self.gspro_messages_thread = QThread()
-        self.gspro_messages_worker = GSProMessagesWorker(self.gspro_connect)
+        self.gspro_messages_worker = WorkerGSProMessages(self.gspro_connect)
         self.gspro_messages_worker.moveToThread(self.gspro_messages_thread)
         self.gspro_messages_worker.club_selected.connect(self.__club_selected)
         self.gspro_messages_worker.error.connect(self.__gspro_messages_error)
@@ -179,7 +179,7 @@ class GSProConnection(QObject):
                         subprocess.Popen(settings.gspro_path)
                     if auto_start:
                         self.gspro_start_thread = QThread()
-                        self.gspro_start_worker = GSProStartWorker(settings)
+                        self.gspro_start_worker = WorkerGSProStart(settings)
                         self.gspro_start_worker.moveToThread(self.gspro_start_thread)
                         self.gspro_start_worker.error.connect(self.__gspro_start_error)
                         self.gspro_start_thread.started.connect(self.gspro_start_worker.run)

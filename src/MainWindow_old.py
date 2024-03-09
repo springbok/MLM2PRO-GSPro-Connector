@@ -21,7 +21,7 @@ from src.gspro_connection import GSProConnection
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings, PuttingSystems
 from src.putting_webcam import PuttingWebcam
-from src.screenshot_worker_launch_monitor import ScreenshotWorkerLaunchMonitor
+from src.worker_screenshot_device_launch_monitor import WorkerScreenshotDeviceLaunchMonitor
 from src.settings import Settings
 from src.custom_exception import WindowNotFoundException, PutterNotSelected, CameraWindowNotFoundException
 
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app_paths.setup()
         self.__setup_logging()
         self.settings = Settings(self.app_paths)
-        self.screenshot_worker = ScreenshotWorkerLaunchMonitor(self.settings)
+        self.screenshot_worker = WorkerScreenshotDeviceLaunchMonitor(self.settings)
         self.gspro_connection = GSProConnection(self)
         self.devices = DevicesForm(self.app_paths)
         self.select_device = SelectDeviceForm(main_window=self)

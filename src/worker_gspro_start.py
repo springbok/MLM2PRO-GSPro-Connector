@@ -4,20 +4,17 @@ from PySide6.QtCore import QObject, Signal
 from src.auto_click import clickButton
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.settings import Settings
+from src.worker_screenshot_device_base import WorkerScreenshotBase
 
 
-class GSProStartWorker(QObject):
-    finished = Signal()
-    error = Signal(tuple)
-    started = Signal()
+class WorkerGSProStart(WorkerScreenshotBase):
     gspro_started = Signal()
 
 
     def __init__(self, settings: Settings):
-        super(GSProStartWorker, self).__init__()
+        super(WorkerScreenshotBase, self).__init__()
         self.settings = settings
-        self.name = 'GSProStartWorker'
-        self._shutdown = Event()
+        self.name = 'WorkerGSProStart'
 
     def run(self):
         self.started.emit()
@@ -44,6 +41,3 @@ class GSProStartWorker(QObject):
                         timeout = True
                         self.error.emit(e)
         self.finished.emit()
-
-    def shutdown(self):
-        self._shutdown.set()

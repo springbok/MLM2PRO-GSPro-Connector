@@ -3,13 +3,13 @@ import traceback
 from threading import Event
 from src.putting_settings import PuttingSettings
 from src.screenshot_exputt import ScreenshotExPutt
-from src.screenshot_worker_base import ScreenshotWorkerBase
+from src.worker_screenshot_device_base import WorkerScreenshotBase
 from src.settings import Settings
 
 
-class ScreenshotWorkerExPutt(ScreenshotWorkerBase):
+class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
     def __init__(self, settings: Settings, putting_settings: PuttingSettings):
-        ScreenshotWorkerBase.__init__(self, settings)
+        WorkerScreenshotBase.__init__(self, settings)
         self.putting_rois_reload = True
         self.settings = settings
         self.putting_settings = putting_settings

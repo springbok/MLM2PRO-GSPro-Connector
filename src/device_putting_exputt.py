@@ -2,43 +2,31 @@ from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QMessageBox
 from src.custom_exception import CameraWindowNotFoundException
 from src.log_message import LogMessageTypes, LogMessageSystems
-from src.screenshot_worker_exputt import ScreenshotWorkerExPutt
+from src.device_base import DeviceBase
+from src.worker_screenshot_device_exputt import WorkerScreenshotDeviceExPutt
 from src import MainWindow
 
 
-class PuttingExPutt:
+class DevicePuttingExPutt(DeviceBase):
 
     def __init__(self, main_window: MainWindow):
-        self.screenshot_thread = None
-        self.screenshot_worker = None
-        self.main_window = main_window
-        self.setup()
+        DeviceBase.__init__(self, main_window)
+        self.screenshot_worker = WorkerScreenshotDeviceExPutt(self.main_window.settings, self.main_window.putting_settings)
+        self.setup_device_thread()
+        self.__setup_signals()
 
-    def setup(self):
-        self.screenshot_worker = ScreenshotWorkerExPutt(self.main_window.settings, self.main_window.putting_settings)
-        self.__setup_screenshot_thread()
-
-    def __setup_screenshot_thread(self):
-        self.screenshot_thread = QThread()
-        self.screenshot_worker.moveToThread(self.screenshot_thread)
-        self.screenshot_thread.started.connect(self.screenshot_worker.run)
+    def setup_device_thread(self):
+        super().setup_device_thread()
         self.screenshot_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
         self.screenshot_worker.bad_shot.connect(self.main_window.bad_shot)
-        self.screenshot_worker.same_shot.connect(self.main_window.gspro_connection.club_selecion_worker.run)
-        self.screenshot_worker.bad_shot.connect(self.main_window.gspro_connection.club_selecion_worker.run)
         self.screenshot_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
-        self.screenshot_worker.error.connect(self.__screenshot_worker_error)
-        self.screenshot_worker.paused.connect(self.__screenshot_worker_paused)
-        self.screenshot_worker.resumed.connect(self.__screenshot_worker_resumed)
-        self.screenshot_thread.start()
-        self.__screenshot_worker_paused()
 
     def __too_many_ghost_shots(self):
         self.screenshot_worker.pause()
         QMessageBox.warning(self.main_window, "Ghost Shots Detected",
-                            "Too many shots were received within a short space of time.")
+                            "Too many putts were received within a short space of time.")
 
-    def __screenshot_worker_error(self, error):
+    def device_worker_error(self, error):
         msg = ''
         if isinstance(error[0], CameraWindowNotFoundException):
             msg = f"Windows Camera application ' {self.main_window.putting_settings.exputt['window_name']}' does not seem to be running.\nPlease start the app, then press the 'Start' button to restart the putting."

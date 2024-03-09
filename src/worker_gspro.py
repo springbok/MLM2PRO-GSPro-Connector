@@ -1,22 +1,19 @@
 import traceback
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 
 from src.gspro_connect import GSProConnect
+from src.worker_screenshot_device_base import WorkerScreenshotBase
 
 
-class GsproWorker(QObject):
-    finished = Signal()
-    error = Signal(tuple)
+class WorkerGspro(WorkerScreenshotBase):
     sent = Signal(object or None)
-    progress = Signal(int)
-    started = Signal(object)
 
     def __init__(self, gspro_connection: GSProConnect):
-        super(GsproWorker, self).__init__()
+        super(WorkerScreenshotBase, self).__init__()
         self.gspro_connection = gspro_connection
 
     def run(self, balldata=None):
-        if not balldata is None:
+        if balldata is not None:
             try:
                 self.started.emit(balldata)
                 self.gspro_connection.launch_ball(balldata)
