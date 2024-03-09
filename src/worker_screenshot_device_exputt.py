@@ -14,7 +14,7 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
         self.settings = settings
         self.putting_settings = putting_settings
         self.exputt_screenshot = ScreenshotExPutt(settings)
-        self.name = 'ScreenshotWorkerExPutt'
+        self.name = 'WorkerScreenshotDeviceExPutt'
 
     def run(self):
         self.started.emit()

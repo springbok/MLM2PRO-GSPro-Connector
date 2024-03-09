@@ -14,7 +14,7 @@ class WorkerScreenshotDeviceLaunchMonitor(WorkerScreenshotBase):
         self.device = None
         self.screenshot = Screenshot(settings)
         self.shot_count = 0
-        self.name = 'ScreenshotWorkerLaunchMonitor'
+        self.name = 'WorkerScreenshotDeviceLaunchMonitor'
 
     def run(self):
         self.started.emit()

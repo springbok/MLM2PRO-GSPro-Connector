@@ -6,11 +6,12 @@ from PySide6.QtCore import QObject, Signal
 from src.ball_data import BallData, PuttType
 from src.custom_exception import PutterNotSelected
 from src.putting_settings import PuttingSettings
+from src.worker_base import WorkerBase
 
 
 class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
 
-    def  __init__(self, *args, putting_worker=None, **kwargs):
+    def __init__(self, *args, putting_worker=None, **kwargs):
         self.ball_data = None
         self.putting_worker = putting_worker
         super(BaseHTTPRequestHandler, self).__init__(*args, **kwargs)
@@ -49,18 +50,15 @@ class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
                 self.putting_worker.send_putt(self.ball_data)
 
 
-class PuttingWebcamWorker(QObject):
-    started = Signal()
-    stopped = Signal()
-    error = Signal(object or None)
+class WorkerDeviceWebcam(WorkerBase):
     putt = Signal(object or None)
 
     def __init__(self, settings: PuttingSettings):
-        super(PuttingWebcamWorker, self).__init__()
+        super(WorkerDeviceWebcam, self).__init__()
         self._server = None
         self.putter = False
         self.settings = settings
-        self.name = 'PuttingWebcamWorker'
+        self.name = 'WorkerDeviceWebcam'
 
     def run(self):
         self.started.emit()
@@ -72,10 +70,9 @@ class PuttingWebcamWorker(QObject):
         self._server.serve_forever()
 
     def stop(self):
+        super().shutdown()
         self._server.shutdown()
         self._server.socket.close()
-        self.stopped.emit()
-        logging.debug(f'{self.name} Stopped')
 
     def send_putt(self, putt):
         self.putt.emit(putt)

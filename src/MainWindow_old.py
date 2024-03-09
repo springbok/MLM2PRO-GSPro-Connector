@@ -20,7 +20,7 @@ from src.devices import Devices
 from src.gspro_connection import GSProConnection
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings, PuttingSystems
-from src.putting_webcam import PuttingWebcam
+from src.device_putting_webcam import DevicePuttingWebcam
 from src.worker_screenshot_device_launch_monitor import WorkerScreenshotDeviceLaunchMonitor
 from src.settings import Settings
 from src.custom_exception import WindowNotFoundException, PutterNotSelected, CameraWindowNotFoundException
@@ -244,7 +244,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__display_putting_system()
         if self.putting_settings.system == PuttingSystems.WEBCAM:
             self.putting_server_button.setEnabled(True)
-            self.webcam_putting = PuttingWebcam(self.putting_settings)
+            self.webcam_putting = DevicePuttingWebcam(self.putting_settings)
             self.webcam_putting.started.connect(self.__putting_started)
             self.webcam_putting.stopped.connect(self.__putting_stopped)
             self.webcam_putting.error.connect(self.__putting_error)

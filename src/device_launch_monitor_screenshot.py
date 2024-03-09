@@ -44,11 +44,11 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
 
     def __club_selected(self, club_data):
         if club_data['Player']['Club'] == "PT":
-            logging.debug('Putter selected pausing screenshot processing')
-            self.device_worker.pause()
+            logging.debug('Putter selected pausing launch monitor screenshot processing')
+            self.pause()
         else:
-            logging.debug('Club other than putter selected resuming screenshot processing')
-            self.device_worker.resume()
+            logging.debug('Club other than putter selected resuming launch monitor screenshot processing')
+            self.resume()
 
     def __too_many_ghost_shots(self):
         self.pause()
@@ -102,7 +102,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         QCoreApplication.processEvents()
 
     def __select_device(self):
-        super().pause()
+        self.pause()
         self.select_device.show()
 
     def shutdown(self):
@@ -111,7 +111,6 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
 
     def __devices(self):
         self.devices.show()
-
 
     def resume(self):
         if not self.current_device is None:

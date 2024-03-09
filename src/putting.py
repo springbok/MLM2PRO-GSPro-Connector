@@ -1,6 +1,8 @@
 from PySide6.QtCore import QCoreApplication
 
 from src import MainWindow
+from src.device_putting_exputt import DevicePuttingExPutt
+from src.device_putting_webcam import DevicePuttingWebcam
 from src.putting_settings import PuttingSystems
 
 
@@ -8,11 +10,17 @@ class Putting:
 
     def __init__(self, main_window: MainWindow):
         self.main_window = main_window
-        self.webcam_putting = None
-        self.exputt_putting = None
-        self.__putting_stopped()
-        self.__display_putting_system()
+        self.__setup_putting_device()
         self.__setup_signals()
+
+    def __setup_putting_device(self):
+        if self.main_window.putting_settings.system == PuttingSystems.WEBCAM:
+            self.putting_device = DevicePuttingWebcam(self.main_window)
+        elif self.main_window.putting_settings.system == PuttingSystems.EXPUTT:
+            self.putting_device = DevicePuttingExPutt(self.main_window)
+        else:
+            self.putting_device = None
+        self.__display_putting_system()
 
     def __setup_signals(self):
         self.main_window.putting_settings_form.saved.connect(self.__putting_settings_saved)
@@ -27,21 +35,26 @@ class Putting:
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
         QCoreApplication.processEvents()
 
+    def __putting_settings(self):
+        self.previous_putting_system = PuttingSystems.NONE
+        if self.putting_device is not None:
+            self.previous_putting_system = self.putting_device.system
+            self.putting_device.pause()
+        self.main_window.putting_settings_form.show()
+
     def __putting_settings_saved(self):
         # Reload updated settings
         self.main_window.putting_settings.load()
-        if not self.webcam_putting is None:
-            self.webcam_putting.shutdown()
-            self.webcam_putting = None
-        elif self.exputt_putting is not None:
-            self.exputt_putting.reload_putting_rois()
-        self.__display_putting_system()
+        # Check if putting device changed
+        if self.previous_putting_system != self.main_window.putting_settings.system and self.putting_device is not None:
+            self.putting_device.shutdown()
+            self.putting_device = None
+        self.putting_device.reload_putting_rois()
 
     def __putting_settings_cancelled(self):
-        print('close')
-        #if not self.current_device is None and self.gspro_connection.connected:
-        #    self.screenshot_worker.reload_putting_rois()
-        #    self.screenshot_worker.resume()
+        if not self.putting_device is None and self.main_window.gspro_connection.connected:
+            self.putting_device.reload_putting_rois()
+            self.putting_device.resume()
 
     def __putting_stop_start(self):
         return
@@ -102,23 +115,9 @@ class Putting:
         self.main_window.putting_system_label.setText(self.main_window.putting_settings.system)
         if self.main_window.putting_settings.system == PuttingSystems.NONE:
             color = 'orange'
-        elif self.main_window.putting_settings.system == PuttingSystems.WEBCAM or self.main_window.putting_settings.system == PuttingSystems.EXPUTT:
+        else:
             color = 'green'
         self.main_window.putting_system_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-        QCoreApplication.processEvents()
-
-    def __putting_settings(self):
-        print('settings')
-        #if (not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM) or \
-        #    (self.current_putting_system == PuttingSystems.EXPUTT and self.screenshot_worker.get_putting_active()):
-        #    self.__putting_stop_start()
-        self.main_window.putting_settings_form.show()
-
-    def __putting_stopped(self):
-        self.main_window.putting_server_button.setText('Start')
-        self.main_window.putting_server_status_label.setText('Not Running')
-        self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
-        QCoreApplication.processEvents()
 
 
     def __club_selected(self, club_data):
