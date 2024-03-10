@@ -53,7 +53,6 @@ class WorkerBase(QObject):
         self.resume()
 
     def is_running(self):
-        print(f'WorkerBase is_running {self.worker_started}')
         return self.worker_started
 
 

@@ -14,9 +14,13 @@ class DevicePuttingBase(DeviceBase):
         self.putting_settings = main_window.putting_settings
 
     def setup(self):
+        self.start_app()
         self.setup_device_thread()
         self.setup_signals()
         self.device_worker_paused()
+
+    def start_app(self):
+        return
 
     def setup_device_thread(self):
         super().setup_device_thread()

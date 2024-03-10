@@ -1,8 +1,11 @@
+import subprocess
+
 from PySide6.QtWidgets import QMessageBox
+from threading import Event
+from src.ctype_screenshot import ScreenMirrorWindow
 from src.custom_exception import CameraWindowNotFoundException
 from src.device_putting_base import DevicePuttingBase
 from src.log_message import LogMessageTypes, LogMessageSystems
-from src.device_base import DeviceBase
 from src.worker_screenshot_device_exputt import WorkerScreenshotDeviceExPutt
 from src import MainWindow
 
@@ -22,6 +25,16 @@ class DevicePuttingExPutt(DevicePuttingBase):
 
     def __bad_shot(self, balldata):
         self.main_window.__add_shot_history_row(balldata)
+
+    def start_app(self):
+        if self.putting_settings.exputt['auto_start'] == 'Yes':
+            try:
+                self.main_window.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR,
+                                             f'Starting ExPutt')
+                ScreenMirrorWindow.find_window(self.putting_settings.exputt['window_name'])
+            except:
+                subprocess.run('start microsoft.windows.camera:', shell=True)
+                Event().wait(3)
 
     def __too_many_ghost_shots(self):
         self.pause()
