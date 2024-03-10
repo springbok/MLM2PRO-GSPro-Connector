@@ -12,7 +12,9 @@ If you are looking at a GSPro control box for your simulator, please consider my
 
 To find out more details you go to the online shop [here](https://cascadia3dpd.com/product/brain-box-golf-simulator-control-box-for-gspro/)
 
-### 7 February 24 - Announcement:
+## Announcements:
+
+### 7 February 24:
 
 **GSCloud Support**
 
@@ -29,7 +31,7 @@ And when that time comes, copy the IP settings from the second (player 2 / conne
 ![Update IP address](images/gscloud_ip_settings.png)
 
 
-### 3 November 23 - Announcement: 
+### 3 November 23: 
 
 **MEVO+ is now supported.**
 
