@@ -11,7 +11,7 @@ from src.device_base import DeviceBase
 from src.device_putting_base import DevicePuttingBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 from src.putting_settings import PuttingSettings
-from src.worker_device_webcam_server import WorkerDeviceWebcam
+from src.worker_device_webcam import WorkerDeviceWebcam
 
 
 class DevicePuttingWebcam(DevicePuttingBase):
@@ -20,12 +20,9 @@ class DevicePuttingWebcam(DevicePuttingBase):
     webcam_app = 'ball_tracking.exe'
 
     def __init__(self, main_window: MainWindow):
-        super(DevicePuttingBase, self).__init__(main_window)
+        DevicePuttingBase.__init__(self, main_window)
         self.device_worker = WorkerDeviceWebcam(self.main_window.settings, self.main_window.putting_settings)
         self.setup()
-        self.device_worker_paused()
-        self.start_putting_app()
-
 
     def setup_device_thread(self):
         self.http_server_worker.started.connect(self.__server_started)
@@ -35,10 +32,10 @@ class DevicePuttingWebcam(DevicePuttingBase):
         self.http_server_thread.started.connect(self.http_server_worker.run)
         self.http_server_thread.start()
 
-    def start_putting_app(self):
-        if self.settings.webcam['auto_start'] == "Yes" and not self.__find_ball_tracking_app():
+    def start_app(self):
+        if self.putting_settings.webcam['auto_start'] == "Yes" and not self.__find_ball_tracking_app():
             try:
-                params = f'-c {self.settings.webcam["ball_color"]} -w {self.settings.webcam["camera"]} {self.settings.webcam["params"]}'
+                params = f'-c {self.putting_settings.webcam["ball_color"]} -w {self.putting_settings.webcam["camera"]} {self.putting_settings.webcam["params"]}'
                 logging.debug(f'Starting webcam app: {DevicePuttingWebcam.webcam_app} params: {params}')
                 os.spawnl(os.P_DETACH, DevicePuttingWebcam.webcam_app, f'{DevicePuttingWebcam.webcam_app} {params}')
             except Exception as e:
@@ -53,7 +50,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
     def __find_ball_tracking_app(self):
         running = False
         try:
-            ScreenMirrorWindow.find_window(self.settings.webcam['window_name'])
+            ScreenMirrorWindow.find_window(self.putting_settings.webcam['window_name'])
             running = True
         except Exception:
             self.ball_tracking_app_not_found.emit()

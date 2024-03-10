@@ -8,6 +8,7 @@ from src.settings import Settings
 
 
 class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
+
     def __init__(self, settings: Settings, putting_settings: PuttingSettings):
         WorkerScreenshotBase.__init__(self, settings)
         self.putting_rois_reload = True

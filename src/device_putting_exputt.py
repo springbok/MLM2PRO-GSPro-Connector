@@ -32,7 +32,7 @@ class DevicePuttingExPutt(DevicePuttingBase):
                 self.main_window.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR,
                                              f'Starting ExPutt')
                 ScreenMirrorWindow.find_window(self.putting_settings.exputt['window_name'])
-            except:
+            except Exception:
                 subprocess.run('start microsoft.windows.camera:', shell=True)
                 Event().wait(3)
 

@@ -46,12 +46,12 @@ class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
             self.send_response_only(200)
             self.end_headers()
             self.wfile.write(str.encode(json.dumps(message)))
-            if not error:
+            if not error and not self.putting_worker.is_paused():
                 self.putting_worker.send_putt(self.ball_data)
 
 
 class WorkerDeviceWebcam(WorkerBase):
-    putt = Signal(object or None)
+    shot = Signal(object or None)
 
     def __init__(self, settings: PuttingSettings):
         super(WorkerDeviceWebcam, self).__init__()
@@ -69,13 +69,13 @@ class WorkerDeviceWebcam(WorkerBase):
             handler_partial)
         self._server.serve_forever()
 
-    def stop(self):
+    def shutdown(self):
         super().shutdown()
         self._server.shutdown()
         self._server.socket.close()
 
     def send_putt(self, putt):
-        self.putt.emit(putt)
+        self.shot.emit(putt)
 
     def send_error(self, error):
         self.error.emit(error)
