@@ -42,16 +42,6 @@ class GSProConnection(QObject):
         self.__gspro_disconnected()
         self.__setup_send_shot_thread()
         self.__setup_gspro_messages_thread()
-        self.__setup_signals()
-
-    def __setup_signals(self):
-        self.gspro_app_not_found.connect(self.__gspro_app_not_found)
-        self.connected_to_gspro.connect(self.__gspro_connected)
-        self.disconnected_from_gspro.connect(self.__gspro_disconnected)
-        self.shot_sent.connect(self.__shot_sent)
-
-    def __shot_sent(self, balldata):
-        self.main_window.__add_shot_history_row(balldata)
 
     def __gspro_disconnected(self):
         self.main_window.gspro_connect_button.setEnabled(True)
@@ -59,14 +49,6 @@ class GSProConnection(QObject):
         self.main_window.gspro_connect_button.setText('Connect')
         self.main_window.gspro_status_label.setText('Not Connected')
         self.main_window.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
-
-    def __gspro_connected(self):
-        self.main_window.gspro_connect_button.setEnabled(True)
-        self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, f'Connected to GSPro')
-        self.main_window.gspro_connect_button.setText('Disconnect')
-        self.main_window.gspro_status_label.setText('Connected')
-        self.main_window.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
         self.send_shot_worker = WorkerGspro(self.gspro_connect)
@@ -135,13 +117,14 @@ class GSProConnection(QObject):
 
     def disconnect_from_gspro(self):
         if self.connected:
-            self.main_window.gspro_connect_button.setEnabled(False)
+            self.connected = False
+            self.__gspro_disconnected()
             self.__shutdown_threads()
             self.gspro_connect.terminate_session()
-            self.connected = False
             self.disconnected_from_gspro.emit()
 
     def __sent(self, balldata):
+        self.main_window.__add_shot_history_row(balldata)
         self.shot_sent.emit(balldata)
 
     def __sending_shot(self):
@@ -157,7 +140,13 @@ class GSProConnection(QObject):
         QCoreApplication.processEvents()
 
     def __connected(self):
+        print('__connected')
         self.connected = True
+        self.main_window.gspro_connect_button.setEnabled(True)
+        self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, f'Connected to GSPro')
+        self.main_window.gspro_connect_button.setText('Disconnect')
+        self.main_window.gspro_status_label.setText('Connected')
+        self.main_window.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
         self.connected_to_gspro.emit()
 
     def __error(self, error):
@@ -182,6 +171,12 @@ class GSProConnection(QObject):
             running = True
         except Exception:
             self.gspro_app_not_found.emit()
+            self.main_window.gspro_connection.disconnect_from_gspro()
+            msg = f"GSPro API window '{self.main_window.settings.gspro_api_window_name}' does not seem to be running.\nStart GSPro or reset the API connector.\nPress 'Connect' to reconnect to GSPro."
+            self.main_window.log_message(LogMessageTypes.LOGS,
+                                         LogMessageSystems.GSPRO_CONNECT,
+                                         msg)
+            QMessageBox.warning(self.main_window, "GSPRO API Window Not Found", msg)
             running = False
         return running
 
@@ -241,11 +236,3 @@ class GSProConnection(QObject):
             self.thread = None
             self.worker = None
         print('__shutdown_threads end')
-
-    def __gspro_app_not_found(self):
-        self.main_window.gspro_connection.disconnect_from_gspro()
-        msg = f"GSPro API window '{self.main_window.settings.gspro_api_window_name}' does not seem to be running.\nStart GSPro or reset the API connector.\nPress 'Connect' to reconnect to GSPro."
-        self.main_window.log_message(LogMessageTypes.LOGS,
-                         LogMessageSystems.GSPRO_CONNECT,
-                         msg)
-        QMessageBox.warning(self.main_window, "GSPRO API Window Not Found", msg)

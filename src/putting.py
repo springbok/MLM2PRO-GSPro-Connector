@@ -31,6 +31,7 @@ class Putting:
         if self.putting_device is None:
             return
         if self.putting_device.running:
+            print('__putting_stop_start shutdown putt device')
             self.putting_device.shutdown()
             self.putting_device = None
         else:
@@ -85,11 +86,3 @@ class Putting:
         self.main_window.putting_settings_form.shutdown()
         if self.putting_device is not None:
             self.putting_device.shutdown()
-
-    def pause(self):
-        if self.putting_device is not None:
-            self.putting_device.pause()
-
-    def resume(self):
-        if self.putting_device is not None:
-            self.putting_device.resume()

@@ -167,6 +167,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         webbrowser.open(url, new=2) # 2 = open in new tab
 
     def __gspro_connect(self):
+        print(f'gspro_connect {self.gspro_connection.connected}')
         if self.gspro_connection.connected:
             self.gspro_connection.disconnect_from_gspro()
         else:

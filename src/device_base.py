@@ -15,7 +15,8 @@ class DeviceBase(QObject):
         self.main_window = main_window
 
     def resume(self):
-        if self.device_worker is not None and self.running:
+        print('DeviceBase resume')
+        if self.device_worker is not None and self.running and self.main_window.gspro_connection.connected:
             self.device_worker.resume()
 
     def pause(self):
