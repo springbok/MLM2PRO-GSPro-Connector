@@ -1,7 +1,16 @@
 # MLM2PRO-GSPro-Connector
 GSPro connector for the MLM2Pro & Mevo+ Launch Monitors that includes Webcam or ExPutt putting.
 
+## Support me:
+Any support greatly appreciated and will help me to continue to develop this connector.
+
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X3OXE0L)
+
+If you are looking at a GSPro control box for your simulator, please consider my Brain Box it has some very unique features.
+
+[![Brain Box](images/brain_box.jpg)](https://cascadia3dpd.com/product/brain-box-golf-simulator-control-box-for-gspro/)
+
+To find out more details you go to the online shop [here](https://cascadia3dpd.com/product/brain-box-golf-simulator-control-box-for-gspro/)
 
 ### 7 February 24 - Announcement:
 
