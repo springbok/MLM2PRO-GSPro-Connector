@@ -30,12 +30,14 @@ class Putting:
     def __putting_stop_start(self):
         if self.putting_device is None:
             return
-        if self.putting_device.running:
-            print('__putting_stop_start shutdown putt device')
-            self.putting_device.shutdown()
-            self.putting_device = None
+        if self.putting_device.is_running():
+            if self.putting_device.is_paused():
+                self.putting_device.resume()
+            else:
+                self.putting_device.stop()
         else:
             self.__setup_putting_device()
+            self.putting_device.start()
 
     def __putting_started(self):
         self.main_window.putting_server_button.setText('Stop')

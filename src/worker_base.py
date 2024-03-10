@@ -8,11 +8,14 @@ class WorkerBase(QObject):
     started = Signal()
     paused = Signal()
     resumed = Signal()
+    stopped = Signal()
+    running = Signal()
 
 
     def __init__(self):
         super(WorkerBase, self).__init__()
         self.name = 'WorkerBase'
+        self.worker_started = False
         self._shutdown = Event()
         self._pause = Event()
         self.pause()
@@ -23,7 +26,8 @@ class WorkerBase(QObject):
     def shutdown(self):
         # Do shutdown first so it doesn't execute when we resume
         self._shutdown.set()
-        self.resume()
+        # Resume
+        self._pause.set()
         self.finished.emit()
 
     def pause(self):
@@ -31,8 +35,25 @@ class WorkerBase(QObject):
         self.paused.emit()
 
     def resume(self):
-        self._pause.set()
-        self.resumed.emit()
+        if self.worker_started:
+            self._pause.set()
+            self.resumed.emit()
 
     def is_paused(self):
         return not self._pause.is_set()
+
+    def stop(self):
+        self.worker_started = False
+        self.stopped.emit()
+        self.pause()
+
+    def start(self):
+        self.worker_started = True
+        self.running.emit()
+        self.resume()
+
+    def is_running(self):
+        print(f'WorkerBase is_running {self.worker_started}')
+        return self.worker_started
+
+

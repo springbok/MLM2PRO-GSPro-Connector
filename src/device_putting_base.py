@@ -2,7 +2,6 @@ import logging
 from PySide6.QtCore import Signal
 from src import MainWindow
 from src.device_base import DeviceBase
-from src.putting_settings import PuttingSettings, PuttingSystems
 
 
 class DevicePuttingBase(DeviceBase):
@@ -39,9 +38,21 @@ class DevicePuttingBase(DeviceBase):
             self.resume()
 
     def device_worker_paused(self):
-        self.main_window.putting_server_button.setText('Start')
-        self.main_window.putting_server_status_label.setText('Not Running')
-        self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
+        msg = 'Start'
+        status = 'Not Running'
+        color = 'red'
+        print(f'DevicePuttingBase device_worker_paused {self.is_running()}')
+        if self.is_running():
+            msg = 'Resume'
+            if self.main_window.gspro_connection.connected:
+                color = 'orange'
+                status = 'Paused'
+            else:
+                status = 'Waiting GSPro'
+                color = 'red'
+        self.main_window.putting_server_button.setText(msg)
+        self.main_window.putting_server_status_label.setText(status)
+        self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def device_worker_resumed(self):
         print('DevicePuttingBase device_worker_resumed')

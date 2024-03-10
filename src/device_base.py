@@ -11,11 +11,11 @@ class DeviceBase(QObject):
         super(QObject, self).__init__()
         self.device_thread = None
         self.device_worker = None
-        self.running = False
         self.main_window = main_window
 
     def resume(self):
         print('DeviceBase resume')
+        self.running = True
         if self.device_worker is not None and self.running and self.main_window.gspro_connection.connected:
             self.device_worker.resume()
 
@@ -38,8 +38,6 @@ class DeviceBase(QObject):
         self.device_worker.error.connect(self.device_worker_error)
         self.device_worker.paused.connect(self.device_worker_paused)
         self.device_worker.resumed.connect(self.device_worker_resumed)
-        self.device_worker.started.connect(self.__server_started)
-        self.device_worker.finished.connect(self.__server_stopped)
         self.device_thread.start()
 
     def device_worker_error(self, error):
@@ -56,11 +54,18 @@ class DeviceBase(QObject):
     def reload_putting_rois(self):
         pass
 
-    def paused(self):
-        return (self.device_worker is not None and self.device_worker.paused())
+    def is_paused(self):
+        return (self.device_worker is not None and self.device_worker.is_paused())
 
-    def __server_started(self):
-        self.running = True
+    def is_running(self):
+        return (self.device_worker is not None and self.device_worker.is_running())
 
-    def __server_stopped(self):
-        self.running = False
+    def start(self):
+        if self.device_worker is not None and not self.is_running():
+            print(f'DeviceBase start {self.is_running()}')
+            self.device_worker.start()
+
+    def stop(self):
+        if self.device_worker is not None and self.is_running():
+            print(f'DeviceBase stop {self.is_running()}')
+            self.device_worker.stop()

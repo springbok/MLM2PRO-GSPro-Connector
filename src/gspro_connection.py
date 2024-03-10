@@ -49,6 +49,7 @@ class GSProConnection(QObject):
         self.main_window.gspro_connect_button.setText('Connect')
         self.main_window.gspro_status_label.setText('Not Connected')
         self.main_window.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
+
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
         self.send_shot_worker = WorkerGspro(self.gspro_connect)
