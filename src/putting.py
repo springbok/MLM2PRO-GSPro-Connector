@@ -14,6 +14,7 @@ class Putting:
         self.__setup_signals()
 
     def __setup_putting_device(self):
+        print('__setup_putting_device')
         if self.main_window.putting_settings.system == PuttingSystems.WEBCAM:
             self.putting_device = DevicePuttingWebcam(self.main_window)
         elif self.main_window.putting_settings.system == PuttingSystems.EXPUTT:
@@ -28,16 +29,14 @@ class Putting:
         self.main_window.actionPuttingSettings.triggered.connect(self.__putting_settings)
 
     def __putting_stop_start(self):
-        if self.putting_device is None:
-            return
-        if self.putting_device.is_running():
-            if self.putting_device.is_paused():
-                self.putting_device.resume()
+        if self.putting_device is not None:
+            if self.putting_device.is_running():
+                if self.putting_device.is_paused():
+                    self.putting_device.resume()
+                else:
+                    self.putting_device.stop()
             else:
-                self.putting_device.stop()
-        else:
-            self.__setup_putting_device()
-            self.putting_device.start()
+                self.putting_device.start()
 
     def __putting_started(self):
         self.main_window.putting_server_button.setText('Stop')
@@ -87,4 +86,5 @@ class Putting:
     def shutdown(self):
         self.main_window.putting_settings_form.shutdown()
         if self.putting_device is not None:
+            print('putting shutdown - putting device')
             self.putting_device.shutdown()

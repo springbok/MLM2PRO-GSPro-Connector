@@ -24,6 +24,7 @@ class WorkerBase(QObject):
         return
 
     def shutdown(self):
+        print(f'{self.name} shutdown')
         # Do shutdown first so it doesn't execute when we resume
         self._shutdown.set()
         # Resume

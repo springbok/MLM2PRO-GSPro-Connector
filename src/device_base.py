@@ -29,8 +29,11 @@ class DeviceBase(QObject):
             self.device_worker.shutdown()
             self.device_thread.quit()
             self.device_thread.wait()
+            self.device_thread = None
+            self.device_worker = None
 
     def setup_device_thread(self):
+        print(f'DeviceBase setup_device_thread {self.__class__.__name__}')
         self.device_thread = QThread()
         self.device_worker.moveToThread(self.device_thread)
         self.device_thread.started.connect(self.device_worker.run)
