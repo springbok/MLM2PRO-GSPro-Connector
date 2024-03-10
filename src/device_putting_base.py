@@ -45,7 +45,6 @@ class DevicePuttingBase(DeviceBase):
         msg = 'Start'
         status = 'Not Running'
         color = 'red'
-        print(f'DevicePuttingBase device_worker_paused {self.is_running()}')
         if self.is_running():
             msg = 'Resume'
             if self.main_window.gspro_connection.connected:
@@ -59,7 +58,6 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def device_worker_resumed(self):
-        print('DevicePuttingBase device_worker_resumed')
         self.main_window.putting_server_button.setText('Stop')
         msg = 'Running'
         color = 'green'
@@ -70,7 +68,6 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def resume(self):
-        print('DevicePuttingBase resume')
         self.reload_putting_rois()
         super().resume()
 

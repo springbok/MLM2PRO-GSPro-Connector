@@ -69,17 +69,39 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         QMessageBox.warning(self.main_window, "Connector Error", msg)
 
     def device_worker_paused(self):
-        self.main_window.connector_status.setText('Not Ready')
-        self.main_window.connector_status.setStyleSheet("QLabel { background-color : red; color : white; }")
-        self.main_window.restart_button.setEnabled(True)
+        status = 'Not Running'
+        color = 'red'
+        restart = False
+        if self.is_running():
+            msg = 'Resume'
+            restart = True
+            if self.main_window.gspro_connection.connected:
+                color = 'orange'
+                status = 'Paused'
+                restart = True
+            else:
+                status = 'Waiting GSPro'
+                color = 'red'
+                restart = False
+        self.main_window.connector_status.setText(status)
+        self.main_window.connector_status.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+        self.main_window.restart_button.setEnabled(restart)
         self.main_window.pause_button.setEnabled(False)
 
     def device_worker_resumed(self):
+        msg = 'Running'
+        color = 'green'
+        restart = False
+        pause = True
+        if not self.main_window.gspro_connection.connected:
+            msg = 'Waiting GSPro'
+            color = 'red'
+            pause = False
         self.device_worker.ignore_shots_after_restart()
-        self.main_window.connector_status.setText('Ready')
-        self.main_window.connector_status.setStyleSheet("QLabel { background-color : green; color : white; }")
-        self.main_window.restart_button.setEnabled(False)
-        self.main_window.pause_button.setEnabled(True)
+        self.main_window.connector_status.setText(msg)
+        self.main_window.connector_status.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+        self.main_window.restart_button.setEnabled(restart)
+        self.main_window.pause_button.setEnabled(pause)
 
     def __device_select_cancelled(self):
         if not self.current_device is None and self.main_window.gspro_connection.connected:
@@ -90,8 +112,11 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.current_device = device
         self.__update_selected_mirror_app()
         self.device_worker.change_device(device)
-        if self.main_window.gspro_connection.connected:
-            self.resume()
+        if self.is_running():
+            if self.is_paused():
+                self.resume()
+        else:
+            self.start()
 
     def __update_selected_mirror_app(self):
         if not self.current_device is None:
@@ -107,7 +132,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         QCoreApplication.processEvents()
 
     def __select_device(self):
-        self.pause()
+        self.stop()
         self.select_device.show()
 
     def shutdown(self):
@@ -118,5 +143,4 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.devices.show()
 
     def resume(self):
-        if not self.current_device is None and self.main_window.gspro_connection.connected:
-            super().resume()
+        super().resume()

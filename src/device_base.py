@@ -14,7 +14,6 @@ class DeviceBase(QObject):
         self.main_window = main_window
 
     def resume(self):
-        print('DeviceBase resume')
         self.running = True
         if self.device_worker is not None and self.running and self.main_window.gspro_connection.connected:
             self.device_worker.resume()
@@ -62,10 +61,8 @@ class DeviceBase(QObject):
 
     def start(self):
         if self.device_worker is not None and not self.is_running():
-            print(f'DeviceBase start {self.is_running()}')
             self.device_worker.start()
 
     def stop(self):
         if self.device_worker is not None and self.is_running():
-            print(f'DeviceBase stop {self.is_running()}')
             self.device_worker.stop()
