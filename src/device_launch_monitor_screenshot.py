@@ -30,14 +30,19 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
     def setup_device_thread(self):
         super().setup_device_thread()
         self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
-        self.device_worker.bad_shot.connect(self.main_window.bad_shot)
+        self.device_worker.bad_shot.connect(self.__bad_shot)
         self.device_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
+
+    def __bad_shot(self, balldata):
+        self.main_window.__add_shot_history_row(balldata)
 
     def __setup_signals(self):
         self.select_device.selected.connect(self.__device_selected)
         self.select_device.cancel.connect(self.__device_select_cancelled)
         self.main_window.select_device_button.clicked.connect(self.__select_device)
         self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
+        self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
+        self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         self.main_window.putting_settings_form.cancel.connect(self.resume)
         self.main_window.actionPuttingSettings.triggered.connect(self.pause)
         self.main_window.actionDevices.triggered.connect(self.__devices)
@@ -113,5 +118,5 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.devices.show()
 
     def resume(self):
-        if not self.current_device is None:
+        if not self.current_device is None and self.main_window.gspro_connection.connected:
             super().resume()

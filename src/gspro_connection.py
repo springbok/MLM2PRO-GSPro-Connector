@@ -32,17 +32,40 @@ class GSProConnection(QObject):
         self.send_shot_worker = None
         self.gspro_start_worker = None
         self.gspro_start_thread = None
-        self.connected = None
+        self.connected = False
         self.settings = main_window.settings
         self.gspro_connect = GSProConnect(
             self.settings.device_id,
             self.settings.units,
             self.settings.api_version
         )
-        self.main_window.gspro_status_label.setText('Not Connected')
-        self.main_window.gspro_status_label.setStyleSheet("QLabel { background-color : red; color : white; }")
+        self.__gspro_disconnected()
         self.__setup_send_shot_thread()
         self.__setup_gspro_messages_thread()
+        self.__setup_signals()
+
+    def __setup_signals(self):
+        self.gspro_app_not_found.connect(self.__gspro_app_not_found)
+        self.connected_to_gspro.connect(self.__gspro_connected)
+        self.disconnected_from_gspro.connect(self.__gspro_disconnected)
+        self.shot_sent.connect(self.__shot_sent)
+
+    def __shot_sent(self, balldata):
+        self.main_window.__add_shot_history_row(balldata)
+
+    def __gspro_disconnected(self):
+        self.main_window.gspro_connect_button.setEnabled(True)
+        self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, 'Disconnected from GSPro')
+        self.main_window.gspro_connect_button.setText('Connect')
+        self.main_window.gspro_status_label.setText('Not Connected')
+        self.main_window.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
+
+    def __gspro_connected(self):
+        self.main_window.gspro_connect_button.setEnabled(True)
+        self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, f'Connected to GSPro')
+        self.main_window.gspro_connect_button.setText('Disconnect')
+        self.main_window.gspro_status_label.setText('Connected')
+        self.main_window.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def __setup_send_shot_thread(self):
         self.send_shot_thread = QThread()
@@ -194,6 +217,7 @@ class GSProConnection(QObject):
         QMessageBox.warning(self.main_window, "GSPro Start Error", msg)
 
     def __shutdown_threads(self):
+        print('__shutdown_threads')
         if self.gspro_messages_thread is not None:
             self.gspro_messages_worker.shutdown()
             self.gspro_messages_thread.quit()
@@ -216,3 +240,12 @@ class GSProConnection(QObject):
             self.thread.wait()
             self.thread = None
             self.worker = None
+        print('__shutdown_threads end')
+
+    def __gspro_app_not_found(self):
+        self.main_window.gspro_connection.disconnect_from_gspro()
+        msg = f"GSPro API window '{self.main_window.settings.gspro_api_window_name}' does not seem to be running.\nStart GSPro or reset the API connector.\nPress 'Connect' to reconnect to GSPro."
+        self.main_window.log_message(LogMessageTypes.LOGS,
+                         LogMessageSystems.GSPRO_CONNECT,
+                         msg)
+        QMessageBox.warning(self.main_window, "GSPRO API Window Not Found", msg)

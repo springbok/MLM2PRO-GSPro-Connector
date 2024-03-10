@@ -4,10 +4,9 @@ import sys
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
-from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QShowEvent, QFont, QColor, QPalette
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QTextEdit, QHBoxLayout
-
 from src.PuttingForm import PuttingForm
 from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
@@ -112,11 +111,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         font.setBold(True)
         self.shot_history_table.horizontalHeader().setFont(font)
         self.shot_history_table.selectionModel().selectionChanged.connect(self.__shot_history_changed)
-        self.gspro_connection.connected_to_gspro.connect(self.__gspro_connected)
-        self.gspro_connection.disconnected_from_gspro.connect(self.__gspro_disconnected)
-        self.gspro_connection.shot_sent.connect(self.__shot_sent)
-        self.gspro_connection.gspro_app_not_found.connect(self.__gspro_app_not_found)
-        self.gspro_connection.club_selected.connect(self.__club_selected)
         self.restart_button.clicked.connect(self.__restart_connector)
         self.pause_button.clicked.connect(self.__pause_connector)
         self.restart_button.setEnabled(False)
@@ -141,30 +135,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.gspro_connection.gspro_start(self.settings, False)
 
-
-    def __club_selected(self, club_data):
-        if (self.club_selection.text() != club_data['Player']['Club'] and
-                (club_data['Player']['Club'] != "PT" or (club_data['Player']['Club'] == "PT" and self.club_selection.text() != 'Putter'))):
-            self.log_message(LogMessageTypes.LOGS, LogMessageSystems.GSPRO_CONNECT, f"Change of Club: {club_data['Player']['Club']}")
-            if club_data['Player']['Club'] == "PT":
-                self.club_selection.setText('Putter')
-                self.club_selection.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-            else:
-                self.club_selection.setText(club_data['Player']['Club'])
-                self.club_selection.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
-            QCoreApplication.processEvents()
-
     def __settings_saved(self):
         # Reload updated settings
         self.settings.load()
-
-    def __gspro_connected(self):
-        self.gspro_connect_button.setEnabled(True)
-        self.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, f'Connected to GSPro')
-        self.gspro_connect_button.setText('Disconnect')
-        self.gspro_status_label.setText('Connected')
-        self.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        self.launch_monitor.resume()
 
     def __restart_connector(self):
         self.launch_monitor.resume()
@@ -172,21 +145,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __pause_connector(self):
         self.launch_monitor.pause()
 
-    def __gspro_disconnected(self):
-        self.launch_monitor.pause()
-        self.putting.pause()
-        self.gspro_connect_button.setEnabled(True)
-        self.log_message(LogMessageTypes.ALL, LogMessageSystems.GSPRO_CONNECT, 'Disconnected from GSPro')
-        self.gspro_connect_button.setText('Connect')
-        self.gspro_status_label.setText('Not Connected')
-        self.gspro_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
-
     def __exit(self):
         self.close()
 
     def closeEvent(self, event: QShowEvent) -> None:
-        #if not self.webcam_putting is None and self.webcam_putting.running and self.current_putting_system == PuttingSystems.WEBCAM:
-        #    ScreenMirrorWindow.not_top_window(self.putting_settings.webcam['window_name'])
+        print('close')
         self.gspro_connection.shutdown()
         self.putting.shutdown()
         self.launch_monitor.shutdown()
@@ -211,14 +174,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __about(self):
         QMessageBox.information(self, "About", f"{MainWindow.app_name}\nVersion: {MainWindow.version}")
-
-    def __gspro_app_not_found(self):
-        self.gspro_connection.disconnect_from_gspro()
-        msg = f"GSPro API window '{self.settings.gspro_api_window_name}' does not seem to be running.\nStart GSPro or reset the API connector.\nPress 'Connect' to reconnect to GSPro."
-        self.log_message(LogMessageTypes.LOGS,
-                         LogMessageSystems.GSPRO_CONNECT,
-                         msg)
-        QMessageBox.warning(self, "GSPRO API Window Not Found", msg)
 
     def log_message(self, message_types, message_system, message):
         self.__add_log_row(
@@ -247,12 +202,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             logging.log(logging.INFO, message.message_string())
         if message.display_on(LogMessageTypes.STATUS_BAR):
             self.statusbar.showMessage(message.message, 2000)
-
-    def __shot_sent(self, balldata):
-        self.__add_shot_history_row(balldata)
-
-    def bad_shot(self, balldata):
-        self.__add_shot_history_row(balldata)
 
     def __add_shot_history_row(self, balldata: BallData):
         row = self.shot_history_table.rowCount()

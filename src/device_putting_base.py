@@ -9,10 +9,12 @@ class DevicePuttingBase(DeviceBase):
 
     putt_shot = Signal(object)
 
-    def __init__(self, putting_settings: PuttingSettings, main_window: MainWindow):
-        super(DevicePuttingBase, self).__init__(main_window)
+    def __init__(self, main_window: MainWindow):
+        super(DeviceBase, self).__init__(main_window)
         self.main_window = main_window
-        self.putting_settings = putting_settings
+        self.putting_settings = main_window.putting_settings
+
+    def setup(self):
         self.setup_device_thread()
         self.setup_signals()
         self.device_worker_paused()
@@ -25,6 +27,8 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         self.main_window.putting_settings_form.cancel.connect(self.resume)
         self.main_window.actionPuttingSettings.triggered.connect(self.pause)
+        self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
+        self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
 
     def __club_selected(self, club_data):
         if club_data['Player']['Club'] == "PT":
@@ -45,8 +49,8 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def resume(self):
-        if self.putting_settings.system != PuttingSystems.NONE:
-            super().resume()
+        self.reload_putting_rois()
+        super().resume()
 
     def reload_putting_rois(self):
         pass

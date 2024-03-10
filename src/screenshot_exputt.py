@@ -12,7 +12,6 @@ class ScreenshotExPutt(ScreenshotBase):
         ScreenshotBase.__init__(self, *args, **kwargs)
         self.settings = settings
 
-
     def capture_screenshot(self, settings, rois_setup=False):
         # Check if window minimized, for some reason it has a different hwnd when minimized
         # so check here first and restore

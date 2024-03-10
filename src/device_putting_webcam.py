@@ -20,9 +20,9 @@ class DevicePuttingWebcam(DevicePuttingBase):
     webcam_app = 'ball_tracking.exe'
 
     def __init__(self, main_window: MainWindow):
+        super(DevicePuttingBase, self).__init__(main_window)
         self.device_worker = WorkerDeviceWebcam(self.main_window.settings, self.main_window.putting_settings)
-        super(DevicePuttingWebcam, self).__init__(main_window)
-        self.__setup_signals()
+        self.setup()
         self.device_worker_paused()
         self.start_putting_app()
 

@@ -26,7 +26,7 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
             self._pause.wait()
             if not self._shutdown.is_set():
                 try:
-                    self.do_screenshot(self.exputt_screenshot, self.settings, self.putting_rois_reload)
+                    self.do_screenshot(self.exputt_screenshot, self.putting_settings, self.putting_rois_reload)
                     self.putting_rois_reload = False
                 except Exception as e:
                     if not isinstance(e, ValueError):
