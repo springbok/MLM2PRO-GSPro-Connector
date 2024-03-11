@@ -27,7 +27,9 @@ class WorkerDeviceR10(WorkerBase):
 
     def run(self) -> None:
         try:
+            print('started')
             self.started.emit()
+            self._pause.wait()
             self._socket.bind((self.settings.r10_connector_ip_address, self.settings.r10_connector_port))
             self._socket.listen(1)
             msg = f"Listening for R10 on port {self.settings.r10_connector_ip_address} : {self.settings.r10_connector_port}"
@@ -65,9 +67,7 @@ class WorkerDeviceR10(WorkerBase):
             logging.debug(f'Error in process {self.name}: {format(e)}, {traceback.format_exc()}')
             self.error.emit((e, traceback.format_exc()))
         finally:
+            print('finished')
             if self._socket:
                 self._socket.close()
         self.finished.emit()
-
-    def shutdown(self):
-        self._shutdown.set()

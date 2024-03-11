@@ -12,6 +12,7 @@ from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
+from src.device_launch_monitor_r10 import DeviceLaunchMonitorR10
 from src.devices import Devices
 from src.gspro_connection import GSProConnection
 from src.device_launch_monitor_screenshot import DeviceLaunchMonitorScreenshot
@@ -52,6 +53,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting = Putting(main_window=self)
         if self.settings.device_id != LaunchMonitor.R10:
             self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
+        else:
+            self.launch_monitor = DeviceLaunchMonitorR10(self)
         self.__setup_ui()
         self.__auto_start()
 

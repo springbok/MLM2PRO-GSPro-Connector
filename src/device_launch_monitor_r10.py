@@ -15,18 +15,28 @@ class DeviceLaunchMonitorR10(DeviceBase):
 
     def __init__(self, main_window: MainWindow):
         DeviceBase.__init__(self, main_window)
-        self.device_worker = WorkerDeviceR10(self.main_window.putting_settings)
+        self.__setup_signals()
+        self.device_worker_paused()
 
     def setup_device_thread(self):
         super().setup_device_thread()
-        self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
+        #self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
         self.device_worker.listening.connect(self.__listening)
         self.device_worker.connected.connect(self.__connected)
+        self.device_worker.finished.connect(self.device_worker_paused)
 
-    def setup(self):
-        self.setup_device_thread()
-        self.setup_signals()
-        self.device_worker_paused()
+    def __setup_signals(self):
+        self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
+
+    def __server_start_stop(self):
+        if self.device_worker is None:
+            self.device_worker = WorkerDeviceR10(self.main_window.settings)
+            self.setup_device_thread()
+            self.device_worker.start()
+        else:
+            self.device_worker.stop()
+            self.shutdown()
+            self.device_worker_paused()
 
     def start_app(self):
         if len(self.main_window.settings.r10_connector_path.strip()) > 0:
@@ -42,34 +52,22 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.stop()
 
     def __listening(self):
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.R10, 'Listening')
-        self.main_window.r10_status_label.setText('Listening')
-        self.main_window.r10_status_label.setStyleSheet("QLabel { background-color : green; color : white; }")
+        self.main_window.start_server_button.setText('Stop')
+        self.main_window.server_status_label.setText('Running')
+        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
+        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.r10_connector_ip_address}:{self.main_window.settings.r10_connector_port}')
+        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
 
     def __connected(self):
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.R10, 'Connected')
-        self.main_window.r10_status_label.setText('Connected')
-        self.main_window.r10_status_label.setStyleSheet("QLabel { background-color : green; color : white; }")
-
+        self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.r10_connector_ip_address}:{self.main_window.settings.r10_connector_port}')
+        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def device_worker_paused(self):
-        msg = 'Start'
-        status = 'Not Running'
-        color = 'red'
-        enabled = True
-        if self.is_running():
-            msg = 'Stop'
-            if self.main_window.gspro_connection.connected:
-                color = 'orange'
-                status = 'Paused'
-            else:
-                status = 'Waiting GSPro'
-                color = 'red'
-        self.main_window.putting_server_button.setEnabled(enabled)
-        self.main_window.putting_server_button.setText(msg)
-        self.main_window.putting_server_status_label.setText(status)
-        self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-        self.device_worker.ignore_shots_after_restart()
+        self.main_window.start_server_button.setText('Start')
+        self.main_window.server_status_label.setText('Not Running')
+        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
+        self.main_window.server_connection_label.setText('No Connection')
+        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
 
     def device_worker_resumed(self):
         self.main_window.putting_server_button.setText('Stop')

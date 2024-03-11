@@ -430,7 +430,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="server_status">
+                     <widget class="QLabel" name="server_status_label">
                       <property name="font">
                        <font>
                         <pointsize>12</pointsize>
@@ -448,7 +448,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="server_connection">
+                     <widget class="QLabel" name="server_connection_label">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                         <horstretch>0</horstretch>

@@ -59,16 +59,17 @@ class GSProConnect(QObject):
                     logging.debug(f"Response from GSPro: {msg}")
 
     def launch_ball(self, ball_data: BallData) -> None:
-        device = {
-            "DeviceID": self._device_id,
-            "Units": self._units,
-            "ShotNumber": self._shot_number,
-            "APIversion": self._api_version
-        }
-        payload = device | ball_data.to_gspro()
-        logging.debug(f'Launch Ball payload: {payload} ball_data.to_gspro(): {ball_data.to_gspro()}')
-        self.send_msg(payload)
-        self._shot_number += 1
+        if self._connected:
+            device = {
+                "DeviceID": self._device_id,
+                "Units": self._units,
+                "ShotNumber": self._shot_number,
+                "APIversion": self._api_version
+            }
+            payload = device | ball_data.to_gspro()
+            logging.debug(f'Launch Ball payload: {payload} ball_data.to_gspro(): {ball_data.to_gspro()}')
+            self.send_msg(payload)
+            self._shot_number += 1
 
     def check_for_message(self):
         message = bytes(0)

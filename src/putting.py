@@ -14,9 +14,7 @@ class Putting:
         self.__setup_signals()
 
     def __setup_putting_device(self):
-        print(f'__setup_putting_device {self.main_window.putting_settings.system}')
         if self.main_window.putting_settings.system == PuttingSystems.WEBCAM:
-            print('webcam device')
             self.putting_device = DevicePuttingWebcam(self.main_window)
         elif self.main_window.putting_settings.system == PuttingSystems.EXPUTT:
             self.putting_device = DevicePuttingExPutt(self.main_window)
@@ -86,5 +84,4 @@ class Putting:
     def shutdown(self):
         self.main_window.putting_settings_form.shutdown()
         if self.putting_device is not None:
-            print('putting shutdown - putting device')
             self.putting_device.shutdown()
