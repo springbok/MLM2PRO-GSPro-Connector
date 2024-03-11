@@ -46,7 +46,7 @@ class DevicePuttingExPutt(DevicePuttingBase):
             msg = f"Windows Camera application ' {self.main_window.putting_settings.exputt['window_name']}' does not seem to be running.\nPlease start the app, then press the 'Start' button to restart the putting."
         else:
             msg = f"An unexpected error has occurred.\nException: {format(error[0])}"
-        self.pause()
+        self.stop()
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.EXPUTT_PUTTING, msg)
         QMessageBox.warning(self.main_window, "ExPutt Error", msg)
 
