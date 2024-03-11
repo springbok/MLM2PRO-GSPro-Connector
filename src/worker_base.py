@@ -58,4 +58,5 @@ class WorkerBase(QObject):
     def is_running(self):
         return self.worker_started
 
-
+    def ignore_shots_after_restart(self):
+        pass

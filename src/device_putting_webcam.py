@@ -45,7 +45,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.WEBCAM_PUTTING, msg)
         QMessageBox.warning(self.main_window, "Webcam Error", msg)
 
-    def __club_selected(self, club_data):
+    def club_selected(self, club_data):
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
         if club_data['Player']['Club'] == "PT":
             self.device_worker.select_putter(True)

@@ -41,3 +41,10 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
         if self.putting_settings is not None and self.exputt_screenshot is not None:
             self.putting_settings.load()
             self.putting_rois_reload = True
+
+    def ignore_shots_after_restart(self):
+        self.exputt_screenshot.first = True
+
+    def select_putter(self, selected):
+        self.putter = selected
+        logging.debug(f"webcam self.putter: {self.putter}")
