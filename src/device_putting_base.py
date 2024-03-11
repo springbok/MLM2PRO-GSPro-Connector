@@ -33,14 +33,8 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
 
     def club_selected(self, club_data):
-        self.device_worker.club = club_data['Player']['Club']
+        self.device_worker.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
-        if club_data['Player']['Club'] == "PT":
-            logging.debug('Putter selected resuming putt processing')
-            self.pause()
-        else:
-            logging.debug('Club other than putter selected pausing putt processing')
-            self.resume()
 
     def device_worker_paused(self):
         msg = 'Start'
@@ -48,12 +42,10 @@ class DevicePuttingBase(DeviceBase):
         color = 'red'
         enabled = True
         if self.is_running():
-            msg = 'Resume'
+            msg = 'Stop'
             if self.main_window.gspro_connection.connected:
                 color = 'orange'
                 status = 'Paused'
-                if self.device_worker.selected_club() == "PT":
-                    enabled = False
             else:
                 status = 'Waiting GSPro'
                 color = 'red'

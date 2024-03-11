@@ -25,6 +25,10 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
             Event().wait(self.settings.screenshot_interval/1000)
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
+            # Make sure putter selected
+            if self.selected_club() != 'PT':
+                self.pause()
+                continue
             if not self._shutdown.is_set():
                 try:
                     self.do_screenshot(self.exputt_screenshot, self.putting_settings, self.putting_rois_reload)
@@ -45,11 +49,11 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
     def ignore_shots_after_restart(self):
         self.exputt_screenshot.first = True
 
-    def select_putter(self, selected):
-        self.putter = selected
-        logging.debug(f"webcam self.putter: {self.putter}")
-
-    def resume(self):
-        print(f'{self.name} resume self.club: {self.club}')
-        if self.club == 'PT':
-            super().resume()
+    def club_selected(self, club):
+        super().club_selected(club)
+        if self.putter_selected():
+            logging.debug('Putter selected resuming putt processing')
+            self.resume()
+        else:
+            self.pause()
+            logging.debug('Club other than putter selected pausing putt processing')

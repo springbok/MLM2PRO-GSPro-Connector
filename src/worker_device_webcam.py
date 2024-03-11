@@ -79,11 +79,3 @@ class WorkerDeviceWebcam(WorkerBase):
 
     def send_error(self, error):
         self.error.emit(error)
-
-    def putter_selected(self):
-        return self.club == 'PT'
-
-    def resume(self):
-        print(f'{self.name} resume self.club: {self.club}')
-        if self.club == 'PT':
-            super().resume()

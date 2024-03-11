@@ -31,13 +31,11 @@ class Putting:
     def __putting_stop_start(self):
         if self.putting_device is not None:
             if self.putting_device.is_running():
-                if self.putting_device.is_paused():
-                    self.putting_device.resume()
-                else:
-                    self.putting_device.stop()
+                self.putting_device.stop()
             else:
                 self.putting_device.start_app()
                 self.putting_device.start()
+            self.putting_device.device_worker.club_selected(self.main_window.gspro_connection.current_club)
 
     def __putting_started(self):
         self.main_window.putting_server_button.setText('Stop')

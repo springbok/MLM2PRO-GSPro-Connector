@@ -67,3 +67,6 @@ class WorkerBase(QObject):
 
     def selected_club(self):
         return self.club
+
+    def putter_selected(self):
+        return self.selected_club() == 'PT'

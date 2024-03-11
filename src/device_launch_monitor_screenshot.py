@@ -48,14 +48,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.main_window.actionDevices.triggered.connect(self.__devices)
 
     def __club_selected(self, club_data):
-        self.device_worker.club = club_data['Player']['Club']
+        self.device_worker.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
-        if club_data['Player']['Club'] == "PT":
-            logging.debug('Putter selected pausing launch monitor screenshot processing')
-            self.pause()
-        else:
-            logging.debug(f'Club other than putter selected resuming launch monitor screenshot processing')
-            self.resume()
 
     def __too_many_ghost_shots(self):
         self.pause()
@@ -120,6 +114,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
                 self.resume()
         else:
             self.start()
+        self.device_worker.club_selected(self.main_window.gspro_connection.current_club)
+
 
     def __update_selected_mirror_app(self):
         if not self.current_device is None:

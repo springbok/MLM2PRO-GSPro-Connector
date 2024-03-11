@@ -24,6 +24,10 @@ class WorkerScreenshotDeviceLaunchMonitor(WorkerScreenshotBase):
             Event().wait(self.settings.screenshot_interval/1000)
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
+            # Make sure putter not selected
+            if self.selected_club() == 'PT':
+                self.pause()
+                continue
             if not self._shutdown.is_set() and self.device is not None:
                 try:
                     self.do_screenshot(self.screenshot, self.device, False)
@@ -44,8 +48,11 @@ class WorkerScreenshotDeviceLaunchMonitor(WorkerScreenshotBase):
     def ignore_shots_after_restart(self):
         self.screenshot.first = True
 
-    def resume(self):
-        print(f'{self.name} resume self.club: {self.club}')
-        if self.club is None or self.club != 'PT':
-            super().resume()
-
+    def club_selected(self, club):
+        super().club_selected(club)
+        if self.putter_selected():
+            logging.debug('Putter selected pausing shot processing')
+            self.pause()
+        else:
+            self.resume()
+            logging.debug('Club other than putter selected resuming shot processing')

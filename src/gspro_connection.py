@@ -25,7 +25,7 @@ class GSProConnection(QObject):
     def __init__(self, main_window: MainWindow):
         super(GSProConnection, self).__init__()
         self.main_window = main_window
-        self.current_club = ''
+        self.current_club = None
         self.worker = None
         self.thread = None
         self.gspro_messages_thread = None
