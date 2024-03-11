@@ -36,6 +36,7 @@ class Putting:
                 else:
                     self.putting_device.stop()
             else:
+                self.putting_device.start_app()
                 self.putting_device.start()
 
     def __putting_started(self):

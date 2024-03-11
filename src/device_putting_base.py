@@ -14,7 +14,6 @@ class DevicePuttingBase(DeviceBase):
         self.putting_settings = main_window.putting_settings
 
     def setup(self):
-        self.start_app()
         self.setup_device_thread()
         self.setup_signals()
         self.device_worker_paused()
@@ -27,13 +26,14 @@ class DevicePuttingBase(DeviceBase):
         self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def setup_signals(self):
-        self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
+        self.main_window.gspro_connection.club_selected.connect(self.club_selected)
         self.main_window.putting_settings_form.cancel.connect(self.resume)
         self.main_window.actionPuttingSettings.triggered.connect(self.pause)
         self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
         self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
 
-    def __club_selected(self, club_data):
+    def club_selected(self, club_data):
+        logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
         if club_data['Player']['Club'] == "PT":
             logging.debug('Putter selected resuming putt processing')
             self.pause()

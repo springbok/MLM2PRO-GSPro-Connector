@@ -48,11 +48,12 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.main_window.actionDevices.triggered.connect(self.__devices)
 
     def __club_selected(self, club_data):
+        logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
         if club_data['Player']['Club'] == "PT":
             logging.debug('Putter selected pausing launch monitor screenshot processing')
             self.pause()
         else:
-            logging.debug('Club other than putter selected resuming launch monitor screenshot processing')
+            logging.debug(f'Club other than putter selected resuming launch monitor screenshot processing')
             self.resume()
 
     def __too_many_ghost_shots(self):
@@ -141,6 +142,3 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
 
     def __devices(self):
         self.devices.show()
-
-    def resume(self):
-        super().resume()
