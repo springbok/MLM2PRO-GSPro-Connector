@@ -50,6 +50,7 @@ class WorkerScreenshotDeviceLaunchMonitor(WorkerScreenshotBase):
 
     def club_selected(self, club):
         super().club_selected(club)
+        self.screenshot.selected_club = club
         if self.putter_selected():
             logging.debug('Putter selected pausing shot processing')
             self.pause()
