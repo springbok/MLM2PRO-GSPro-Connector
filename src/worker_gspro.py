@@ -13,9 +13,10 @@ class WorkerGspro(WorkerScreenshotBase):
         self.gspro_connection = gspro_connection
 
     def run(self, balldata=None):
+        print(f'WorkerGspro run {balldata}')
         if balldata is not None:
             try:
-                self.started.emit(balldata)
+                self.started.emit()
                 self.gspro_connection.launch_ball(balldata)
             except Exception as e:
                 traceback.print_exc()

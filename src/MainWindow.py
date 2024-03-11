@@ -88,6 +88,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionDonate.triggered.connect(self.__donate)
         self.actionShop.triggered.connect(self.__shop)
         self.gspro_connect_button.clicked.connect(self.__gspro_connect)
+        self.gspro_connection.shot_sent.connect(self.__shot_sent)
         self.main_tab.setCurrentIndex(0)
         #self.log_table.horizontalHeader().setStretchLastSection(True)
         self.log_table.setHorizontalHeaderLabels(['Date', 'Type', 'System', 'Message'])
@@ -141,6 +142,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __restart_connector(self):
         self.launch_monitor.resume()
+
+    def __shot_sent(self, balldata):
+        self.__add_shot_history_row(balldata)
 
     def __pause_connector(self):
         self.launch_monitor.pause()

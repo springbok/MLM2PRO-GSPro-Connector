@@ -46,7 +46,7 @@ class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
             self.send_response_only(200)
             self.end_headers()
             self.wfile.write(str.encode(json.dumps(message)))
-            if not error and not self.putting_worker.is_paused():
+            if not error:
                 self.putting_worker.send_putt(self.ball_data)
 
 
@@ -71,10 +71,13 @@ class WorkerDeviceWebcam(WorkerBase):
 
     def shutdown(self):
         super().shutdown()
-        self._server.shutdown()
-        self._server.socket.close()
+        if self._server is not None:
+            self._server.shutdown()
+            self._server.socket.close()
+            self._server = None
 
     def send_putt(self, putt):
+        print(f'WorkerDeviceWebcam send_putt: {putt.to_json()}', flush=True)
         self.shot.emit(putt)
 
     def send_error(self, error):

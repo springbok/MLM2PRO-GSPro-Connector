@@ -18,9 +18,7 @@ class GSProConnection(QObject):
     connected_to_gspro = Signal()
     disconnected_from_gspro = Signal()
     shot_sent = Signal(object)
-    gspro_app_not_found = Signal()
     club_selected = Signal(object)
-    club_selection_error = Signal()
 
     def __init__(self, main_window: MainWindow):
         super(GSProConnection, self).__init__()
@@ -84,7 +82,6 @@ class GSProConnection(QObject):
         self.thread.start()
 
     def __club_selecion_error(self, error):
-        self.club_selection_error.emit()
         self.disconnect_from_gspro()
         msg = f"Error while trying to check for club selection messages from GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
         self.__log_message(LogMessageTypes.LOGS, f'{msg}\nException: {format(error)}')
@@ -136,7 +133,6 @@ class GSProConnection(QObject):
             self.disconnected_from_gspro.emit()
 
     def __sent(self, balldata):
-        self.main_window.__add_shot_history_row(balldata)
         self.shot_sent.emit(balldata)
 
     def __sending_shot(self):
@@ -180,7 +176,6 @@ class GSProConnection(QObject):
                 ScreenMirrorWindow.find_window(self.settings.gspro_api_window_name)
             running = True
         except Exception:
-            self.gspro_app_not_found.emit()
             self.main_window.gspro_connection.disconnect_from_gspro()
             msg = f"GSPro API window '{self.main_window.settings.gspro_api_window_name}' does not seem to be running.\nStart GSPro or reset the API connector.\nPress 'Connect' to reconnect to GSPro."
             self.main_window.log_message(LogMessageTypes.LOGS,

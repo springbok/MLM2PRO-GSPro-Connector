@@ -3,6 +3,7 @@ import os
 from PySide6.QtWidgets import QMessageBox
 from src import MainWindow
 from src.ctype_screenshot import ScreenMirrorWindow
+from src.custom_exception import PutterNotSelected
 from src.device_putting_base import DevicePuttingBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 from src.worker_device_webcam import WorkerDeviceWebcam
@@ -27,7 +28,6 @@ class DevicePuttingWebcam(DevicePuttingBase):
                 params = f'-c {self.putting_settings.webcam["ball_color"]} -w {self.putting_settings.webcam["camera"]} {self.putting_settings.webcam["params"]}'
                 logging.debug(f'Starting webcam app: {DevicePuttingWebcam.webcam_app} params: {params}')
                 os.spawnl(os.P_DETACH, DevicePuttingWebcam.webcam_app, f'{DevicePuttingWebcam.webcam_app} {params}')
-                Event().wait(3)
             except Exception as e:
                 logging.debug(f'Could not start webcam app: {DevicePuttingWebcam.webcam_app} error: {format(e)}')
 
@@ -40,10 +40,10 @@ class DevicePuttingWebcam(DevicePuttingBase):
         return running
 
     def device_worker_error(self, error):
-        msg = f"An unexpected error has occurred.\nException: {format(error[0])}"
-        self.pause()
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.WEBCAM_PUTTING, msg)
-        QMessageBox.warning(self.main_window, "Webcam Error", msg)
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.WEBCAM_PUTTING, f'Putting Error: {format(error)}')
+        if not isinstance(error, ValueError) and not isinstance(error, PutterNotSelected):
+            QMessageBox.warning(self, "Putting Error", f'{format(error)}')
+            self.stop()
 
     def club_selected(self, club_data):
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
