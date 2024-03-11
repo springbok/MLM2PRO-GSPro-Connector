@@ -27,11 +27,11 @@ class DevicePuttingExPutt(DevicePuttingBase):
         self.main_window.__add_shot_history_row(balldata)
 
     def start_app(self):
-        if self.putting_settings.exputt['auto_start'] == 'Yes':
+        if self.main_window.putting_settings.exputt['auto_start'] == 'Yes':
             try:
                 self.main_window.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR,
                                              f'Starting ExPutt')
-                ScreenMirrorWindow.find_window(self.putting_settings.exputt['window_name'])
+                ScreenMirrorWindow.find_window(self.main_window.putting_settings.exputt['window_name'])
             except Exception:
                 subprocess.run('start microsoft.windows.camera:', shell=True)
                 Event().wait(3)

@@ -11,7 +11,6 @@ class DevicePuttingBase(DeviceBase):
     def __init__(self, main_window: MainWindow):
         super(DeviceBase, self).__init__(main_window)
         self.main_window = main_window
-        self.putting_settings = main_window.putting_settings
 
     def setup(self):
         self.setup_device_thread()

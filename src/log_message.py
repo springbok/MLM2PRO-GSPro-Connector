@@ -8,6 +8,7 @@ class LogMessageSystems:
     GSPRO_CONNECT = 'GSProConnect'
     WEBCAM_PUTTING = "Webcam Putting"
     EXPUTT_PUTTING = "ExPutt"
+    R10 = "R10 Connector"
 
 
 @dataclass

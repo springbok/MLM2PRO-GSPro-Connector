@@ -5,30 +5,33 @@ from threading import Event
 
 from PySide6.QtCore import QObject, Signal
 
+from src.settings import Settings
+from src.worker_base import WorkerBase
 
-class R10ServerWorker(QObject):
 
-    error = Signal(tuple)
+class WorkerDeviceR10(WorkerBase):
+
     shot = Signal(object or None)
     listening = Signal()
     connected = Signal()
     finished = Signal()
 
-    def __init__(self):
-        super(R10ServerWorker, self).__init__()
-        self.name = 'R10ServerWorker'
+    def __init__(self, settings: Settings):
+        WorkerBase.__init__(self)
+        self.settings = settings
+        self.name = 'WorkerDeviceR10'
         self.connection = None
-        self.restart = False
         self._shutdown = Event()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.settimeout(1)
 
-    def run(self, ip: str, port: int) -> None:
+    def run(self) -> None:
         try:
-            self._socket.bind((ip, port))
+            self.started.emit()
+            self._socket.bind((self.settings.r10_connector_ip_address, self.settings.r10_connector_port))
             self._socket.listen(1)
-            msg = f"Listening for R10 on port {ip} : {port}"
-            self.listening.emit(msg)
+            msg = f"Listening for R10 on port {self.settings.r10_connector_ip_address} : {self.settings.r10_connector_port}"
+            self.listening.emit()
             logging.debug(f'{self.name}: {msg}')
             while not self._shutdown.is_set():
                 try:
@@ -39,7 +42,7 @@ class R10ServerWorker(QObject):
                     pass
                 else:
                     msg = f"Connected to R10 from: {addr[0]}:{addr[1]}"
-                    self.connected.emit(msg)
+                    self.connected.emit()
                     logging.debug(f'{self.name}: {msg}')
                     while not self._shutdown.is_set():
                         try:

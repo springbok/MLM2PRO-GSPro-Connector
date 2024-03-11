@@ -82,6 +82,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(QMainWindow, self).showEvent(event)
 
     def __setup_ui(self):
+        self.__setup_launch_monitor()
         self.actionExit.triggered.connect(self.__exit)
         self.actionAbout.triggered.connect(self.__about)
         self.actionSettings.triggered.connect(self.__settings)
@@ -139,6 +140,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __settings_saved(self):
         # Reload updated settings
         self.settings.load()
+        self.__setup_launch_monitor()
+
+    def __setup_launch_monitor(self):
+        if self.settings.device_id != LaunchMonitor.R10:
+            self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
+            self.device_control_widget.show()
+            self.server_control_widget.hide()
+        else:
+            self.device_control_widget.hide()
+            self.server_control_widget.show()
+        self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
     def __restart_connector(self):
         self.launch_monitor.resume()

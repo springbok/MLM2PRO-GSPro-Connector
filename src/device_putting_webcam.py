@@ -23,9 +23,9 @@ class DevicePuttingWebcam(DevicePuttingBase):
         self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def start_app(self):
-        if self.putting_settings.webcam['auto_start'] == "Yes" and not self.__find_ball_tracking_app():
+        if self.main_window.putting_settings.webcam['auto_start'] == "Yes" and not self.__find_ball_tracking_app():
             try:
-                params = f'-c {self.putting_settings.webcam["ball_color"]} -w {self.putting_settings.webcam["camera"]} {self.putting_settings.webcam["params"]}'
+                params = f'-c {self.main_window.putting_settings.webcam["ball_color"]} -w {self.main_window.putting_settings.webcam["camera"]} {self.main_window.putting_settings.webcam["params"]}'
                 logging.debug(f'Starting webcam app: {DevicePuttingWebcam.webcam_app} params: {params}')
                 os.spawnl(os.P_DETACH, DevicePuttingWebcam.webcam_app, f'{DevicePuttingWebcam.webcam_app} {params}')
             except Exception as e:
@@ -33,7 +33,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
 
     def __find_ball_tracking_app(self):
         try:
-            ScreenMirrorWindow.find_window(self.putting_settings.webcam['window_name'])
+            ScreenMirrorWindow.find_window(self.main_window.putting_settings.webcam['window_name'])
             running = True
         except Exception:
             running = False
@@ -42,7 +42,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
     def device_worker_error(self, error):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.WEBCAM_PUTTING, f'Putting Error: {format(error)}')
         if not isinstance(error, ValueError) and not isinstance(error, PutterNotSelected):
-            QMessageBox.warning(self, "Putting Error", f'{format(error)}')
+            QMessageBox.warning(self.main_window, "Putting Error", f'{format(error)}')
             self.stop()
 
     def club_selected(self, club_data):
