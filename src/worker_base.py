@@ -15,6 +15,7 @@ class WorkerBase(QObject):
     def __init__(self):
         super(WorkerBase, self).__init__()
         self.name = 'WorkerBase'
+        self.club = None
         self.worker_started = False
         self._shutdown = Event()
         self._pause = Event()
@@ -60,3 +61,9 @@ class WorkerBase(QObject):
 
     def ignore_shots_after_restart(self):
         pass
+
+    def club_selected(self, club):
+        self.club = club
+
+    def selected_club(self):
+        return self.club

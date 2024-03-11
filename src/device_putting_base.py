@@ -33,6 +33,7 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
 
     def club_selected(self, club_data):
+        self.device_worker.club = club_data['Player']['Club']
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
         if club_data['Player']['Club'] == "PT":
             logging.debug('Putter selected resuming putt processing')
@@ -45,14 +46,18 @@ class DevicePuttingBase(DeviceBase):
         msg = 'Start'
         status = 'Not Running'
         color = 'red'
+        enabled = True
         if self.is_running():
             msg = 'Resume'
             if self.main_window.gspro_connection.connected:
                 color = 'orange'
                 status = 'Paused'
+                if self.device_worker.selected_club() == "PT":
+                    enabled = False
             else:
                 status = 'Waiting GSPro'
                 color = 'red'
+        self.main_window.putting_server_button.setEnabled(enabled)
         self.main_window.putting_server_button.setText(msg)
         self.main_window.putting_server_status_label.setText(status)
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")

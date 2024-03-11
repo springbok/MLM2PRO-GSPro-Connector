@@ -81,8 +81,9 @@ class WorkerDeviceWebcam(WorkerBase):
         self.error.emit(error)
 
     def putter_selected(self):
-        return self.putter
+        return self.club == 'PT'
 
-    def select_putter(self, selected):
-        self.putter = selected
-        logging.debug(f"webcam self.putter: {self.putter}")
+    def resume(self):
+        print(f'{self.name} resume self.club: {self.club}')
+        if self.club == 'PT':
+            super().resume()

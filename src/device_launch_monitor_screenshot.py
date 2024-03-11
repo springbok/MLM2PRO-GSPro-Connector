@@ -48,6 +48,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.main_window.actionDevices.triggered.connect(self.__devices)
 
     def __club_selected(self, club_data):
+        self.device_worker.club = club_data['Player']['Club']
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
         if club_data['Player']['Club'] == "PT":
             logging.debug('Putter selected pausing launch monitor screenshot processing')
@@ -70,16 +71,16 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         QMessageBox.warning(self.main_window, "Connector Error", msg)
 
     def device_worker_paused(self):
+        print(f'{self.__class__.__name__} device_worker_paused {self.device_worker.selected_club()}')
         status = 'Not Running'
         color = 'red'
         restart = False
         if self.is_running():
-            msg = 'Resume'
-            restart = True
             if self.main_window.gspro_connection.connected:
                 color = 'orange'
                 status = 'Paused'
-                restart = True
+                if self.device_worker.selected_club() != "PT":
+                    restart = True
             else:
                 status = 'Waiting GSPro'
                 color = 'red'
@@ -90,6 +91,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.main_window.pause_button.setEnabled(False)
 
     def device_worker_resumed(self):
+        print(f'{self.__class__.__name__} device_worker_resumed {self.device_worker.selected_club()}')
         msg = 'Running'
         color = 'green'
         restart = False
@@ -133,7 +135,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         QCoreApplication.processEvents()
 
     def __select_device(self):
-        self.stop()
+        self.pause()
         self.select_device.show()
 
     def shutdown(self):

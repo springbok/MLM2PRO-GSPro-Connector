@@ -48,10 +48,8 @@ class DevicePuttingWebcam(DevicePuttingBase):
     def club_selected(self, club_data):
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
         if club_data['Player']['Club'] == "PT":
-            self.device_worker.select_putter(True)
             ScreenMirrorWindow.top_window(self.main_window.putting_settings.webcam['window_name'])
         else:
-            self.device_worker.select_putter(False)
             ScreenMirrorWindow.not_top_window(self.main_window.putting_settings.webcam['window_name'])
             ScreenMirrorWindow.bring_to_front(self.main_window.settings.grspo_window_name)
         super().club_selected(club_data)

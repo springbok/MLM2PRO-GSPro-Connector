@@ -43,3 +43,9 @@ class WorkerScreenshotDeviceLaunchMonitor(WorkerScreenshotBase):
 
     def ignore_shots_after_restart(self):
         self.screenshot.first = True
+
+    def resume(self):
+        print(f'{self.name} resume self.club: {self.club}')
+        if self.club is None or self.club != 'PT':
+            super().resume()
+
