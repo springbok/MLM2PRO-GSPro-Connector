@@ -17,6 +17,7 @@ class DeviceLaunchMonitorR10(DeviceBase):
         DeviceBase.__init__(self, main_window)
         self.__setup_signals()
         self.device_worker_paused()
+        self.prev_shot = None
 
     def setup_device_thread(self):
         super().setup_device_thread()
@@ -33,16 +34,15 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
     def __shot_sent(self, shot_data):
-        print(f'__shot_sent xxxx: {shot_data.decode("utf-8")}')
         data = json.loads(shot_data.decode("utf-8"))
         balldata = BallData()
         balldata.from_gspro(data)
         balldata.good_shot = True
-        print(f'__shot_sent xxxx2 {balldata}')
-        self.main_window.shot_sent(balldata)
+        if self.prev_shot is None or self.prev_shot.eq(balldata) > 0:
+            self.main_window.shot_sent(balldata)
+            self.prev_shot = balldata
 
     def __gspro_message(self, message):
-        print(f'__gspro_message: {message}')
         self.device_worker.send_msg(message)
 
     def __server_start_stop(self):
