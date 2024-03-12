@@ -130,6 +130,19 @@ class BallData:
             payload['ClubData']['FaceToTarget'] = self.face_to_target
         return payload
 
+    def from_gspro(self, payload):
+        self.speed = payload['BallData']['Speed']
+        self.spin_axis = payload['BallData']['SpinAxis']
+        self.total_spin = payload['BallData']['TotalSpin']
+        self.hla = payload['BallData']['HLA']
+        self.vla = payload['BallData']['VLA']
+        self.back_spin = payload['BallData']['Backspin']
+        self.side_spin = payload['BallData']['SideSpin']
+        self.club_speed = payload['ClubData']['Speed']
+        if 'Path' in payload['ClubData']:
+            self.path = payload['ClubData']['Path']
+            self.face_to_target = payload['ClubData']['FaceToTarget']
+
     def process_putt_data(self, ocr_result, roi, previous_balldata):
         self.putt_type = PuttType.EXPUTT
         msg = None

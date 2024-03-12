@@ -77,7 +77,6 @@ class WorkerDeviceWebcam(WorkerBase):
             self._server = None
 
     def send_putt(self, putt):
-        print(f'WorkerDeviceWebcam send_putt: {putt.to_json()}', flush=True)
         self.shot.emit(putt)
 
     def send_error(self, error):

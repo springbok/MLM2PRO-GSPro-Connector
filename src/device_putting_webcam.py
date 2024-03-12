@@ -20,7 +20,6 @@ class DevicePuttingWebcam(DevicePuttingBase):
 
     def setup_device_thread(self):
         super().setup_device_thread()
-        self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def start_app(self):
         if self.main_window.putting_settings.webcam['auto_start'] == "Yes" and not self.__find_ball_tracking_app():

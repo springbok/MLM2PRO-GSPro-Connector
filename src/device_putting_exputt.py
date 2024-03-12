@@ -19,7 +19,6 @@ class DevicePuttingExPutt(DevicePuttingBase):
 
     def setup_device_thread(self):
         super().setup_device_thread()
-        self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
         self.device_worker.bad_shot.connect(self.__bad_shot)
         self.device_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
 

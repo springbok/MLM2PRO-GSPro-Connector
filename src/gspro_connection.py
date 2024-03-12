@@ -17,7 +17,6 @@ class GSProConnection(QObject):
 
     connected_to_gspro = Signal()
     disconnected_from_gspro = Signal()
-    shot_sent = Signal(object)
     club_selected = Signal(object)
     gspro_message = Signal(object)
 
@@ -56,7 +55,7 @@ class GSProConnection(QObject):
         self.send_shot_worker = WorkerGspro(self.gspro_connect)
         self.send_shot_worker.moveToThread(self.send_shot_thread)
         self.send_shot_worker.started.connect(self.__sending_shot)
-        self.send_shot_worker.sent.connect(self.__sent)
+        self.send_shot_worker.sent.connect(self.main_window.shot_sent)
         self.send_shot_worker.error.connect(self.__send_shot_error)
         self.send_shot_thread.started.connect(self.send_shot_worker.run)
         self.send_shot_thread.start()
@@ -136,9 +135,6 @@ class GSProConnection(QObject):
             self.__shutdown_threads()
             self.gspro_connect.terminate_session()
             self.disconnected_from_gspro.emit()
-
-    def __sent(self, balldata):
-        self.shot_sent.emit(balldata)
 
     def __sending_shot(self):
         self.__log_message(LogMessageTypes.ALL, 'Sending shot to GSPro')

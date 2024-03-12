@@ -25,7 +25,6 @@ class WorkerBase(QObject):
         return
 
     def shutdown(self):
-        print(f'{self.name} shutdown')
         # Do shutdown first so it doesn't execute when we resume
         self._shutdown.set()
         # Resume
@@ -37,7 +36,6 @@ class WorkerBase(QObject):
         self.paused.emit()
 
     def resume(self):
-        print(f'{self.name} resume self.worker_started: {self.worker_started}')
         if self.worker_started:
             self._pause.set()
             self.resumed.emit()
@@ -51,7 +49,6 @@ class WorkerBase(QObject):
         self.pause()
 
     def start(self):
-        print(f'{self.name} start')
         self.worker_started = True
         self.running.emit()
         self.resume()

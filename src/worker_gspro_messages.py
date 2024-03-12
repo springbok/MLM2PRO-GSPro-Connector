@@ -31,7 +31,6 @@ class WorkerGSProMessages(WorkerScreenshotBase):
                     message = self.gspro_connection.check_for_message()
                     if len(message) > 0:
                         logging.debug(f'{self.name}: GSPro received data: {message}')
-                        print(f'__process_message json_messages: {message}')
                         self.gspro_message.emit(message)
                         self.__process_message(message)
                 except Exception as e:

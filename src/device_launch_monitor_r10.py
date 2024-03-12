@@ -1,7 +1,9 @@
+import json
 import logging
 import os
 from PySide6.QtWidgets import QMessageBox
 from src import MainWindow
+from src.ball_data import BallData
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 from src.worker_device_r10 import WorkerDeviceR10
@@ -21,6 +23,7 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.device_worker.listening.connect(self.__listening)
         self.device_worker.connected.connect(self.__connected)
         self.device_worker.finished.connect(self.device_worker_paused)
+        self.device_worker.r10_shot.connect(self.__shot_sent)
 
     def __setup_signals(self):
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
@@ -29,8 +32,14 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
-    def __shot(self, shot_data):
-        print(f'__shot: {shot_data.decode()}')
+    def __shot_sent(self, shot_data):
+        print(f'__shot_sent xxxx: {shot_data.decode("utf-8")}')
+        data = json.loads(shot_data.decode("utf-8"))
+        balldata = BallData()
+        balldata.from_gspro(data)
+        balldata.good_shot = True
+        print(f'__shot_sent xxxx2 {balldata}')
+        self.main_window.shot_sent(balldata)
 
     def __gspro_message(self, message):
         print(f'__gspro_message: {message}')

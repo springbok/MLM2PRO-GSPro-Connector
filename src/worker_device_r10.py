@@ -13,7 +13,7 @@ from src.worker_base import WorkerBase
 
 class WorkerDeviceR10(WorkerBase):
 
-    shot = Signal(object or None)
+    r10_shot = Signal(object or None)
     listening = Signal()
     connected = Signal()
     finished = Signal()
@@ -30,7 +30,6 @@ class WorkerDeviceR10(WorkerBase):
 
     def run(self) -> None:
         try:
-            print('started')
             self.started.emit()
             self._pause.wait()
             self._socket.bind((self.settings.r10_connector_ip_address, self.settings.r10_connector_port))
@@ -41,7 +40,6 @@ class WorkerDeviceR10(WorkerBase):
             while not self._shutdown.is_set():
                 try:
                     # Wait for connection
-                    print('socket accept')
                     self.connection, addr = self._socket.accept()
                     #self.connection.settimeout(1)
                 except socket.timeout:
@@ -54,14 +52,15 @@ class WorkerDeviceR10(WorkerBase):
                         self._pause.wait()
                         try:
                             # Wait for data
-                            print('waiting for data')
+                            print(f'{self.name}: R10 waiting for data')
                             data = self.connection.recv(1024)
                             if data is not None and len(data) > 0:
+                                print(f'{self.name}: R10 received data: {data.decode()}')
                                 logging.debug(f'{self.name}: R10 received data: {data.decode()}')
-                                self.shot.emit(data.decode())
                                 if self.gspro_connection.connected():
                                     msg = self.gspro_connection.send_msg(data)
                                     self.send_msg(msg)
+                                    self.r10_shot.emit(data)
                                     logging.debug(f'{self.name}: R10 sent data to GSPro result: {msg.decode()}')
                             else:
                                 break
@@ -72,15 +71,10 @@ class WorkerDeviceR10(WorkerBase):
                             break
                         except Exception as e:
                             raise e
-                        finally:
-                            print('close socket')
-                            #self.connection.close()
-                            #break
         except Exception as e:
             logging.debug(f'Error in process {self.name}: {format(e)}, {traceback.format_exc()}')
             self.error.emit((e, traceback.format_exc()))
         finally:
-            print('finished')
             if self._socket:
                 self._socket.close()
         self.finished.emit()
@@ -95,12 +89,17 @@ class WorkerDeviceR10(WorkerBase):
             logging.debug('Club other than putter selected resuming shot processing')
 
     def send_msg(self, payload, attempts=2):
-        print(f'send_msg self.connection: {self.connection}')
         if self.connection:
             for attempt in range(attempts):
                 try:
+                    print(f'send_msg: {payload}')
                     self.connection.sendall(payload)
                 except Exception as e:
                     msg = f"R10 unknown error when trying to send result, Exception: {format(e)}"
                     logging.debug(msg)
                     raise Exception(msg)
+
+    def shutdown(self):
+        super().shutdown()
+        if self.connection:
+            self.connection.close()
