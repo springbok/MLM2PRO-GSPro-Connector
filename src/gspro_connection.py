@@ -19,6 +19,7 @@ class GSProConnection(QObject):
     disconnected_from_gspro = Signal()
     shot_sent = Signal(object)
     club_selected = Signal(object)
+    gspro_message = Signal(object)
 
     def __init__(self, main_window: MainWindow):
         super(GSProConnection, self).__init__()
@@ -66,8 +67,12 @@ class GSProConnection(QObject):
         self.gspro_messages_worker.moveToThread(self.gspro_messages_thread)
         self.gspro_messages_worker.club_selected.connect(self.__club_selected)
         self.gspro_messages_worker.error.connect(self.__gspro_messages_error)
+        self.gspro_messages_worker.gspro_message.connect(self.__gspro_message)
         self.gspro_messages_thread.started.connect(self.gspro_messages_worker.run)
         self.gspro_messages_thread.start()
+
+    def __gspro_message(self, message):
+        self.gspro_message.emit(message)
 
     def __setup_connection_thread(self):
         self.thread = QThread()

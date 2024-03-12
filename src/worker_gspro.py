@@ -13,7 +13,6 @@ class WorkerGspro(WorkerScreenshotBase):
         self.gspro_connection = gspro_connection
 
     def run(self, balldata=None):
-        print(f'WorkerGspro run {balldata}')
         if balldata is not None:
             try:
                 self.started.emit()

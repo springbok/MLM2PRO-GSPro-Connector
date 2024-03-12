@@ -3,7 +3,7 @@ import logging
 import re
 import traceback
 from threading import Event
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 from src.gspro_connect import GSProConnect
 from src.worker_screenshot_device_base import WorkerScreenshotBase
 
@@ -11,6 +11,7 @@ from src.worker_screenshot_device_base import WorkerScreenshotBase
 class WorkerGSProMessages(WorkerScreenshotBase):
     player_info = 201
     club_selected = Signal(object)
+    gspro_message = Signal(object)
 
     def __init__(self, gspro_connection: GSProConnect):
         super(WorkerScreenshotBase, self).__init__()
@@ -25,11 +26,13 @@ class WorkerGSProMessages(WorkerScreenshotBase):
             Event().wait(250/1000)
             # When _pause is clear we wait(suspended) if set we process
             self._pause.wait()
-            if not self._shutdown.is_set() and self.gspro_connection is not None and self.gspro_connection._connected:
+            if not self._shutdown.is_set() and self.gspro_connection is not None and self.gspro_connection.connected():
                 try:
                     message = self.gspro_connection.check_for_message()
                     if len(message) > 0:
                         logging.debug(f'{self.name}: GSPro received data: {message}')
+                        print(f'__process_message json_messages: {message}')
+                        self.gspro_message.emit(message)
                         self.__process_message(message)
                 except Exception as e:
                     if not isinstance(e, ValueError):

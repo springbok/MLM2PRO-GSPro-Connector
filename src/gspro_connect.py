@@ -30,33 +30,38 @@ class GSProConnect(QObject):
         self._socket.settimeout(2)
         self._connected = True
 
+    def connected(self):
+        return self._connected
+
     def send_msg(self, payload, attempts=2):
-        for attempt in range(attempts):
-            try:
-                logging.info(f"Sending to GSPro data: {payload}")
-                self._socket.sendall(json.dumps(payload).encode("utf-8"))
-                msg = self._socket.recv(2048)
-            except socket.timeout:
-                logging.info('Timed out. Retrying...')
-                if attempt >= attempts-1:
-                    raise GSProConnectionTimeout(f'Failed to send shot to GSPro after {attempts} attempts.')
-                Event().wait(0.5)
-                continue
-            except socket.error as e:
-                msg = f'GSPro Connector socket error when trying to send shot, Exception: {format(e)}'
-                logging.debug(msg)
-                raise GSProConnectionSocketError(msg)
-            except Exception as e:
-                msg = f"GSPro Connector unknown error when trying to send shot, Exception: {format(e)}"
-                logging.debug(msg)
-                raise GSProConnectionUknownError(msg)
-            else:
-                if len(msg) == 0:
-                    msg = f"GSPro closed the connection"
+        if self._connected:
+            for attempt in range(attempts):
+                try:
+                    logging.info(f"Sending to GSPro data: {payload}")
+                    self._socket.sendall(payload)
+                    msg = self._socket.recv(2048)
+                except socket.timeout:
+                    logging.info('Timed out. Retrying...')
+                    if attempt >= attempts-1:
+                        raise GSProConnectionTimeout(f'Failed to send shot to GSPro after {attempts} attempts.')
+                    Event().wait(0.5)
+                    continue
+                except socket.error as e:
+                    msg = f'GSPro Connector socket error when trying to send shot, Exception: {format(e)}'
                     logging.debug(msg)
-                    raise GSProConnectionGSProClosedConnection(msg)
+                    raise GSProConnectionSocketError(msg)
+                except Exception as e:
+                    msg = f"GSPro Connector unknown error when trying to send shot, Exception: {format(e)}"
+                    logging.debug(msg)
+                    raise GSProConnectionUknownError(msg)
                 else:
-                    logging.debug(f"Response from GSPro: {msg}")
+                    if len(msg) == 0:
+                        msg = f"GSPro closed the connection"
+                        logging.debug(msg)
+                        raise GSProConnectionGSProClosedConnection(msg)
+                    else:
+                        logging.debug(f"Response from GSPro: {msg}")
+                        return msg
 
     def launch_ball(self, ball_data: BallData) -> None:
         if self._connected:
@@ -68,7 +73,7 @@ class GSProConnect(QObject):
             }
             payload = device | ball_data.to_gspro()
             logging.debug(f'Launch Ball payload: {payload} ball_data.to_gspro(): {ball_data.to_gspro()}')
-            self.send_msg(payload)
+            self.send_msg(json.dumps(payload).encode("utf-8"))
             self._shot_number += 1
 
     def check_for_message(self):
