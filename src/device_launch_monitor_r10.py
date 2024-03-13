@@ -39,7 +39,6 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.main_window.shot_sent(balldata)
 
     def __gspro_message(self, message):
-        print(f'__gspro_message: {message}')
         self.device_worker.send_msg(message)
 
     def __server_start_stop(self):

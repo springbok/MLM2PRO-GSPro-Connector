@@ -51,10 +51,8 @@ class WorkerDeviceR10(WorkerBase):
                         self._pause.wait()
                         try:
                             # Wait for data
-                            print(f'{self.name}: R10 waiting for data')
                             data = self.connection.recv(1024)
                             if data is not None and len(data) > 0:
-                                print(f'{self.name}: R10 received data: {data.decode()}')
                                 logging.debug(f'{self.name}: R10 received data: {data.decode()}')
                                 if self.gspro_connection.connected():
                                     msg = self.gspro_connection.send_msg(data)
@@ -91,7 +89,6 @@ class WorkerDeviceR10(WorkerBase):
         if self.connection:
             for attempt in range(attempts):
                 try:
-                    print(f'send_msg: {payload}')
                     self.connection.sendall(payload)
                 except Exception as e:
                     msg = f"R10 unknown error when trying to send result, Exception: {format(e)}"
