@@ -1,6 +1,5 @@
 import logging
 from PySide6.QtCore import Signal
-from src import MainWindow
 from src.device_base import DeviceBase
 
 
@@ -8,7 +7,7 @@ class DevicePuttingBase(DeviceBase):
 
     putt_shot = Signal(object)
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super(DeviceBase, self).__init__(main_window)
         self.main_window = main_window
 

@@ -1,13 +1,11 @@
 from PySide6.QtCore import QObject, QThread
 from PySide6.QtWidgets import QMessageBox
-
-from src import MainWindow
 from src.log_message import LogMessageTypes, LogMessageSystems
 
 
 class DeviceBase(QObject):
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super(QObject, self).__init__()
         self.device_thread = None
         self.device_worker = None

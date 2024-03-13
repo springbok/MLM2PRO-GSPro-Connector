@@ -1,7 +1,5 @@
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QMessageBox, QMainWindow
-
-from src import MainWindow
 from src.RoisFormBase import RoisFormBase
 from src.screenshot import Screenshot
 from src.worker_thread import WorkerThread
@@ -9,7 +7,7 @@ from src.worker_thread import WorkerThread
 
 class RoisForm(RoisFormBase):
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         self.roi_image = Screenshot(main_window.settings)
         super(RoisForm, self).__init__(main_window)
         self.setup_ui()

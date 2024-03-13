@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from PySide6.QtWidgets import QMessageBox
-from src import MainWindow
 from src.ball_data import BallData
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
@@ -13,7 +12,7 @@ class DeviceLaunchMonitorR10(DeviceBase):
 
     webcam_app = 'ball_tracking.exe'
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         DeviceBase.__init__(self, main_window)
         self.__setup_signals()
         self.device_worker_paused()
@@ -33,12 +32,10 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
     def __shot_sent(self, shot_data):
-        print(f'__shot_sent xxxx: {shot_data.decode("utf-8")}')
         data = json.loads(shot_data.decode("utf-8"))
         balldata = BallData()
         balldata.from_gspro(data)
         balldata.good_shot = True
-        print(f'__shot_sent xxxx2 {balldata}')
         self.main_window.shot_sent(balldata)
 
     def __gspro_message(self, message):

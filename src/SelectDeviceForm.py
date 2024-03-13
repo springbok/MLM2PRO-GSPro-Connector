@@ -4,11 +4,8 @@ import PySide6
 from PySide6 import QtGui
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QMainWindow
-
-from src import MainWindow
 from src.RoisForm import RoisForm
 from src.SelectDeviceForm_ui import Ui_SelectDeviceForm
-from src.appdata import AppDataPaths
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.device import Device
 from src.devices import Devices
@@ -20,7 +17,7 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
     selected = Signal(object or None)
     cancel = Signal()
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super().__init__()
         self.setupUi(self)
         self.main_window = main_window

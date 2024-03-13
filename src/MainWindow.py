@@ -7,19 +7,19 @@ from datetime import datetime
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QShowEvent, QFont, QColor, QPalette
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QTextEdit, QHBoxLayout
-from src.PuttingForm import PuttingForm
 from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
-from src.device_launch_monitor_r10 import DeviceLaunchMonitorR10
 from src.devices import Devices
-from src.gspro_connection import GSProConnection
-from src.device_launch_monitor_screenshot import DeviceLaunchMonitorScreenshot
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
-from src.putting import Putting
 from src.putting_settings import PuttingSettings
 from src.settings import Settings, LaunchMonitor
+from src.PuttingForm import PuttingForm
+from src.gspro_connection import GSProConnection
+from src.device_launch_monitor_screenshot import DeviceLaunchMonitorScreenshot
+from src.putting import Putting
+from src.device_launch_monitor_r10 import DeviceLaunchMonitorR10
 
 
 @dataclass
@@ -30,7 +30,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.03.00'
+    version = 'V1.03.01'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -51,12 +51,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting_settings = PuttingSettings(self.app_paths)
         self.putting_settings_form = PuttingForm(main_window=self)
         self.putting = Putting(main_window=self)
-        if self.settings.device_id != LaunchMonitor.R10:
-            self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
-        else:
-            self.launch_monitor = DeviceLaunchMonitorR10(self)
         self.__setup_ui()
-        self.__auto_start()
+        #self.__auto_start()
 
     def __setup_logging(self):
         level = logging.DEBUG
@@ -145,6 +141,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__setup_launch_monitor()
 
     def __setup_launch_monitor(self):
+        if self.launch_monitor is not None:
+            self.launch_monitor.shutdown()
         if self.settings.device_id != LaunchMonitor.R10:
             self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
             self.device_control_widget.show()
@@ -152,6 +150,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.device_control_widget.hide()
             self.server_control_widget.show()
+            self.launch_monitor = DeviceLaunchMonitorR10(self)
         self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
     def __restart_connector(self):

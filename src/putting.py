@@ -1,6 +1,5 @@
 from PySide6.QtCore import QCoreApplication
 
-from src import MainWindow
 from src.device_putting_exputt import DevicePuttingExPutt
 from src.device_putting_webcam import DevicePuttingWebcam
 from src.putting_settings import PuttingSystems
@@ -8,7 +7,7 @@ from src.putting_settings import PuttingSystems
 
 class Putting:
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         self.main_window = main_window
         self.__setup_putting_device()
         self.__setup_signals()

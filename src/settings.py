@@ -22,7 +22,7 @@ class Settings(SettingsBase):
             ), {
                 "ip_address": "127.0.0.1",
                 "port": 921,
-                "api_version": "2",
+                "api_version": "1",
                 "device_id": "Rapsodo MLM2PRO",
                 "units": "Yards",
                 "gspro_path": "",
