@@ -148,10 +148,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
             self.device_control_widget.show()
             self.server_control_widget.hide()
+            self.actionDevices.setEnabled(True)
         else:
             self.device_control_widget.hide()
             self.server_control_widget.show()
             self.launch_monitor = DeviceLaunchMonitorR10(self)
+            self.actionDevices.setEnabled(False)
         self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
     def __restart_connector(self):
