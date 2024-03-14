@@ -206,6 +206,13 @@
       </layout>
      </item>
      <item>
+      <widget class="QPushButton" name="open_windows_title_button">
+       <property name="text">
+        <string>Display Window Title of all open Windows</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
