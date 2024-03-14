@@ -131,6 +131,11 @@ class Ui_DevicesForm(object):
 
         self.verticalLayout_10.addLayout(self.horizontalLayout_4)
 
+        self.open_windows_title_button = QPushButton(DevicesForm)
+        self.open_windows_title_button.setObjectName(u"open_windows_title_button")
+
+        self.verticalLayout_10.addWidget(self.open_windows_title_button)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_10.addItem(self.verticalSpacer)
@@ -201,6 +206,7 @@ class Ui_DevicesForm(object):
         self.delete_button.setToolTip(QCoreApplication.translate("DevicesForm", u"Delete Device", None))
 #endif // QT_CONFIG(tooltip)
         self.delete_button.setText(QCoreApplication.translate("DevicesForm", u"Delete", None))
+        self.open_windows_title_button.setText(QCoreApplication.translate("DevicesForm", u"Display Window Title of all open Windows", None))
 #if QT_CONFIG(tooltip)
         self.close_button.setToolTip(QCoreApplication.translate("DevicesForm", u"Close Form", None))
 #endif // QT_CONFIG(tooltip)
