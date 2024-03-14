@@ -228,9 +228,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i=1
         for metric in BallData.properties:
             error = False
+            correction = False
             if len(balldata.errors) > 0 and metric in balldata.errors and len(balldata.errors[metric]):
                 error = True
                 value = 'Error'
+            elif len(balldata.corrections) > 0 and metric in balldata.corrections and len(balldata.corrections[metric]):
+                correction = True
             else:
                 value = str(getattr(balldata, metric))
             item = QTableWidgetItem(value)
@@ -239,14 +242,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.shot_history_table.setItem(row, i, item)
             if error:
                 item.setBackground(QColor(MainWindow.bad_shot_color))
+            elif correction:
+                item.setBackground(QColor(MainWindow.corrected_value_color))
             else:
-                if balldata.corrected:
-                    item.setBackground(QColor(MainWindow.corrected_value_color))
+                if balldata.putt_type is None:
+                    item.setBackground(QColor(MainWindow.good_shot_color))
                 else:
-                    if balldata.putt_type is None:
-                        item.setBackground(QColor(MainWindow.good_shot_color))
-                    else:
-                        item.setBackground(QColor(MainWindow.good_putt_color))
+                    item.setBackground(QColor(MainWindow.good_putt_color))
             i = i + 1
         result = 'Success'
         if not balldata.good_shot:

@@ -77,7 +77,7 @@ class BallData:
         self.putt_type = None
         self.good_shot = False
         self.new_shot = False
-        self.corrected = False
+        self.corrections = {}
         self.errors = {}
         for key in BallData.properties:
             setattr(self, key, 0)
@@ -191,7 +191,7 @@ class BallData:
             if roi == BallMetrics.SPEED:
                 if result > 40:
                     result = self.__fix_out_of_bounds_metric(40, result, roi)
-                    self.corrected = True
+                    self.corrections[roi] = True
                 setattr(self, BallMetrics.CLUB_SPEED, result)
             elif roi == BallMetrics.HLA and (result > 20 or result < -20):
                 if result < 0:
@@ -200,7 +200,7 @@ class BallData:
                     sign = 1
                 result = self.__fix_out_of_bounds_metric(20, (result * sign), roi)
                 result = result * sign
-                self.corrected = True
+                self.corrections[roi] = True
             # Round all values to one decimal place
             setattr(self, roi, math.floor(float(result)*10)/10)
             logging.debug(f'Cleaned and corrected value: {result}')
@@ -251,13 +251,13 @@ class BallData:
             # For some reason ball speed sometimes get an extra digit added
             if roi == BallMetrics.SPEED and result > 200:
                 result = self.__fix_out_of_bounds_metric(200, result, roi)
-                self.corrected = True
+                self.corrections[roi] = True
             elif roi == BallMetrics.TOTAL_SPIN and result > 13000:
                 result = self.__fix_out_of_bounds_metric(13000, result, roi)
-                self.corrected = True
+                self.corrections[roi] = True
             elif roi == BallMetrics.CLUB_SPEED and result > 140:
                 result = self.__fix_out_of_bounds_metric(140, result, roi)
-                self.corrected = True
+                self.corrections[roi] = True
             # Round to one decimal place
             setattr(self, roi, math.floor(result*10)/10)
             logging.debug(f'Cleaned and corrected value: {result}')
@@ -315,14 +315,14 @@ class BallData:
                 if smash_factor > 1.7 and ball_speed > 125.0 and ball_speed < 250:
                     corrected_value = math.floor(ball_speed / 1.48)
                     setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
-                    self.corrected = True
+                    self.corrections[BallMetrics.CLUB_SPEED] = True
                     logging.debug(
                         f"Smash factor: {smash_factor} > 1.7 and ball speed between 125.0 and 250.0, corrected CLUB_SPEED value: {corrected_value}")
                 # Corrects for Ball Speed Misreads on the MLM2PRO related to 5-wood thru Driver where Club Speed is correct.
                 elif smash_factor <= 0.7 and club_speed > 90 and club_speed < 175:
                     corrected_value = math.floor(club_speed * 1.48)
                     setattr(self, BallMetrics.SPEED, corrected_value)
-                    self.corrected = True
+                    self.corrections[BallMetrics.SPEED] = True
                     logging.debug(
                         f"Smash factor: {smash_factor} <= 0.7 and club speed between 90 and 175, corrected SPEED value: {corrected_value}")
             else:
@@ -330,12 +330,12 @@ class BallData:
                 if smash_factor >= 1.7 and ball_speed >= 100:
                     corrected_value = math.floor(ball_speed/10)
                     setattr(self, BallMetrics.SPEED, corrected_value)
-                    self.corrected = True
+                    self.corrections[BallMetrics.SPEED] = True
                     logging.debug(f"Invalid smash factor value: {smash_factor} > 1.7, corrected  {BallData.properties[BallMetrics.SPEED]} value: {corrected_value}")
                 elif smash_factor <= 0.6:
                     corrected_value = math.floor(club_speed/10)
                     setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
-                    self.corrected = True
+                    self.corrections[BallMetrics.CLUB_SPEED] = True
                     logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
         self.back_spin = round(
             self.total_spin * math.cos(math.radians(self.spin_axis)))
