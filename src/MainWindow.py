@@ -39,6 +39,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
     bad_shot_color = '#ff3800'
+    corrected_value_color = '#ffa500'
 
     def __init__(self, app):
         super().__init__()
@@ -487,10 +488,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if error:
                 item.setBackground(QColor(MainWindow.bad_shot_color))
             else:
-                if balldata.putt_type is None:
-                    item.setBackground(QColor(MainWindow.good_shot_color))
+                if balldata.corrected:
+                    item.setBackground(QColor(MainWindow.corrected_value_color))
                 else:
-                    item.setBackground(QColor(MainWindow.good_putt_color))
+                    if balldata.putt_type is None:
+                        item.setBackground(QColor(MainWindow.good_shot_color))
+                    else:
+                        item.setBackground(QColor(MainWindow.good_putt_color))
             i = i + 1
         result = 'Success'
         if not balldata.good_shot:
