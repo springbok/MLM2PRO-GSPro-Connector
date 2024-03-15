@@ -482,6 +482,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 value = 'Error'
             elif len(balldata.corrections) > 0 and metric in balldata.corrections and len(balldata.corrections[metric]):
                 correction = True
+                value = str(getattr(balldata, metric))
             else:
                 value = str(getattr(balldata, metric))
             item = QTableWidgetItem(value)
