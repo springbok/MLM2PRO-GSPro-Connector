@@ -2,11 +2,7 @@ import json
 import logging
 import os
 import subprocess
-import time
-
 from PySide6.QtWidgets import QMessageBox
-
-from src.auto_click import search
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.device_base import DeviceBase
