@@ -1,6 +1,4 @@
-import sys
 import ctypes
-import time
 
 EnumWindows = ctypes.windll.user32.EnumWindows
 EnumChildWindows = ctypes.windll.user32.EnumChildWindows

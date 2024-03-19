@@ -1,6 +1,6 @@
 import logging
 from threading import Event
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 from src.auto_click import clickButton
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.settings import Settings

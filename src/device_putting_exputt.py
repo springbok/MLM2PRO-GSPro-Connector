@@ -1,5 +1,4 @@
 import subprocess
-
 from PySide6.QtWidgets import QMessageBox
 from threading import Event
 from src.ctype_screenshot import ScreenMirrorWindow

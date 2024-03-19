@@ -219,6 +219,14 @@ class ScreenMirrorWindow:
             return hwnd
 
     @staticmethod
+    def minimize_window(title):
+        try:
+            hwnd = ScreenMirrorWindow.find_window(title)
+            ShowWindow(hwnd, SW_MINIMIZE)
+        except:
+            pass
+
+    @staticmethod
     def top_window(title):
         try:
             hwnd = ScreenMirrorWindow.find_window(title)

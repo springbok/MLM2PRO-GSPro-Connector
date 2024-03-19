@@ -2,13 +2,17 @@ import json
 import logging
 import os
 import subprocess
+import time
 
 from PySide6.QtWidgets import QMessageBox
+
+from src.auto_click import search
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 from src.worker_device_launch_monitor_relay_server import WorkerDeviceLaunchMonitorRelayServer
+from threading import Event
 
 
 class DeviceLaunchMonitorRelayServerBase(DeviceBase):
@@ -48,24 +52,29 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
 
     def __server_start_stop(self):
         if self.device_worker is None:
+            QMessageBox.warning(self.main_window, "Starting LM connector", 'Before starting the relay server ensure your launch monitor is turned on and ready for connection.')
             self.device_worker = WorkerDeviceLaunchMonitorRelayServer(self.main_window.settings, self.main_window.gspro_connection.gspro_connect)
             self.setup_device_thread()
             self.device_worker.start()
             self.device_worker.club_selected(self.main_window.gspro_connection.current_club)
-            self.start_app()
+            self.__start_app()
         else:
             self.device_worker.stop()
             self.shutdown()
             self.device_worker_paused()
 
-    def start_app(self):
+    def __start_app(self):
         if not self.__find_connector_app():
-            print(f'app not found {self.launch_monitor_app}')
             try:
                 path = f"{os.getcwd()}{self.launch_monitor_app}"
                 logging.debug(f'Starting connector app: {path}')
-                print(f'starting {path}')
-                subprocess.Popen(path, cwd=os.path.dirname(path))
+                DETACHED_PROCESS = 0x00000008
+                subprocess.Popen([path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(path))
+                for i in range(10):
+                    Event().wait(250/1000)
+                    if self.__find_connector_app():
+                        ScreenMirrorWindow.minimize_window(self.main_window.settings.relay_server_window_name)
+                        break
             except Exception as e:
                 logging.debug(f'Could not start LM connector app: {self.launch_monitor_app} error: {format(e)}')
 
