@@ -16,6 +16,8 @@ class WorkerDeviceLaunchMonitorRelayServer(WorkerBase):
     listening = Signal()
     connected = Signal()
     finished = Signal()
+    shot_error = Signal(tuple)
+    disconnected = Signal()
 
     def __init__(self, settings: Settings, gspro_connection: GSProConnect):
         WorkerBase.__init__(self)
@@ -55,11 +57,17 @@ class WorkerDeviceLaunchMonitorRelayServer(WorkerBase):
                             if data is not None and len(data) > 0:
                                 logging.debug(f'{self.name}: connector received data: {data.decode()}')
                                 if self.gspro_connection.connected():
-                                    msg = self.gspro_connection.send_msg(data)
-                                    self.send_msg(msg)
-                                    self.relay_server_shot.emit(data)
-                                    logging.debug(f'{self.name}: connector sent data to GSPro result: {msg.decode()}')
+                                    try:
+                                        msg = self.gspro_connection.send_msg(data)
+                                        self.send_msg(msg)
+                                        self.relay_server_shot.emit(data)
+                                        logging.debug(f'{self.name}: connector sent data to GSPro result: {msg.decode()}')
+                                    except Exception as e:
+                                        logging.debug(
+                                            f'Error when trying to send shot to GSPro, process {self.name}: {format(e)}, {traceback.format_exc()}')
+                                        self.shot_error.emit((e, traceback.format_exc()))
                             else:
+                                self.disconnected.emit()
                                 break
                         except socket.timeout:
                             pass

@@ -29,6 +29,8 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
         self.device_worker.listening.connect(self.__listening)
         self.device_worker.connected.connect(self.__connected)
         self.device_worker.finished.connect(self.device_worker_paused)
+        self.device_worker.shot_error.connect(self.__send_shot_error)
+        self.device_worker.disconnected.connect(self.__listening)
         self.device_worker.relay_server_shot.connect(self.__shot_sent)
 
     def __setup_signals(self):
@@ -87,8 +89,8 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
         return running
 
     def device_worker_error(self, error):
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.R10, f'Error: {format(error)}')
-        QMessageBox.warning(self.main_window, "R10 Error", f'{format(error)}')
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'Error: {format(error)}')
+        QMessageBox.warning(self.main_window, "LM Error", f'{format(error)}')
         self.stop()
 
     def __listening(self):
@@ -134,3 +136,8 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
     def __club_selected(self, club_data):
         self.device_worker.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
+
+    def __send_shot_error(self, error):
+        msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}\nException: {format(error)}')
+        QMessageBox.warning(self.main_window, "Relay Send to GSPro Error", msg)
