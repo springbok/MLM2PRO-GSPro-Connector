@@ -2,7 +2,6 @@ from functools import partial
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import QMainWindow, QMessageBox
 
-from src import MainWindow
 from src.RoisForm_ui import Ui_RoisForm
 from src.VerifyRoiForm import VerifyRoiForm
 from src.ball_data import BallData
@@ -14,7 +13,7 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
     closed = Signal()
     saved = Signal()
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super().__init__()
         self.setupUi(self)
         self.main_window = main_window

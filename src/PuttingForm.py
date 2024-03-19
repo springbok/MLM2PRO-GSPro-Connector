@@ -5,14 +5,13 @@ from threading import Event
 import cv2
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QShowEvent
-from PySide6.QtWidgets import QWidget, QMessageBox, QProgressDialog, QMainWindow
+from PySide6.QtWidgets import QWidget, QMessageBox, QProgressDialog
 
-from src import MainWindow
 from src.PuttingForm_ui import Ui_PuttingForm
 from src.RoisExPuttForm import RoisExPuttForm
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
-from src.putting_settings import PuttingSettings, PuttingSystems
+from src.putting_settings import PuttingSystems
 
 
 class PuttingForm(QWidget, Ui_PuttingForm):
@@ -20,7 +19,7 @@ class PuttingForm(QWidget, Ui_PuttingForm):
     saved = Signal()
     cancel = Signal()
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
         self.settings = main_window.putting_settings

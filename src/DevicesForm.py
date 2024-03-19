@@ -2,8 +2,10 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QFileDialog
+
 from src.DevicesForm_ui import Ui_DevicesForm
 from src.appdata import AppDataPaths
+from src.ctype_screenshot import open_window_titles
 from src.device import Device
 from src.devices import Devices
 
@@ -22,10 +24,11 @@ class DevicesForm(QWidget, Ui_DevicesForm):
         self.new_button.clicked.connect(self.__new_device)
         self.save_button.clicked.connect(self.__save_device)
         self.delete_button.clicked.connect(self.__delete_device)
+        self.open_windows_title_button.clicked.connect(self.__open_windows_title)
         self.file_browse_button.clicked.connect(self.__file_dialog)
         self.devices_table.resizeRowsToContents()
         self.devices_table.setTextElideMode(Qt.ElideNone)
-        self.devices_table.setHorizontalHeaderLabels(['Device Name', 'Mirror App Window Name', 'Mirror App Path'])
+        self.devices_table.setHorizontalHeaderLabels(['Device Name', 'Mirror App Window Title', 'Mirror App Path'])
         self.devices_table.setColumnWidth(DevicesForm.name_col, 100)
         self.devices_table.setColumnWidth(DevicesForm.window_title_col, 200)
         self.devices_table.setColumnWidth(DevicesForm.path_col, 500)
@@ -38,6 +41,13 @@ class DevicesForm(QWidget, Ui_DevicesForm):
 
     def __close(self):
         self.close()
+
+    def __open_windows_title(self):
+        titles = open_window_titles()
+        titles = [title for title in titles if title]
+        titles = '\n'.join(titles)
+        QMessageBox.information(self, "Display Open Window Titles", f"Please open your mirror app and click OK.")
+        QMessageBox.information(self, "Open Window Titles", f"Here are the titles of all open windows:\n{titles}")
 
     def __new_device(self):
         self.name_edit.setPlainText('')

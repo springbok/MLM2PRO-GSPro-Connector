@@ -7,12 +7,11 @@ from src.custom_exception import CameraWindowNotFoundException
 from src.device_putting_base import DevicePuttingBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 from src.worker_screenshot_device_exputt import WorkerScreenshotDeviceExPutt
-from src import MainWindow
 
 
 class DevicePuttingExPutt(DevicePuttingBase):
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         DevicePuttingBase.__init__(self, main_window)
         self.device_worker = WorkerScreenshotDeviceExPutt(self.main_window.settings, self.main_window.putting_settings)
         self.setup()

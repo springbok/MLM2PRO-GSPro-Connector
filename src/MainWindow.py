@@ -7,19 +7,19 @@ from datetime import datetime
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QShowEvent, QFont, QColor, QPalette
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QTextEdit, QHBoxLayout
-from src.PuttingForm import PuttingForm
 from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
-from src.device_launch_monitor_r10 import DeviceLaunchMonitorR10
 from src.devices import Devices
-from src.gspro_connection import GSProConnection
-from src.device_launch_monitor_screenshot import DeviceLaunchMonitorScreenshot
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
-from src.putting import Putting
 from src.putting_settings import PuttingSettings
 from src.settings import Settings, LaunchMonitor
+from src.PuttingForm import PuttingForm
+from src.gspro_connection import GSProConnection
+from src.device_launch_monitor_screenshot import DeviceLaunchMonitorScreenshot
+from src.putting import Putting
+from src.device_launch_monitor_r10 import DeviceLaunchMonitorR10
 
 
 @dataclass
@@ -30,11 +30,12 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.03.00'
+    version = 'V1.03.02'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
     bad_shot_color = '#ff3800'
+    corrected_value_color = '#ffa500'
 
     def __init__(self, app):
         super().__init__()
@@ -51,10 +52,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting_settings = PuttingSettings(self.app_paths)
         self.putting_settings_form = PuttingForm(main_window=self)
         self.putting = Putting(main_window=self)
-        if self.settings.device_id != LaunchMonitor.R10:
-            self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
-        else:
-            self.launch_monitor = DeviceLaunchMonitorR10(self)
         self.__setup_ui()
         self.__auto_start()
 
@@ -125,14 +122,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __auto_start(self):
         # If a default device is specified try and start all components
-        if hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
+        if self.settings.device_id != LaunchMonitor.R10 and hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
             self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Default Device specified, attempting to auto start all software')
             devices = Devices(self.app_paths)
             device = devices.find_device(self.settings.default_device)
             if not device is None:
-                self.select_device.select_device(device)
+                self.launch_monitor.select_device.select_device(device)
                 self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Selecting Device:{device.name}')
-            self.__setup_putting()
             if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
                 self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Starting GSPro')
                 self.gspro_connection.gspro_start(self.settings, True)
@@ -145,13 +141,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__setup_launch_monitor()
 
     def __setup_launch_monitor(self):
+        if self.launch_monitor is not None:
+            self.launch_monitor.shutdown()
         if self.settings.device_id != LaunchMonitor.R10:
             self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
             self.device_control_widget.show()
             self.server_control_widget.hide()
+            self.actionDevices.setEnabled(True)
         else:
             self.device_control_widget.hide()
             self.server_control_widget.show()
+            self.launch_monitor = DeviceLaunchMonitorR10(self)
+            self.actionDevices.setEnabled(False)
         self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
     def __restart_connector(self):
@@ -226,9 +227,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i=1
         for metric in BallData.properties:
             error = False
+            correction = False
             if len(balldata.errors) > 0 and metric in balldata.errors and len(balldata.errors[metric]):
                 error = True
                 value = 'Error'
+            elif len(balldata.corrections) > 0 and metric in balldata.corrections and len(balldata.corrections[metric]):
+                correction = True
+                value = str(getattr(balldata, metric))
             else:
                 value = str(getattr(balldata, metric))
             item = QTableWidgetItem(value)
@@ -237,6 +242,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.shot_history_table.setItem(row, i, item)
             if error:
                 item.setBackground(QColor(MainWindow.bad_shot_color))
+            elif correction:
+                item.setBackground(QColor(MainWindow.corrected_value_color))
             else:
                 if balldata.putt_type is None:
                     item.setBackground(QColor(MainWindow.good_shot_color))

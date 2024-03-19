@@ -1,7 +1,6 @@
 import logging
 import os
 from PySide6.QtWidgets import QMessageBox
-from src import MainWindow
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.custom_exception import PutterNotSelected
 from src.device_putting_base import DevicePuttingBase
@@ -13,7 +12,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
 
     webcam_app = 'ball_tracking.exe'
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         DevicePuttingBase.__init__(self, main_window)
         self.device_worker = WorkerDeviceWebcam(self.main_window.putting_settings)
         self.setup()

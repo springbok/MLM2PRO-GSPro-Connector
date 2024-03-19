@@ -1,20 +1,16 @@
 import logging
-
-from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMessageBox
-
 from src.DevicesForm import DevicesForm
 from src.SelectDeviceForm import SelectDeviceForm
 from src.custom_exception import WindowNotFoundException
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
-from src import MainWindow
 from src.worker_screenshot_device_launch_monitor import WorkerScreenshotDeviceLaunchMonitor
 
 
 class DeviceLaunchMonitorScreenshot(DeviceBase):
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         DeviceBase.__init__(self, main_window)
         self.current_device = None        
         self.devices = None
@@ -126,7 +122,6 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             self.main_window.selected_device.setStyleSheet("QLabel { background-color : red; color : white; }")
             self.main_window.selected_mirror_app.setText('No Mirror App')
             self.main_window.selected_mirror_app.setStyleSheet("QLabel { background-color : red; color : white; }")
-        QCoreApplication.processEvents()
 
     def __select_device(self):
         self.pause()

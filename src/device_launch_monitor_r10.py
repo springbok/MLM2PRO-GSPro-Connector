@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from PySide6.QtWidgets import QMessageBox
-from src import MainWindow
 from src.ball_data import BallData
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
@@ -13,7 +12,7 @@ class DeviceLaunchMonitorR10(DeviceBase):
 
     webcam_app = 'ball_tracking.exe'
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         DeviceBase.__init__(self, main_window)
         self.__setup_signals()
         self.device_worker_paused()

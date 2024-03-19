@@ -1,9 +1,8 @@
 import logging
 import os
 import subprocess
-from PySide6.QtCore import QThread, QCoreApplication, Signal, QObject
+from PySide6.QtCore import QThread, Signal, QObject
 from PySide6.QtWidgets import QMessageBox
-from src import MainWindow
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.gspro_connect import GSProConnect
 from src.worker_gspro_messages import WorkerGSProMessages
@@ -20,7 +19,7 @@ class GSProConnection(QObject):
     club_selected = Signal(object)
     gspro_message = Signal(object)
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super(GSProConnection, self).__init__()
         self.main_window = main_window
         self.current_club = None
@@ -146,7 +145,6 @@ class GSProConnection(QObject):
         self.main_window.gspro_status_label.setText(msg)
         self.main_window.gspro_status_label.setStyleSheet("QLabel { background-color : orange; color : white; }")
         self.main_window.gspro_connect_button.setEnabled(False)
-        QCoreApplication.processEvents()
 
     def __connected(self):
         self.connected = True
