@@ -11,6 +11,7 @@ from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
+from src.device_launch_monitor_relay_server_mlm import DeviceLaunchMonitorRelayServerMLM
 from src.devices import Devices
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings
@@ -19,7 +20,7 @@ from src.PuttingForm import PuttingForm
 from src.gspro_connection import GSProConnection
 from src.device_launch_monitor_screenshot import DeviceLaunchMonitorScreenshot
 from src.putting import Putting
-from src.device_launch_monitor_r10 import DeviceLaunchMonitorR10
+from src.device_launch_monitor_relay_server_r10 import DeviceLaunchMonitorRelayServerR10
 
 
 @dataclass
@@ -143,7 +144,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __setup_launch_monitor(self):
         if self.launch_monitor is not None:
             self.launch_monitor.shutdown()
-        if self.settings.device_id != LaunchMonitor.R10:
+        if self.settings.device_id != LaunchMonitor.R10 and self.settings.device_id != LaunchMonitor.MLM2PRO_BT:
             self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
             self.device_control_widget.show()
             self.server_control_widget.hide()
@@ -151,7 +152,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.device_control_widget.hide()
             self.server_control_widget.show()
-            self.launch_monitor = DeviceLaunchMonitorR10(self)
+            if self.settings.device_id == LaunchMonitor.R10:
+                self.launch_monitor = DeviceLaunchMonitorRelayServerR10(self)
+            else:
+                self.launch_monitor = DeviceLaunchMonitorRelayServerMLM(self)
             self.actionDevices.setEnabled(False)
         self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 

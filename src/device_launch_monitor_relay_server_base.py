@@ -1,19 +1,21 @@
 import json
 import logging
 import os
+import subprocess
+
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
+from src.ctype_screenshot import ScreenMirrorWindow
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
-from src.worker_device_r10 import WorkerDeviceR10
+from src.worker_device_launch_monitor_relay_server import WorkerDeviceLaunchMonitorRelayServer
 
 
-class DeviceLaunchMonitorR10(DeviceBase):
-
-    webcam_app = 'ball_tracking.exe'
+class DeviceLaunchMonitorRelayServerBase(DeviceBase):
 
     def __init__(self, main_window):
         DeviceBase.__init__(self, main_window)
+        self.launch_monitor_app = None
         self.__setup_signals()
         self.device_worker_paused()
         self.prev_shot = None
@@ -23,7 +25,7 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.device_worker.listening.connect(self.__listening)
         self.device_worker.connected.connect(self.__connected)
         self.device_worker.finished.connect(self.device_worker_paused)
-        self.device_worker.r10_shot.connect(self.__shot_sent)
+        self.device_worker.relay_server_shot.connect(self.__shot_sent)
 
     def __setup_signals(self):
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
@@ -46,22 +48,34 @@ class DeviceLaunchMonitorR10(DeviceBase):
 
     def __server_start_stop(self):
         if self.device_worker is None:
-            self.device_worker = WorkerDeviceR10(self.main_window.settings, self.main_window.gspro_connection.gspro_connect)
+            self.device_worker = WorkerDeviceLaunchMonitorRelayServer(self.main_window.settings, self.main_window.gspro_connection.gspro_connect)
             self.setup_device_thread()
             self.device_worker.start()
             self.device_worker.club_selected(self.main_window.gspro_connection.current_club)
+            self.start_app()
         else:
             self.device_worker.stop()
             self.shutdown()
             self.device_worker_paused()
 
     def start_app(self):
-        if len(self.main_window.settings.r10_connector_path.strip()) > 0:
+        if not self.__find_connector_app():
+            print(f'app not found {self.launch_monitor_app}')
             try:
-                logging.debug(f'Starting R10 connector: {self.main_window.settings.r10_connector_path}')
-                os.spawnl(os.P_DETACH, self.main_window.settings.r10_connector_path)
+                path = f"{os.getcwd()}{self.launch_monitor_app}"
+                logging.debug(f'Starting connector app: {path}')
+                print(f'starting {path}')
+                subprocess.Popen(path, cwd=os.path.dirname(path))
             except Exception as e:
-                logging.debug(f'Could not start R10 connector app: {self.main_window.settings.r10_connector_path} error: {format(e)}')
+                logging.debug(f'Could not start LM connector app: {self.launch_monitor_app} error: {format(e)}')
+
+    def __find_connector_app(self):
+        try:
+            ScreenMirrorWindow.find_window(self.main_window.settings.relay_server_window_name)
+            running = True
+        except Exception:
+            running = False
+        return running
 
     def device_worker_error(self, error):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.R10, f'Error: {format(error)}')
@@ -72,11 +86,11 @@ class DeviceLaunchMonitorR10(DeviceBase):
         self.main_window.start_server_button.setText('Stop')
         self.main_window.server_status_label.setText('Running')
         self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.r10_connector_ip_address}:{self.main_window.settings.r10_connector_port}')
+        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.relay_server_ip_address}:{self.main_window.settings.relay_server_port}')
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
 
     def __connected(self):
-        self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.r10_connector_ip_address}:{self.main_window.settings.r10_connector_port}')
+        self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.relay_server_ip_address}:{self.main_window.settings.relay_server_port}')
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def device_worker_paused(self):

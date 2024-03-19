@@ -10,9 +10,9 @@ from src.settings import Settings
 from src.worker_base import WorkerBase
 
 
-class WorkerDeviceR10(WorkerBase):
+class WorkerDeviceLaunchMonitorRelayServer(WorkerBase):
 
-    r10_shot = Signal(object or None)
+    relay_server_shot = Signal(object or None)
     listening = Signal()
     connected = Signal()
     finished = Signal()
@@ -21,7 +21,7 @@ class WorkerDeviceR10(WorkerBase):
         WorkerBase.__init__(self)
         self.settings = settings
         self.gspro_connection = gspro_connection
-        self.name = 'WorkerDeviceR10'
+        self.name = 'WorkerDeviceLaunchMonitorRelayServer'
         self.connection = None
         self._shutdown = Event()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,9 +31,9 @@ class WorkerDeviceR10(WorkerBase):
         try:
             self.started.emit()
             self._pause.wait()
-            self._socket.bind((self.settings.r10_connector_ip_address, self.settings.r10_connector_port))
+            self._socket.bind((self.settings.relay_server_ip_address, self.settings.relay_server_port))
             self._socket.listen(5)
-            msg = f"Listening for R10 on port {self.settings.r10_connector_ip_address} : {self.settings.r10_connector_port}"
+            msg = f"Listening on port {self.settings.relay_server_ip_address} : {self.settings.relay_server_port}"
             self.listening.emit()
             logging.debug(f'{self.name}: {msg}')
             while not self._shutdown.is_set():
@@ -44,7 +44,7 @@ class WorkerDeviceR10(WorkerBase):
                 except socket.timeout:
                     pass
                 else:
-                    msg = f"Connected to R10 from: {addr[0]}:{addr[1]}"
+                    msg = f"Connected to connector from: {addr[0]}:{addr[1]}"
                     self.connected.emit()
                     logging.debug(f'{self.name}: {msg}')
                     while not self._shutdown.is_set():
@@ -53,18 +53,18 @@ class WorkerDeviceR10(WorkerBase):
                             # Wait for data
                             data = self.connection.recv(1024)
                             if data is not None and len(data) > 0:
-                                logging.debug(f'{self.name}: R10 received data: {data.decode()}')
+                                logging.debug(f'{self.name}: connector received data: {data.decode()}')
                                 if self.gspro_connection.connected():
                                     msg = self.gspro_connection.send_msg(data)
                                     self.send_msg(msg)
-                                    self.r10_shot.emit(data)
-                                    logging.debug(f'{self.name}: R10 sent data to GSPro result: {msg.decode()}')
+                                    self.relay_server_shot.emit(data)
+                                    logging.debug(f'{self.name}: connector sent data to GSPro result: {msg.decode()}')
                             else:
                                 break
                         except socket.timeout:
                             pass
                         except ConnectionError:
-                            logging.debug(f'{self.name}: R10 disconnected')
+                            logging.debug(f'{self.name}: connector disconnected')
                             break
                         except Exception as e:
                             raise e
@@ -91,7 +91,7 @@ class WorkerDeviceR10(WorkerBase):
                 try:
                     self.connection.sendall(payload)
                 except Exception as e:
-                    msg = f"R10 unknown error when trying to send result, Exception: {format(e)}"
+                    msg = f"Relay server unknown error when trying to send result, Exception: {format(e)}"
                     logging.debug(msg)
                     raise Exception(msg)
 

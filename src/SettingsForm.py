@@ -4,6 +4,8 @@ from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QWidget, QMessageBox, QFileDialog
 from src.SettingsForm_ui import Ui_SettingsForm
 from src.appdata import AppDataPaths
+from src.device_launch_monitor_relay_server_mlm import DeviceLaunchMonitorRelayServerMLM
+from src.device_launch_monitor_relay_server_r10 import DeviceLaunchMonitorRelayServerR10
 from src.devices import Devices
 from src.settings import Settings, LaunchMonitor
 
@@ -16,6 +18,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         super().__init__()
         self.app_paths = app_paths
         self.settings = settings
+        self.prev_device_id = None
         self.setupUi(self)
         self.launch_monitor_combo.clear()
         self.launch_monitor_combo.addItems(SettingsForm.launchmonitor_as_list())
@@ -27,7 +30,16 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.devices = Devices(self.app_paths)
         self.default_device_combo.clear()
         self.default_device_combo.addItems(self.devices.as_list())
+        self.launch_monitor_combo.currentTextChanged.connect(self._on_lm_change)
         self.__load_values()
+
+    def _on_lm_change(self, value):
+        if self.prev_device_id != value or self.prev_device_id is None:
+            if value == LaunchMonitor.MLM2PRO_BT:
+                self.relay_server_window_name.setPlainText(DeviceLaunchMonitorRelayServerMLM.default_window_name)
+            elif value == LaunchMonitor.R10:
+                self.relay_server_window_name.setPlainText(DeviceLaunchMonitorRelayServerR10.default_window_name)
+            self.prev_device_id = value
 
     def __close(self):
         self.close()
@@ -49,9 +61,9 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.gspro_api_window_name = self.gspro_api_window_name.toPlainText()
             self.settings.device_id = self.launch_monitor_combo.currentText()
             self.settings.default_device = self.default_device_combo.currentText()
-            self.settings.r10_connector_ip_address = self.r10_ip_edit.toPlainText()
-            self.settings.r10_connector_port = int(self.r10_port_edit.toPlainText())
-            self.settings.r10_connector_path = self.r10_path_edit.toPlainText()
+            self.settings.relay_server_ip_address = self.relay_server_ip_edit.toPlainText()
+            self.settings.relay_server_port = int(self.relay_server_port_edit.toPlainText())
+            self.settings.relay_server_window_name = self.relay_server_window_name.toPlainText()
             self.settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.\nPlease exit and restart the Connector for the changes to take effect.")
@@ -64,10 +76,10 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         if not error and len(self.port_edit.toPlainText()) <= 0:
             QMessageBox.information(self, "Error", "Port is required.")
             error = False
-        if self.launch_monitor_combo.currentText() == LaunchMonitor.R10 and len(self.r10_ip_edit.toPlainText()) <= 0:
+        if self.launch_monitor_combo.currentText() == LaunchMonitor.R10 and len(self.relay_server_ip_edit.toPlainText()) <= 0:
             QMessageBox.information(self, "Error", "R10 Connector IP Address is required.")
             error = False
-        if self.launch_monitor_combo.currentText() == LaunchMonitor.R10 and len(self.r10_port_edit.toPlainText()) <= 0:
+        if self.launch_monitor_combo.currentText() == LaunchMonitor.R10 and len(self.relay_server_port_edit.toPlainText()) <= 0:
             QMessageBox.information(self, "Error", "R10 Connector Port is required.")
             error = False
         return error
@@ -83,9 +95,10 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         if hasattr(self.settings, 'default_device') and self.settings.default_device != '':
             device = self.settings.default_device
         self.default_device_combo.setCurrentText(device)
-        self.r10_ip_edit.setPlainText(self.settings.r10_connector_ip_address)
-        self.r10_port_edit.setPlainText(str(self.settings.r10_connector_port))
-        self.r10_path_edit.setPlainText(str(self.settings.r10_connector_path))
+        self.relay_server_ip_edit.setPlainText(self.settings.relay_server_ip_address)
+        self.relay_server_port_edit.setPlainText(str(self.settings.relay_server_port))
+        self.relay_server_window_name.setPlainText(str(self.settings.relay_server_window_name))
+        self.prev_device_id = self.settings.device_id
 
 
     def __file_dialog(self):

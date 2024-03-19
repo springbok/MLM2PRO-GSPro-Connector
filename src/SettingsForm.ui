@@ -205,11 +205,11 @@
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string>R10 Settings</string>
+          <string>Relay Server Settings</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QPlainTextEdit" name="r10_ip_edit">
+           <widget class="QPlainTextEdit" name="relay_server_ip_edit">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -229,12 +229,12 @@
              <bool>true</bool>
             </property>
             <property name="placeholderText">
-             <string>IP Address</string>
+             <string>Relay Server IP Address</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPlainTextEdit" name="r10_port_edit">
+           <widget class="QPlainTextEdit" name="relay_server_port_edit">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -254,14 +254,14 @@
              <bool>true</bool>
             </property>
             <property name="placeholderText">
-             <string>Port</string>
+             <string>Relay Server Port</string>
             </property>
            </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QPlainTextEdit" name="r10_path_edit">
+             <widget class="QPlainTextEdit" name="relay_server_window_name">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
@@ -281,14 +281,7 @@
                <enum>QPlainTextEdit::WidgetWidth</enum>
               </property>
               <property name="placeholderText">
-               <string>R10 Connector Path</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="file_browse_button_2">
-              <property name="text">
-               <string>Browse</string>
+               <string>Relay Server Window Name</string>
               </property>
              </widget>
             </item>
