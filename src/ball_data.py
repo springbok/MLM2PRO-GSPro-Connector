@@ -137,8 +137,11 @@ class BallData:
         self.total_spin = payload['BallData']['TotalSpin']
         self.hla = payload['BallData']['HLA']
         self.vla = payload['BallData']['VLA']
-        self.back_spin = payload['BallData']['Backspin']
-        self.side_spin = payload['BallData']['SideSpin']
+        if 'Backspin' in payload['BallData'] and 'SideSpin' in payload['BallData']:
+            self.back_spin = payload['BallData']['Backspin']
+            self.side_spin = payload['BallData']['SideSpin']
+        else:
+            self.__calc_spin()
         self.club_speed = payload['ClubData']['Speed']
         if 'Path' in payload['ClubData']:
             self.path = payload['ClubData']['Path']
@@ -337,6 +340,9 @@ class BallData:
                     setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                     self.corrections[BallMetrics.CLUB_SPEED] = True
                     logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
+                self.__calc_spin()
+
+    def __calc_spin(self):
         self.back_spin = round(
             self.total_spin * math.cos(math.radians(self.spin_axis)))
         self.side_spin = round(
