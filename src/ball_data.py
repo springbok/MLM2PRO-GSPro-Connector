@@ -40,11 +40,13 @@ class BallMetrics:
     SIDE_SPIN = 'side_spin'
     CLUB_PATH = 'path'
     CLUB_FACE_TO_TARGET = 'face_to_target'
+    CLUB = 'club'
 
 
 class BallData:
     invalid_value = 9999999
     properties = {
+        BallMetrics.CLUB: 'Club',
         BallMetrics.SPEED: 'Ball Speed',
         BallMetrics.SPIN_AXIS: 'Spin Axis',
         BallMetrics.TOTAL_SPIN: 'Spin Rate',
@@ -278,8 +280,10 @@ class BallData:
         diff_count = 0
         non_zero_found = False
         for roi in self.properties:
+            if roi == BallMetrics.CLUB:
+                continue
             result = getattr(self, roi)
-            if result > 0 and not non_zero_found:
+            if result and result > 0 and not non_zero_found:
                 non_zero_found = True
             previous_result = getattr(other, roi)
             if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and result != previous_result):

@@ -50,6 +50,7 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
         self.exputt_screenshot.first = True
 
     def club_selected(self, club):
+        self.exputt_screenshot.selected_club = club
         super().club_selected(club)
         if self.putter_selected():
             logging.debug('Putter selected resuming putt processing')

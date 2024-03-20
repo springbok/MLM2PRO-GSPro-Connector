@@ -34,6 +34,7 @@ class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
             self.ball_data.hla = float(putt_data['ballData']['LaunchDirection'])
             self.ball_data.putt_type = PuttType.WEBCAM
             self.ball_data.good_shot = True
+            self.ball_data.club = 'PT'
             message = {"result": "Success"}
             logging.debug(f'Putting Server putt received: {self.ball_data.to_json()}')
         except Exception as e:

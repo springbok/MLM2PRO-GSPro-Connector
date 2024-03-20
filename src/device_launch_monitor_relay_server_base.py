@@ -41,6 +41,8 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
         data = json.loads(shot_data.decode("utf-8"))
         balldata = BallData()
         balldata.from_gspro(data)
+        balldata.club = self.main_window.gspro_connection.current_club
+        print(f'balldata: {balldata.to_json()} club: {self.main_window.gspro_connection.current_club}')
         balldata.good_shot = True
         if self.prev_shot is None or self.prev_shot.eq(balldata) > 0:
             self.main_window.shot_sent(balldata)

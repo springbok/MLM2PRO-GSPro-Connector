@@ -120,6 +120,7 @@ class ScreenshotBase(ViewBox):
 
     def ocr_image(self):
         self.balldata = BallData()
+        self.balldata.club = self.selected_club
         self.new_shot = False
         fallback_tesserocr_api = None
         if self.__class__.__name__ == 'ScreenshotExPutt':
