@@ -19,6 +19,7 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
         self.__setup_signals()
         self.device_worker_paused()
         self.prev_shot = None
+        self.shell_app = False
 
     def setup_device_thread(self):
         super().setup_device_thread()
@@ -65,9 +66,10 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
         if not self.__find_connector_app():
             try:
                 path = f"{os.getcwd()}{self.launch_monitor_app}"
+                print(f'path: {path}')
                 logging.debug(f'Starting connector app: {path}')
                 DETACHED_PROCESS = 0x00000008
-                subprocess.Popen([path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(path))
+                subprocess.Popen([path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(path), shell=self.shell_app)
                 for i in range(10):
                     Event().wait(250/1000)
                     if self.__find_connector_app():

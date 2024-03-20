@@ -123,16 +123,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __auto_start(self):
         # If a default device is specified try and start all components
-        if self.settings.device_id != LaunchMonitor.R10 and hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
+        if self.settings.device_id != LaunchMonitor.R10 and self.settings.device_id != LaunchMonitor.MLM2PRO_BT and hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
             self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Default Device specified, attempting to auto start all software')
             devices = Devices(self.app_paths)
             device = devices.find_device(self.settings.default_device)
             if not device is None:
                 self.launch_monitor.select_device.select_device(device)
                 self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Selecting Device:{device.name}')
+            self.putting.putting_stop_start()
             if len(self.settings.gspro_path) > 0 and len(self.settings.grspo_window_name) and os.path.exists(self.settings.gspro_path):
                 self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Starting GSPro')
                 self.gspro_connection.gspro_start(self.settings, True)
+
         else:
             self.gspro_connection.gspro_start(self.settings, False)
 

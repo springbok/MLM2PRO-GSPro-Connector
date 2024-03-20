@@ -9,3 +9,4 @@ class DeviceLaunchMonitorRelayServerR10(DeviceLaunchMonitorRelayServerBase):
     def __init__(self, main_window):
         DeviceLaunchMonitorRelayServerBase.__init__(self, main_window)
         self.launch_monitor_app = self.app
+        self.shell_app = True

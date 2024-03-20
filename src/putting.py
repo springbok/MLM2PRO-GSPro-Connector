@@ -23,10 +23,10 @@ class Putting:
 
     def __setup_signals(self):
         self.main_window.putting_settings_form.saved.connect(self.__putting_settings_saved)
-        self.main_window.putting_server_button.clicked.connect(self.__putting_stop_start)
+        self.main_window.putting_server_button.clicked.connect(self.putting_stop_start)
         self.main_window.actionPuttingSettings.triggered.connect(self.__putting_settings)
 
-    def __putting_stop_start(self):
+    def putting_stop_start(self):
         if self.putting_device is not None:
             if self.putting_device.is_running():
                 self.putting_device.stop()
