@@ -11,7 +11,7 @@ class SettingsBase:
         self.load()
 
     def load(self):
-        self.__create()
+        self.create()
         logging.debug(f"Loading settings from {self.path}")
         if os.path.isfile(self.path):
             with open(self.path, "r") as file:
@@ -26,7 +26,7 @@ class SettingsBase:
         for key in settings:
             setattr(self, key, settings[key])
 
-    def __create(self):
+    def create(self):
         if not os.path.isfile(self.path):
             logging.debug(f"File does not exist creating: {self.path}")
             with open(self.path, "w") as file:
@@ -46,3 +46,8 @@ class SettingsBase:
     def save(self):
         with open(self.path, "w") as file:
             file.write(self.to_json())
+
+    def read_json_file(self):
+        with open(self.path, 'r') as file:
+            data = json.load(file)
+        return data

@@ -7,6 +7,8 @@ from src.appdata import AppDataPaths
 from src.device_launch_monitor_relay_server_mlm import DeviceLaunchMonitorRelayServerMLM
 from src.device_launch_monitor_relay_server_r10 import DeviceLaunchMonitorRelayServerR10
 from src.devices import Devices
+from src.mlm2pro_bt_settings import MLM2PROBTSettings
+from src.r10_bt_settings import R10BTSettings
 from src.settings import Settings, LaunchMonitor
 
 
@@ -65,6 +67,14 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.relay_server_port = int(self.relay_server_port_edit.toPlainText())
             self.settings.relay_server_window_name = self.relay_server_window_name.toPlainText()
             self.settings.save()
+            mlm_settings = MLM2PROBTSettings(self.app_paths)
+            mlm_settings.OpenConnect['GSProIp'] = self.relay_server_ip_edit.toPlainText()
+            mlm_settings.OpenConnect['GSProPort'] = int(self.relay_server_port_edit.toPlainText())
+            mlm_settings.save()
+            r10_settings = R10BTSettings(self.app_paths)
+            r10_settings.openConnect['ip'] = self.relay_server_ip_edit.toPlainText()
+            r10_settings.openConnect['port'] = int(self.relay_server_port_edit.toPlainText())
+            r10_settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.\nPlease exit and restart the Connector for the changes to take effect.")
 
