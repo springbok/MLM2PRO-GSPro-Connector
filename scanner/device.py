@@ -37,8 +37,8 @@ class DeviceDiscoveryDialog(QDialog):
     @Slot(QBluetoothDeviceInfo)
     def add_device(self, info):
         print(f'config: {info.coreConfigurations()}')
-        if info.coreConfigurations() == QBluetoothDeviceInfo.LowEnergyCoreConfiguration or not info.name().startswith("MLM"):
-            return
+        #if info.coreConfigurations() == QBluetoothDeviceInfo.LowEnergyCoreConfiguration or not info.name().startswith("MLM"):
+        #    return
 
         a = info.address().toString()
         label = f"{a} {info.name()}"
