@@ -33,7 +33,6 @@ class MLM2PROAPI:
     async def stop(self):
         print('api stop')
         if self.started:
-            await self.mlm2pro_client.unsubscribe_to_characteristics()
             self.started = False
 
     async def start(self):

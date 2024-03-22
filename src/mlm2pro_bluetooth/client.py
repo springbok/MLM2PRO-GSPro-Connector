@@ -11,7 +11,7 @@ class MLM2PROClient:
         device: BLEDevice,
         connect_timeout: float = 10
     ) -> None:
-        self.bleak_client = BleakClient(device, timeout=connect_timeout)
+        self.bleak_client = BleakClient(device, timeout=connect_timeout, disconnected_callback=self.disconnected)
         self.connect_timeout = connect_timeout
         self.subscriptions = []
         self.started = False
@@ -23,7 +23,8 @@ class MLM2PROClient:
 
     async def stop(self) -> None:
         print('stop')
-        if self.started:
+        if self.is_connected and self.started:
+            await self.unsubscribe_to_characteristics()
             await self.disconnect()
         self.started = False
 
@@ -63,7 +64,7 @@ class MLM2PROClient:
 
     async def subscribe_to_characteristics(self, characteristics: list[str], notification_handler: Callable) -> None:
         print(f'subscribed: {self.subscriptions}')
-        if len(self.subscriptions) <= 0:
+        if self.is_connected and len(self.subscriptions) <= 0:
             print('subscribing to characteristics')
             for characteristic in characteristics:
                 print(f'subscribe to: {characteristic}')
@@ -71,9 +72,13 @@ class MLM2PROClient:
                 self.subscriptions.append(characteristic)
 
     async def unsubscribe_to_characteristics(self):
-        if len(self.subscriptions) > 0:
+        if self.is_connected and len(self.subscriptions) > 0:
             print('unsubscribing to characteristics')
             for subscription in self.subscriptions:
                 print(f'unsubscribe from: {subscription}')
                 await self.bleak_client.stop_notify(subscription)
             self.subscriptions = []
+
+    def disconnected(self, client: BleakClient):
+        print('disconnected')
+        print('Disconnected from MLM2PRO device, please ensure MLM2PRO is still rumning and connected to the PC. If not please restart the MLM2PRO, wait till there is a steady red light, and resart the connection.')
