@@ -1,16 +1,16 @@
 from bleak import BleakClient, BLEDevice
+from bleak.backends.service import BleakGATTService
 
 
-class Client:
-    client: BleakClient
-    #api: RadonEyeInterfaceBase
+class MLM2PROClient:
+
 
     def __init__(
         self,
         device: BLEDevice,
         connect_timeout: float = 10
     ) -> None:
-        self.client = BleakClient(device, timeout=connect_timeout)
+        self.bleak_client = BleakClient(device, timeout=connect_timeout)
         self.connect_timeout = connect_timeout
 
     '''
@@ -24,29 +24,43 @@ class Client:
 
     async def __aenter__(self):
         print('__aenter__')
-        await self.client.connect()  # type: ignore
+        await self.connect()  # type: ignore
         #self.__init_api()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # type: ignore
         print('__aexit__')
-        await self.client.disconnect()
+        await self.disconnect()
 
     async def connect(self) -> None:
         print('connect')
-        await self.client.connect()  # type: ignore
-        #self.__init_api()
+        if not self.is_connected:
+            await self.bleak_client.connect()  # type: ignore
+            #await self.bleak_client.pair()
+            #self.__init_api()
 
     async def disconnect(self) -> None:
         print('disconnect')
-        await self.client.disconnect()  # type: ignore
+        if self.is_connected:
+            #await self.bleak_client.unpair()
+            await self.bleak_client.disconnect()  # type: ignore
 
     @property
     def is_connected(self) -> bool:
-        return self.client.is_connected
+        return self.bleak_client.is_connected
 
-    #async def beep(self) -> None:
-    #    await self.api.beep(self.client)
+    async def supports_service(self, uuid) -> bool:
+        return bool(await self.get_service(uuid))
+
+    async def get_service(self, uuid) -> BleakGATTService:
+        return self.bleak_client.services.get_service(uuid)
+
+    async def read_characteristic(self, characteristic_uuid):
+        value = None
+        characteristic = self.bleak_client.services.get_characteristic(characteristic_uuid)
+        if characteristic is not None and "read" in characteristic.properties:
+            value = await self.bleak_client.read_gatt_char(characteristic.uuid)
+        return value
 
     '''
     async def status(self) -> RadonEyeStatus:

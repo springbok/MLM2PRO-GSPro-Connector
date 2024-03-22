@@ -2,7 +2,7 @@ import asyncio
 from bleak import BleakScanner, BLEDevice, AdvertisementData
 
 
-class DeviceScanner:
+class MLM2PRODeviceScanner:
     timeout_seconds = 20
 
     def __init__(self):
@@ -11,7 +11,7 @@ class DeviceScanner:
         self.device = None
 
     def __detection_callback(self, device: BLEDevice, advertisement_data: AdvertisementData):
-        if device is not None and device.name.startswith("MLM2-") or device.name.startswith("BlueZ ") or device.name.startswith("KICKR CORE "):
+        if device and device.name.startswith("MLM2-") or device.name.startswith("BlueZ ") or device.name.startswith("KICKR CORE "):
             print(f"{device.name} {device.address} {advertisement_data}")
             print(f"Device found: {device.name}")
             self.device = device
@@ -20,7 +20,7 @@ class DeviceScanner:
     async def run(self, loop):
         await self._scanner.start()
         self.scanning.set()
-        end_time = loop.time() + DeviceScanner.timeout_seconds
+        end_time = loop.time() + MLM2PRODeviceScanner.timeout_seconds
         while self.scanning.is_set():
             if loop.time() > end_time:
                 self.scanning.clear()
