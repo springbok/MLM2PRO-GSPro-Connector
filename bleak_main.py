@@ -14,17 +14,27 @@ async def main():
 
     if scanner.device is not None:
         print(f"Device: {scanner.device}")
+        mlm2pro_client = None
+        mlm2pro_api = None
         try:
             print(f'{scanner.device}')
-            async with MLM2PROClient(scanner.device) as mlm2pro_client:
-                print(mlm2pro_client.is_connected)
-                async with MLM2PROAPI(mlm2pro_client) as api:
-                    result = await api.auth()
-                    print(f'result: {result}')
+            mlm2pro_client = MLM2PROClient(scanner.device)
+            await mlm2pro_client.start()
+            print(mlm2pro_client.is_connected)
+            if mlm2pro_client.is_connected:
+                mlm2pro_api = MLM2PROAPI(mlm2pro_client)
+                await mlm2pro_api.start()
+                result = await mlm2pro_api.auth()
+                print(f'result: {result}')
 
                 #print(f'firmware version: {await api.read_firmware_version()}')
         except Exception as e:
             print(f'Error: {format(e)}, {traceback.format_exc()}')
+        finally:
+            if mlm2pro_api is not None:
+                await mlm2pro_api.stop()
+            if mlm2pro_client is not None:
+                await mlm2pro_client.stop()
 
     else:
         print('No device found')

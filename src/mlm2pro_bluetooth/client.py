@@ -14,16 +14,18 @@ class MLM2PROClient:
         self.bleak_client = BleakClient(device, timeout=connect_timeout)
         self.connect_timeout = connect_timeout
         self.subscriptions = []
+        self.started = False
 
-    async def __aenter__(self):
-        print('__aenter__')
-        await self.connect()  # type: ignore
-        #self.__init_api()
-        return self
+    async def start(self) -> None:
+        print('start')
+        await self.connect()
+        self.started = True
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):  # type: ignore
-        print('__aexit__')
-        await self.disconnect()
+    async def stop(self) -> None:
+        print('stop')
+        if self.started:
+            await self.disconnect()
+        self.started = False
 
     async def connect(self) -> None:
         print('connect')

@@ -28,21 +28,21 @@ class MLM2PROAPI:
             MLM2PROAPI.write_responseCharacteristic_uuid,
             MLM2PROAPI.measurement_characteristic_uuid
         ]
+        self.started = False
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):  # type: ignore
-        print('api __aexit__')
-        await self.mlm2pro_client.unsubscribe_to_characteristics()
+    async def stop(self):
+        print('api stop')
+        if self.started:
+            await self.mlm2pro_client.unsubscribe_to_characteristics()
+            self.started = False
 
-    async def __aenter__(self):
-        print('api __aenter__')
-        await self.__init()
-        return self
-
-    async def __init(self):
+    async def start(self):
+        print('api start')
         self.general_service = self.mlm2pro_client.bleak_client.services.get_service(MLM2PROAPI.service_uuid)
         if self.general_service is None:
             raise Exception('General service not found')
         await self.mlm2pro_client.subscribe_to_characteristics(self.notifications, self.notification_handler)
+        self.started = True
         print('init completed')
 
     async def read_firmware_version(self):
