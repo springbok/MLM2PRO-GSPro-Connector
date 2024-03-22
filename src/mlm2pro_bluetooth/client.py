@@ -1,9 +1,10 @@
+from typing import Callable
+
 from bleak import BleakClient, BLEDevice
 from bleak.backends.service import BleakGATTService
 
 
 class MLM2PROClient:
-
 
     def __init__(
         self,
@@ -12,15 +13,7 @@ class MLM2PROClient:
     ) -> None:
         self.bleak_client = BleakClient(device, timeout=connect_timeout)
         self.connect_timeout = connect_timeout
-
-    '''
-    def __init_api(self) -> None:
-        self.api = RadonEyeInterfaceFactory.create(
-            self.client,
-            status_read_timeout=self.status_read_timeout,
-            history_read_timeout=self.history_read_timeout,
-        )
-    '''
+        self.subscriptions = []
 
     async def __aenter__(self):
         print('__aenter__')
@@ -55,10 +48,30 @@ class MLM2PROClient:
     async def get_service(self, uuid) -> BleakGATTService:
         return self.bleak_client.services.get_service(uuid)
 
-    '''
-    async def status(self) -> RadonEyeStatus:
-        return await self.api.status(self.client)
+    async def write_characteristic(self, service: BleakGATTService,  data: bytearray, characteristic_uuid: str, response: bool = True) -> None:
+        if service is None:
+            raise Exception('Service not initialized')
+        characteristic = service.get_characteristic(characteristic_uuid)
+        print(f'characteristic: {characteristic} {characteristic.properties}')
+        if characteristic is None or "write" not in characteristic.properties:
+            raise Exception(f'Characteristic: {characteristic_uuid} not found or not writable')
+        print('write auth')
+        result = await self.bleak_client.write_gatt_char(characteristic.uuid, data, response)
+        return result
 
-    async def history(self) -> RadonEyeHistory:
-        return await self.api.history(self.client)
-    '''
+    async def subscribe_to_characteristics(self, characteristics: list[str], notification_handler: Callable) -> None:
+        print(f'subscribed: {self.subscriptions}')
+        if len(self.subscriptions) <= 0:
+            print('subscribing to characteristics')
+            for characteristic in characteristics:
+                print(f'subscribe to: {characteristic}')
+                await self.bleak_client.start_notify(characteristic, notification_handler)
+                self.subscriptions.append(characteristic)
+
+    async def unsubscribe_to_characteristics(self):
+        if len(self.subscriptions) > 0:
+            print('unsubscribing to characteristics')
+            for subscription in self.subscriptions:
+                print(f'unsubscribe from: {subscription}')
+                await self.bleak_client.stop_notify(subscription)
+            self.subscriptions = []
