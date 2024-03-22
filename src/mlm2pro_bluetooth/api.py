@@ -13,8 +13,17 @@ class MLM2PROAPI:
         self.general_service = None
 
     async def init(self):
-        self.general_service = await self.mlm2pro_client.get_service(MLM2PROAPI.service_uuid)
+        self.general_service = self.mlm2pro_client.bleak_client.services.get_service(MLM2PROAPI.service_uuid)
         if self.general_service is None:
             raise Exception('General service not found')
         print('init completed')
         return self.general_service
+
+    async def read_firmware_version(self):
+        if self.general_service is None:
+            raise Exception('General service not initialized')
+        characteristic = self.general_service.get_characteristic(MLM2PROAPI.firmware_characteristic_uuid)
+        if characteristic is None or not "read" in characteristic.properties:
+            raise Exception('Firmware characteristic not found')
+        value = await self.mlm2pro_client.bleak_client.read_gatt_char(characteristic.uuid)
+        return value

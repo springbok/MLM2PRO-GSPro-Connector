@@ -55,13 +55,6 @@ class MLM2PROClient:
     async def get_service(self, uuid) -> BleakGATTService:
         return self.bleak_client.services.get_service(uuid)
 
-    async def read_characteristic(self, characteristic_uuid):
-        value = None
-        characteristic = self.bleak_client.services.get_characteristic(characteristic_uuid)
-        if characteristic is not None and "read" in characteristic.properties:
-            value = await self.bleak_client.read_gatt_char(characteristic.uuid)
-        return value
-
     '''
     async def status(self) -> RadonEyeStatus:
         return await self.api.status(self.client)

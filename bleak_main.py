@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 
 from src.mlm2pro_bluetooth.api import MLM2PROAPI
 from src.mlm2pro_bluetooth.client import MLM2PROClient
@@ -16,8 +17,9 @@ async def main():
                 print(mlm2pro_client.is_connected)
                 api = MLM2PROAPI(mlm2pro_client)
                 await api.init()
+                print(f'firmware version: {await api.read_firmware_version()}')
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'Error: {format(e)}, {traceback.format_exc()}')
     else:
         print('No device found')
 
