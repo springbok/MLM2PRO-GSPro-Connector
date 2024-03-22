@@ -1,7 +1,5 @@
 import asyncio
-import struct
-
-from bleak import BleakScanner
+from bleak import BleakScanner, BLEDevice, AdvertisementData
 
 
 class DeviceScanner:
@@ -12,7 +10,7 @@ class DeviceScanner:
         self.scanning = asyncio.Event()
         self.device = None
 
-    def __detection_callback(self, device, advertisement_data):
+    def __detection_callback(self, device: BLEDevice, advertisement_data: AdvertisementData):
         if device is not None and device.name.startswith("MLM2-") or device.name.startswith("BlueZ ") or device.name.startswith("KICKR CORE "):
             print(f"{device.name} {device.address} {advertisement_data}")
             print(f"Device found: {device.name}")
