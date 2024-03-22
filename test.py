@@ -9,7 +9,7 @@ async def main():
     for d in devices:
         print(d.name, d.address)
         #if "KICKR CORE " in d.name:
-        if "MLM2-" in d.name or "BlueZ" in d.name or "KICKR CORE" in d.name:
+        if d.name and "MLM2-" in d.name or "BlueZ" in d.name: #or "KICKR CORE" in d.name:
             dev = d
             break
     if dev is not None:
