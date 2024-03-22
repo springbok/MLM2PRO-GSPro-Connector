@@ -1,3 +1,4 @@
+import asyncio
 import binascii
 
 from bleak import BleakGATTCharacteristic
@@ -6,41 +7,48 @@ from src.mlm2pro_bluetooth.client import MLM2PROClient
 
 
 class MLM2PROAPI:
+    
+    HEARTBEAT_INTERVAL = 2
 
-    #service_uuid = '0000180a-0000-1000-8000-00805f9b34fb'
-    service_uuid = 'DAF9B2A4-E4DB-4BE4-816D-298A050F25CD'
+    #SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb'
+    SERVICE_UUID = 'DAF9B2A4-E4DB-4BE4-816D-298A050F25CD'
     #firmware_characteristic_uuid = '00002a29-0000-1000-8000-00805f9b34fb'
-    auth_characteristic_uuid = 'B1E9CE5B-48C8-4A28-89DD-12FFD779F5E1'
-    command_characteristic_uuid = "1EA0FA51-1649-4603-9C5F-59C940323471"
-    configure_characteristic_uuid = "DF5990CF-47FB-4115-8FDD-40061D40AF84"
-    events_characteristic_uuid = "02E525FD-7960-4EF0-BFB7-DE0F514518FF"
-    heartbeat_characteristic_uuid = "EF6A028E-F78B-47A4-B56C-DDA6DAE85CBF"
-    measurement_characteristic_uuid = "76830BCE-B9A7-4F69-AEAA-FD5B9F6B0965"
-    write_responseCharacteristic_uuid  = "CFBBCB0D-7121-4BC2-BF54-8284166D61F0"
+    AUTH_CHARACTERISTIC_UUID = 'B1E9CE5B-48C8-4A28-89DD-12FFD779F5E1'
+    COMMAND_CHARACTERISTIC_UUID = "1EA0FA51-1649-4603-9C5F-59C940323471"
+    CONFIGURE_CHARACTERISTIC_UUID = "DF5990CF-47FB-4115-8FDD-40061D40AF84"
+    EVENTS_CHARACTERISTIC_UUID = "02E525FD-7960-4EF0-BFB7-DE0F514518FF"
+    HEARTBEAT_CHARACTERISTIC_UUID = "EF6A028E-F78B-47A4-B56C-DDA6DAE85CBF"
+    MEASUREMENT_CHARACTERISTIC_UUID = "76830BCE-B9A7-4F69-AEAA-FD5B9F6B0965"
+    WRITE_RESPONSECHARACTERISTIC_UUID  = "CFBBCB0D-7121-4BC2-BF54-8284166D61F0"
 
 
     def __init__(self, client: MLM2PROClient):
         self.mlm2pro_client = client
         self.general_service = None
         self.notifications = [
-            MLM2PROAPI.events_characteristic_uuid,
-            MLM2PROAPI.heartbeat_characteristic_uuid,
-            MLM2PROAPI.write_responseCharacteristic_uuid,
-            MLM2PROAPI.measurement_characteristic_uuid
+            MLM2PROAPI.EVENTS_CHARACTERISTIC_UUID,
+            MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID,
+            MLM2PROAPI.WRITE_RESPONSECHARACTERISTIC_UUID,
+            MLM2PROAPI.MEASUREMENT_CHARACTERISTIC_UUID
         ]
         self.started = False
+        self.heartbeat_task = None
 
     async def stop(self):
         print('api stop')
         if self.started:
             self.started = False
+            self.stop_heartbeat_task()
 
     async def start(self):
+        if not self.mlm2pro_client.is_connected:
+            raise Exception('Client not connected')
         print('api start')
-        self.general_service = self.mlm2pro_client.bleak_client.services.get_service(MLM2PROAPI.service_uuid)
+        self.general_service = self.mlm2pro_client.bleak_client.services.get_service(MLM2PROAPI.SERVICE_UUID)
         if self.general_service is None:
             raise Exception('General service not found')
         await self.mlm2pro_client.subscribe_to_characteristics(self.notifications, self.notification_handler)
+        self.start_heartbeat_task()
         self.started = True
         print('init completed')
 
@@ -54,11 +62,13 @@ class MLM2PROAPI:
         return value
 
     async def auth(self):
+        if not self.mlm2pro_client.is_connected:
+            raise Exception('Client not connected')
         if self.general_service is None:
             raise Exception('General service not initialized')
         await self.mlm2pro_client.write_characteristic(self.general_service,
             bytearray.fromhex('0100000000011A180126F99A3C3F95B9CD967EA0263D59C7448CFF15FA8337A579FA3179E915'),
-            MLM2PROAPI.auth_characteristic_uuid, True)
+            MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
         print('write auth')
 
     def notification_handler(self, characteristic: BleakGATTCharacteristic, data: bytearray):
@@ -66,3 +76,20 @@ class MLM2PROAPI:
         print(f'notification received: {characteristic.description} {binascii.hexlify(data).decode()}')
         int_array = [byte & 0xFF for byte in data]
         print(f'int_array:  {int_array}')
+
+    async def heartbeat(self):
+        while self:
+            print('heartbeat')
+            await asyncio.sleep(MLM2PROAPI.HEARTBEAT_INTERVAL)
+
+    def start_heartbeat_task(self):
+        if self.heartbeat_task is None or self.heartbeat_task.done() or \
+            self.heartbeat_task.cancelled() and self.mlm2pro_client.is_connected:
+            self.heartbeat_task = asyncio.create_task(self.heartbeat())
+            print('heartbeat task created')
+
+    def stop_heartbeat_task(self):
+        if self.heartbeat_task is not None and not self.heartbeat_task.done() and \
+            not self.heartbeat_task.cancelled():
+            self.heartbeat_task.cancel()
+            print('heartbeat task cancelled')
