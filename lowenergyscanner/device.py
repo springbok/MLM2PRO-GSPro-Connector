@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 import warnings
 from PySide6.QtBluetooth import (QBluetoothDeviceDiscoveryAgent, QLowEnergyController,
-                                 QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyService)
-from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QMetaObject, Qt
+                                 QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyService, QLowEnergyCharacteristic)
+from PySide6.QtCore import QObject, Property, Signal, Slot, QTimer, QMetaObject, Qt, QByteArray
 from PySide6.QtQml import QmlElement, QmlSingleton
 
 from deviceinfo import DeviceInfo
@@ -44,6 +44,10 @@ class Device(QObject):
         self.discovery_agent.errorOccurred.connect(self.device_scan_error)
         self.discovery_agent.finished.connect(self.device_scan_finished)
         self.update = "Search"
+        self.primary_service = None
+        self.auto_uuid = QBluetoothUuid("B1E9CE5B-48C8-4A28-89DD-12FFD779F5E1")
+        self.service_uuid = QBluetoothUuid("daf9b2a4-e4db-4be4-816d-298a050f25cd")
+
 
     @Property("QVariant", notify=devices_updated)
     def devices_list(self):
@@ -137,32 +141,24 @@ class Device(QObject):
         self._previousAddress = self.currentDevice.device_address
 
     @Slot(str)
-    def connect_to_service(self, uuid):
-        service: QLowEnergyService = None
-        for serviceInfo in self._services:
-            if not serviceInfo:
-                continue
-
-            if serviceInfo.service_uuid == uuid:
-                service = serviceInfo.service
-                break
-
-        if not service:
-            return
-
+    def connect_to_service(self, service):
+        print('connect_to_service')
         self._characteristics.clear()
         self.characteristic_updated.emit()
 
-        if service.state() == QLowEnergyService.RemoteService:
-            service.state_changed.connect(self.service_details_discovered)
-            service.discoverDetails()
-            self.update = "Back\n(Discovering details...)"
-            return
+        #if service.state() == QLowEnergyService.RemoteService:
+        #    service.stateChanged.connect(self.service_details_discovered)
+        #    service.discoverDetails()
+        #    self.update = "Back\n(Discovering details...)"
+        #    return
 
         # discovery already done
+        print(f'connect_to_service bef chars:')
         chars = service.characteristics()
+        print(f'connect_to_service chars: {chars}')
         for ch in chars:
             cInfo = CharacteristicInfo(ch)
+            print(f'connect_to_service cInfo xx: {cInfo.characteristic_name}')
             self._characteristics.append(cInfo)
 
         QTimer.singleShot(0, self.characteristic_updated)
@@ -230,7 +226,19 @@ class Device(QObject):
             return
 
         serv = ServiceInfo(service)
+
         self._services.append(serv)
+
+        print(f'add_low_energy_service {service.serviceUuid().toString()}')
+        print(f"{'daf9b2a4-e4db-4be4-816d-298a050f25cd' in service.serviceUuid().toString()}")
+        if self.service_uuid.toString() in service.serviceUuid().toString():
+            print(f'add_low_energy_service {service.serviceUuid().toString()}')
+            #self.connect_to_service(service)
+            self.update = "Primary service found)"
+            self.primary_service = service
+            self.connect_to_service(service)
+            #self.auth()
+
         self.services_updated.emit()
 
     @Slot()
@@ -258,27 +266,46 @@ class Device(QObject):
 
     @Slot("QLowEnergyService::ServiceState")
     def service_details_discovered(self, newState):
+        print('service_details_discovered')
         if newState != QLowEnergyService.RemoteServiceDiscovered:
             # do not hang in "Scanning for characteristics" mode forever
             # in case the service discovery failed
             # We have to queue the signal up to give UI time to even enter
             # the above mode
             if newState != QLowEnergyService.RemoteServiceDiscovering:
-                QMetaObject.invokeMethod(self.characteristic_updated, Qt.QueuedConnection)
+                self.characteristic_updated.emit()
+                #QMetaObject.invokeMethod(self.characteristic_updated, Qt.QueuedConnection)
             return
 
         service = self.sender()
         if not service:
             return
 
+        print('bef chars')
         chars = service.characteristics()
+        print('aft chars')
         for ch in chars:
             cInfo = CharacteristicInfo(ch)
+            print(f'cInfo {cInfo.characteristic_name} ')
             self._characteristics.append(cInfo)
-
+        print('emit chars')
         self.characteristic_updated.emit()
 
     @Slot()
     def stop_device_discovery(self):
         if self.discovery_agent.isActive():
             self.discovery_agent.stop()
+
+    def auth(self):
+        print('auth')
+        self.update = "Authenticating"
+        characteristic = self.primary_service.characteristic(self.auto_uuid)
+        ch = CharacteristicInfo(characteristic)
+        print(f'characteristic: {characteristic}')
+        if not characteristic.isValid():
+            print("Characteristic not found")
+        else:
+            # Create a QByteArray from the data you want to write
+            data = QByteArray(bytes.fromhex('0100000000011A180126F99A3C3F95B9CD967EA0263D59C7448CFF15FA8337A579FA3179E915'))
+            status = self.primary_service.writeCharacteristic(characteristic, data)
+            print(f'status: {status}')
