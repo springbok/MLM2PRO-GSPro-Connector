@@ -4,6 +4,7 @@ import binascii
 from bleak import BleakGATTCharacteristic
 
 from src.mlm2pro_bluetooth.client import MLM2PROClient
+from src.mlm2pro_bluetooth.utils import MLM2PROUtils
 
 
 class MLM2PROAPI:
@@ -19,7 +20,7 @@ class MLM2PROAPI:
     EVENTS_CHARACTERISTIC_UUID = "02E525FD-7960-4EF0-BFB7-DE0F514518FF"
     HEARTBEAT_CHARACTERISTIC_UUID = "EF6A028E-F78B-47A4-B56C-DDA6DAE85CBF"
     MEASUREMENT_CHARACTERISTIC_UUID = "76830BCE-B9A7-4F69-AEAA-FD5B9F6B0965"
-    WRITE_RESPONSECHARACTERISTIC_UUID  = "CFBBCB0D-7121-4BC2-BF54-8284166D61F0"
+    WRITE_RESPONSE_CHARACTERISTIC_UUID  = "CFBBCB0D-7121-4BC2-BF54-8284166D61F0"
 
 
     def __init__(self, client: MLM2PROClient):
@@ -28,7 +29,7 @@ class MLM2PROAPI:
         self.notifications = [
             MLM2PROAPI.EVENTS_CHARACTERISTIC_UUID,
             MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID,
-            MLM2PROAPI.WRITE_RESPONSECHARACTERISTIC_UUID,
+            MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID,
             MLM2PROAPI.MEASUREMENT_CHARACTERISTIC_UUID
         ]
         self.started = False
@@ -72,10 +73,11 @@ class MLM2PROAPI:
         print('write auth')
 
     def notification_handler(self, characteristic: BleakGATTCharacteristic, data: bytearray):
-        """Simple notification handler which prints the data received."""
         print(f'notification received: {characteristic.description} {binascii.hexlify(data).decode()}')
-        int_array = [byte & 0xFF for byte in data]
-        print(f'int_array:  {int_array}')
+        if characteristic.uuid.upper() == MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID:
+            print(f'write response {characteristic.uuid}')
+            int_array = MLM2PROUtils.bytearray_to_int_array(data)
+            print(f'int_array:  {int_array}')
 
     async def heartbeat(self):
         while self:
