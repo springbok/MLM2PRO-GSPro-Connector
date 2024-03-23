@@ -13,6 +13,10 @@ class MLM2PROAPI:
     HEARTBEAT_INTERVAL = 2
     MLM2PRO_HEARTBEAT_INTERVAL = 20
 
+    MLM2PRO_SEND_INITIAL_PARAMS = 2
+    MLM2PRO_AUTH_SUCCESS = 0
+    MLM2PRO_RAPSODO_AUTH_FAILED = 1
+
     #SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb'
     SERVICE_UUID = 'DAF9B2A4-E4DB-4BE4-816D-298A050F25CD'
     #firmware_characteristic_uuid = '00002a29-0000-1000-8000-00805f9b34fb'
@@ -81,9 +85,35 @@ class MLM2PROAPI:
         if characteristic.uuid.upper() == MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             int_array = MLM2PROUtils.bytearray_to_int_array(data)
             print(f'Write response {characteristic.uuid}: {int_array}')
+            self.__process_write_response(int_array)
         elif characteristic.uuid.upper() == MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID:
             print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
             self.set_next_expected_heartbeat()
+
+    def __process_write_response(self, data: list[int]):
+        if len(data) >= 2:
+            if len(data) > 2:
+                if data[0] == MLM2PROAPI.MLM2PRO_SEND_INITIAL_PARAMS:
+                    print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
+                    if data[1] != MLM2PROAPI.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
+                        print(f'Auth failed: {data[1]}')
+                        if data[1] == MLM2PROAPI.MLM2PRO_RAPSODO_AUTH_FAILED:
+                            raise Exception('Awesome Golf authorisation has expired, please re-authorise in the Rapsodo app and try again once that has been done.')
+                        else:
+                            raise Exception('Auth failed')
+                    print('Auth success, send initial params')
+
+                    byte_array = data[2:]
+                    print(f'byte array: {byte_array}')
+                    byte_arr3 = byte_array[:4]
+                    byte_array_int = MLM2PROUtils.bytes_to_int(byte_arr3, True)
+                    print(f'User ID generated from device: {byte_array_int}')
+
+
+            else:
+                print('Connected to MLM2PRO, initial parameters not required')
+
+
 
 
     async def heartbeat(self):
