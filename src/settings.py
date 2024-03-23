@@ -74,6 +74,16 @@ class Settings(SettingsBase):
         if not hasattr(self, 'relay_server_window_name'):
             self.relay_server_window_name = ""
             save = True
+        if not hasattr(self, 'web_api'):
+            self.web_api = {
+                "url": "https://mlm.rapsodo.com/api/simulator/user/",
+                "secret": "d3d4baff-02c7-4c91-8100-2e362936e06e",
+                "token": "",
+                "user_id": 0,
+                "token_expiry": 0,
+                "device_id": 0
+            }
+            save = True
         if save:
             super().save()
 

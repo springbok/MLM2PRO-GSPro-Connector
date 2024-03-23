@@ -1,11 +1,11 @@
 import asyncio
 import traceback
 
+from src.appdata import AppDataPaths
 from src.mlm2pro_bluetooth.manager import MLM2PROBluetoothManager
 
 
 async def main():
-
     mlm2pro_manager = MLM2PROBluetoothManager()
     error = False
     try:

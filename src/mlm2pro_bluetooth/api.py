@@ -1,11 +1,15 @@
 import asyncio
 import binascii
 import datetime
+import json
 
 from bleak import BleakGATTCharacteristic
 
+from src.appdata import AppDataPaths
 from src.mlm2pro_bluetooth.client import MLM2PROClient
 from src.mlm2pro_bluetooth.utils import MLM2PROUtils
+from src.mlm2pro_bluetooth.web_api import MLM2PROWebApi
+from src.settings import Settings
 
 
 class MLM2PROAPI:
@@ -41,6 +45,11 @@ class MLM2PROAPI:
         self.started = False
         self.heartbeat_task = None
         self.set_next_expected_heartbeat()
+        self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
+        self.settings = Settings(self.app_paths)
+        print(f'settings: {self.settings.to_json()}')
+        self.web_api = MLM2PROWebApi(self.settings.web_api['url'], self.settings.web_api['secret'])
+
 
     async def stop(self):
         print('api stop')
@@ -105,11 +114,12 @@ class MLM2PROAPI:
 
                     byte_array = data[2:]
                     print(f'byte array: {byte_array}')
-                    byte_arr3 = byte_array[:4]
-                    byte_array_int = MLM2PROUtils.bytes_to_int(byte_arr3, True)
-                    print(f'User ID generated from device: {byte_array_int}')
-
-
+                    byte_array2 = byte_array[:4]
+                    user_id = MLM2PROUtils.bytes_to_int(byte_array2, True)
+                    print(f'User ID generated from device: {user_id}')
+                    self.settings.web_api['user_id'] = user_id
+                    self.settings.save()
+                    asyncio.create_task(self.update_user_token(user_id))
             else:
                 print('Connected to MLM2PRO, initial parameters not required')
 
@@ -162,3 +172,18 @@ class MLM2PROAPI:
                     print(f'Error while connecting WindowsError: {e}')
                     await self.mlm2pro_client.stop()
                     await self.mlm2pro_client.start()
+
+    async def update_user_token(self, user_id: str):
+        print(f'updating user token: {user_id}')
+        result = self.web_api.send_request(user_id)
+        print(f'update user token response: {result}')
+        if result is not None:
+            response = json.loads(result)
+            print('User token updated successfully')
+            self.settings.web_api['token'] = response['user']['token']
+            self.settings.web_api['token_expiry'] = response['user']['expireDate']
+            self.settings.web_api['device_id'] = response['user']['id']
+            self.settings.save()
+        else:
+            print('Failed to update user token')
+            raise Exception('Failed to update user token from web API')
