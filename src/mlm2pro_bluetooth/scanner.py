@@ -20,12 +20,12 @@ class MLM2PROScanner:
             self.device = device
             self.scanning.clear()
 
-    async def run(self, loop):
+    async def run(self):
         await self._scanner.start()
         self.scanning.set()
-        end_time = loop.time() + MLM2PROScanner.timeout_seconds
+        end_time = asyncio.get_event_loop().time() + MLM2PROScanner.timeout_seconds
         while self.scanning.is_set():
-            if loop.time() > end_time:
+            if asyncio.get_event_loop().time() > end_time:
                 self.scanning.clear()
                 print('Scan has timed out, no device found')
             await asyncio.sleep(0.1)

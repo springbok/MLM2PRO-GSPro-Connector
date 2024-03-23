@@ -1,3 +1,4 @@
+import asyncio
 from typing import Callable
 
 from bleak import BleakClient, BLEDevice
@@ -29,11 +30,15 @@ class MLM2PROClient:
         self.started = False
 
     async def connect(self) -> None:
-        print('connect')
         if not self.is_connected:
-            await self.bleak_client.connect()  # type: ignore
-            #await self.bleak_client.pair()
-            #self.__init_api()
+            for i in range(3):
+                try:
+                    print('connect')
+                    await self.bleak_client.connect()
+                    break
+                except WindowsError as e:
+                    print(f'Error while connecting WindowsError: {e}')
+                    await asyncio.sleep(1)
 
     async def disconnect(self) -> None:
         print('disconnect')
@@ -51,20 +56,20 @@ class MLM2PROClient:
     async def get_service(self, uuid) -> BleakGATTService:
         return self.bleak_client.services.get_service(uuid)
 
-    async def write_characteristic(self, service: BleakGATTService,  data: bytearray, characteristic_uuid: str, response: bool = True) -> None:
+    async def write_characteristic(self, service: BleakGATTService,  data: bytearray, characteristic_uuid: str, response: bool = False) -> None:
         if service is None:
             raise Exception('Service not initialized')
         characteristic = service.get_characteristic(characteristic_uuid)
-        print(f'characteristic: {characteristic} {characteristic.properties}')
         if characteristic is None or "write" not in characteristic.properties:
             raise Exception(f'Characteristic: {characteristic_uuid} not found or not writable')
-        print('write auth')
+        print(f'writing characteristic: {characteristic} {characteristic.properties}')
         result = await self.bleak_client.write_gatt_char(characteristic.uuid, data, response)
         return result
 
     async def subscribe_to_characteristics(self, characteristics: list[str], notification_handler: Callable) -> None:
-        print(f'subscribed: {self.subscriptions}')
-        if self.is_connected and len(self.subscriptions) <= 0:
+        print(f'subscribed: {characteristics}')
+        self.subscriptions = []
+        if self.is_connected:
             print('subscribing to characteristics')
             for characteristic in characteristics:
                 print(f'subscribe to: {characteristic}')

@@ -17,7 +17,7 @@ class MLM2PROBluetoothManager:
 
     async def scan_for_mlm2pro(self) -> bool:
         loop = asyncio.get_event_loop()
-        await self.mlm2pro_scanner.run(loop)
+        await self.mlm2pro_scanner.run()
         self.device = self.mlm2pro_scanner.device
         return (self.device is not None)
 

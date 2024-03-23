@@ -1,5 +1,6 @@
 import asyncio
 import binascii
+import datetime
 
 from bleak import BleakGATTCharacteristic
 
@@ -10,6 +11,7 @@ from src.mlm2pro_bluetooth.utils import MLM2PROUtils
 class MLM2PROAPI:
     
     HEARTBEAT_INTERVAL = 2
+    MLM2PRO_HEARTBEAT_INTERVAL = 20
 
     #SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb'
     SERVICE_UUID = 'DAF9B2A4-E4DB-4BE4-816D-298A050F25CD'
@@ -34,6 +36,7 @@ class MLM2PROAPI:
         ]
         self.started = False
         self.heartbeat_task = None
+        self.set_next_expected_heartbeat()
 
     async def stop(self):
         print('api stop')
@@ -48,7 +51,8 @@ class MLM2PROAPI:
         self.general_service = self.mlm2pro_client.bleak_client.services.get_service(MLM2PROAPI.SERVICE_UUID)
         if self.general_service is None:
             raise Exception('General service not found')
-        await self.mlm2pro_client.subscribe_to_characteristics(self.notifications, self.notification_handler)
+        await self.subscribe_to_characteristics()
+        self.set_next_expected_heartbeat()
         self.start_heartbeat_task()
         self.started = True
         print('init completed')
@@ -75,19 +79,31 @@ class MLM2PROAPI:
     def notification_handler(self, characteristic: BleakGATTCharacteristic, data: bytearray):
         print(f'notification received: {characteristic.description} {binascii.hexlify(data).decode()}')
         if characteristic.uuid.upper() == MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID:
-            print(f'write response {characteristic.uuid}')
             int_array = MLM2PROUtils.bytearray_to_int_array(data)
-            print(f'int_array:  {int_array}')
+            print(f'Write response {characteristic.uuid}: {int_array}')
+        elif characteristic.uuid.upper() == MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID:
+            print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
+            self.set_next_expected_heartbeat()
+
 
     async def heartbeat(self):
         while self:
             print('heartbeat')
+            if self.mlm2pro_client.is_connected:
+                print(f'writing heartbeat {datetime.datetime.utcnow()} self.next_heartbeat: {self.next_heartbeat}')
+                if datetime.datetime.utcnow() > self.next_heartbeat:
+                    # heartbeat not received within 20 seconds, reset subscriptions
+                    print('Heartbeat not received for 20 seconds, resubscribing...')
+                    self.set_next_expected_heartbeat()
+                    await self.subscribe_to_characteristics()
+                await self.mlm2pro_client.write_characteristic(self.general_service, bytearray([0x01]), MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID)
             await asyncio.sleep(MLM2PROAPI.HEARTBEAT_INTERVAL)
 
     def start_heartbeat_task(self):
         if self.heartbeat_task is None or self.heartbeat_task.done() or \
             self.heartbeat_task.cancelled() and self.mlm2pro_client.is_connected:
             self.heartbeat_task = asyncio.create_task(self.heartbeat())
+            self.set_next_expected_heartbeat()
             print('heartbeat task created')
 
     def stop_heartbeat_task(self):
@@ -95,3 +111,24 @@ class MLM2PROAPI:
             not self.heartbeat_task.cancelled():
             self.heartbeat_task.cancel()
             print('heartbeat task cancelled')
+
+    def set_next_expected_heartbeat(self):
+        now = datetime.datetime.utcnow()
+        self.next_heartbeat = now + datetime.timedelta(seconds=MLM2PROAPI.MLM2PRO_HEARTBEAT_INTERVAL)
+        print(f'next heartbeat expected at {self.next_heartbeat} now: {now}')
+
+    async def subscribe_to_characteristics(self):
+        for i in range(3):
+            try:
+                await self.mlm2pro_client.subscribe_to_characteristics(self.notifications,
+                                                                       self.notification_handler)
+                print('subscribed to characteristics')
+                break
+            except Exception as e:
+                if i == 2:
+                    raise Exception('Error while connecting WindowsError: {e}')
+                else:
+                    await asyncio.sleep(1)
+                    print(f'Error while connecting WindowsError: {e}')
+                    await self.mlm2pro_client.stop()
+                    await self.mlm2pro_client.start()
