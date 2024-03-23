@@ -7,6 +7,7 @@ from bleak import BleakGATTCharacteristic
 
 from src.appdata import AppDataPaths
 from src.mlm2pro_bluetooth.client import MLM2PROClient
+from src.mlm2pro_bluetooth.device import MLM2PRODevice
 from src.mlm2pro_bluetooth.utils import MLM2PROUtils
 from src.mlm2pro_bluetooth.web_api import MLM2PROWebApi
 from src.settings import Settings
@@ -42,6 +43,7 @@ class MLM2PROAPI:
             MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID,
             MLM2PROAPI.MEASUREMENT_CHARACTERISTIC_UUID
         ]
+        self.device = MLM2PRODevice()
         self.started = False
         self.heartbeat_task = None
         self.set_next_expected_heartbeat()
@@ -184,6 +186,8 @@ class MLM2PROAPI:
             self.settings.web_api['token_expiry'] = response['user']['expireDate']
             self.settings.web_api['device_id'] = response['user']['id']
             self.settings.save()
+            params = self.device.get_initial_parameters(response['user']['token'])
+            print(f'Initial parameters: {params}')
         else:
             print('Failed to update user token')
             raise Exception('Failed to update user token from web API')

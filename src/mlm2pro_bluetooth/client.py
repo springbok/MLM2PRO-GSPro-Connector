@@ -23,10 +23,9 @@ class MLM2PROClient:
         self.started = True
 
     async def stop(self) -> None:
-        print('stop')
-        if self.is_connected and self.started:
-            await self.unsubscribe_to_characteristics()
-            await self.disconnect()
+        print('client stop')
+        await self.unsubscribe_to_characteristics()
+        await self.disconnect()
         self.started = False
 
     async def connect(self) -> None:
