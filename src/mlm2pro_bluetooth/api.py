@@ -8,6 +8,7 @@ from bleak import BleakGATTCharacteristic
 from src.appdata import AppDataPaths
 from src.mlm2pro_bluetooth.client import MLM2PROClient
 from src.mlm2pro_bluetooth.device import MLM2PRODevice
+from src.mlm2pro_bluetooth.encryption import MLM2PROEncryption
 from src.mlm2pro_bluetooth.utils import MLM2PROUtils
 from src.mlm2pro_bluetooth.web_api import MLM2PROWebApi
 from src.settings import Settings
@@ -51,6 +52,7 @@ class MLM2PROAPI:
         self.settings = Settings(self.app_paths)
         print(f'settings: {self.settings.to_json()}')
         self.web_api = MLM2PROWebApi(self.settings.web_api['url'], self.settings.web_api['secret'])
+        self.encryption = MLM2PROEncryption()
 
 
     async def stop(self):
@@ -81,16 +83,6 @@ class MLM2PROAPI:
         value = await self.mlm2pro_client.bleak_client.read_gatt_char(characteristic.uuid)
         return value
 
-    async def auth(self):
-        if not self.mlm2pro_client.is_connected:
-            raise Exception('Client not connected')
-        if self.general_service is None:
-            raise Exception('General service not initialized')
-        await self.mlm2pro_client.write_characteristic(self.general_service,
-            bytearray.fromhex('0100000000011A180126F99A3C3F95B9CD967EA0263D59C7448CFF15FA8337A579FA3179E915'),
-            MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
-        print('write auth')
-
     def notification_handler(self, characteristic: BleakGATTCharacteristic, data: bytearray):
         print(f'notification received: {characteristic.description} {binascii.hexlify(data).decode()}')
         if characteristic.uuid.upper() == MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID:
@@ -113,7 +105,6 @@ class MLM2PROAPI:
                         else:
                             raise Exception('Auth failed')
                     print('Auth success, send initial params')
-
                     byte_array = data[2:]
                     print(f'byte array: {byte_array}')
                     byte_array2 = byte_array[:4]
@@ -124,9 +115,6 @@ class MLM2PROAPI:
                     asyncio.create_task(self.update_user_token(user_id))
             else:
                 print('Connected to MLM2PRO, initial parameters not required')
-
-
-
 
     async def heartbeat(self):
         while self:
@@ -174,6 +162,48 @@ class MLM2PROAPI:
                     print(f'Error while connecting WindowsError: {e}')
                     await self.mlm2pro_client.stop()
                     await self.mlm2pro_client.start()
+
+    async def auth(self):
+        if not self.mlm2pro_client.is_connected:
+            raise Exception('Client not connected')
+        if self.general_service is None:
+            raise Exception('General service not initialized')
+        int_to_byte_array = MLM2PROUtils.int_to_byte_array(1, True, False)
+        encryption_type_bytes = self.encryption.get_encryption_type_bytes()
+        key_bytes = self.encryption.get_key_bytes()
+        if key_bytes == None: raise Exception('Key bytes not generated')
+        b_arr = bytearray(int_to_byte_array + encryption_type_bytes + key_bytes)
+        b_arr[:len(int_to_byte_array)] = int_to_byte_array
+        b_arr[len(int_to_byte_array):len(int_to_byte_array) + len(encryption_type_bytes)] = encryption_type_bytes
+        start_index = len(int_to_byte_array) + len(encryption_type_bytes)
+        end_index = start_index + len(key_bytes)
+        b_arr[start_index:end_index] = key_bytes
+        print(f'Auth request: {MLM2PROUtils.byte_array_to_hex_string(b_arr)}')
+        await self.mlm2pro_client.write_characteristic(self.general_service,
+            b_arr,
+            MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
+
+    async def __write_config(self, data):
+        if not self.mlm2pro_client.is_connected:
+            raise Exception('Client not connected')
+        if self.general_service is None:
+            raise Exception('General service not initialized')
+        int_to_byte_array = MLM2PROUtils.int_to_byte_array(1, True, False)
+        encryption_type_bytes = self.encryption.get_encryption_type_bytes()
+        key_bytes = self.encryption.get_key_bytes()
+        if key_bytes == None: raise Exception('Key bytes not generated')
+        b_arr = bytearray(int_to_byte_array + encryption_type_bytes + key_bytes)
+        b_arr[:len(int_to_byte_array)] = int_to_byte_array
+        b_arr[len(int_to_byte_array):len(int_to_byte_array) + len(encryption_type_bytes)] = encryption_type_bytes
+        start_index = len(int_to_byte_array) + len(encryption_type_bytes)
+        end_index = start_index + len(key_bytes)
+        b_arr[start_index:end_index] = key_bytes
+        print(f'Auth request: {MLM2PROUtils.byte_array_to_hex_string(b_arr)}')
+        await self.mlm2pro_client.write_characteristic(self.general_service,
+            b_arr,
+            MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
+
+    async def send_(self, data):
 
     async def update_user_token(self, user_id: str):
         print(f'updating user token: {user_id}')
