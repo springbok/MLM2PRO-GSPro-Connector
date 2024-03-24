@@ -9,6 +9,7 @@ from src.appdata import AppDataPaths
 from src.mlm2pro_bluetooth.client import MLM2PROClient
 from src.mlm2pro_bluetooth.device import MLM2PRODevice
 from src.mlm2pro_bluetooth.encryption import MLM2PROEncryption
+from src.mlm2pro_bluetooth.secret import MLM2PROSecret
 from src.mlm2pro_bluetooth.utils import MLM2PROUtils
 from src.mlm2pro_bluetooth.web_api import MLM2PROWebApi
 from src.settings import Settings
@@ -45,13 +46,14 @@ class MLM2PROAPI:
             MLM2PROAPI.MEASUREMENT_CHARACTERISTIC_UUID
         ]
         self.device = MLM2PRODevice()
+        self.armed = False
         self.started = False
         self.heartbeat_task = None
         self.set_next_expected_heartbeat()
         self.app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self.settings = Settings(self.app_paths)
         print(f'settings: {self.settings.to_json()}')
-        self.web_api = MLM2PROWebApi(self.settings.web_api['url'], self.settings.web_api['secret'])
+        self.web_api = MLM2PROWebApi(self.settings.web_api['url'], MLM2PROSecret.decode_secret(self.settings.web_api['secret']))
         self.encryption = MLM2PROEncryption()
 
 
@@ -60,6 +62,11 @@ class MLM2PROAPI:
         if self.started:
             self.started = False
             self.stop_heartbeat_task()
+            if self.armed:
+                await self.disarm()
+            await self.disconnect()
+        print('api stopped')
+
 
     async def start(self):
         if not self.mlm2pro_client.is_connected:
@@ -88,12 +95,12 @@ class MLM2PROAPI:
         if characteristic.uuid.upper() == MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             int_array = MLM2PROUtils.bytearray_to_int_array(data)
             print(f'Write response {characteristic.uuid}: {int_array}')
-            self.__process_write_response(int_array)
+            self.process_write_response(int_array)
         elif characteristic.uuid.upper() == MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID:
             print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
             self.set_next_expected_heartbeat()
 
-    def __process_write_response(self, data: list[int]):
+    def process_write_response(self, data: list[int]):
         if len(data) >= 2:
             if len(data) > 2:
                 if data[0] == MLM2PROAPI.MLM2PRO_SEND_INITIAL_PARAMS:
@@ -176,7 +183,7 @@ class MLM2PROAPI:
             b_arr,
             MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
 
-    async def __write_config(self, data):
+    async def write_config(self, data):
         if not self.mlm2pro_client.is_connected:
             raise Exception('Client not connected')
         if self.general_service is None:
@@ -185,6 +192,16 @@ class MLM2PROAPI:
         await self.mlm2pro_client.write_characteristic(self.general_service,
             self.encryption.encrypt(data),
             MLM2PROAPI.CONFIGURE_CHARACTERISTIC_UUID, True)
+
+    async def write_command(self, data):
+        if not self.mlm2pro_client.is_connected:
+            raise Exception('Client not connected')
+        if self.general_service is None:
+            raise Exception('General service not initialized')
+        print(f'Write command: {MLM2PROUtils.bytearray_to_int_array(data)}')
+        await self.mlm2pro_client.write_characteristic(self.general_service,
+            self.encryption.encrypt(data),
+            MLM2PROAPI.COMMAND_CHARACTERISTIC_UUID, True)
 
     async def send_initial_params(self, data):
         byte_array = data[2:]
@@ -197,7 +214,7 @@ class MLM2PROAPI:
         await self.update_user_token(user_id)
         params = self.device.get_initial_parameters(self.settings.web_api['token'])
         print(f'Initial parameters: {params}')
-        await self.__write_config(params)
+        await self.write_config(params)
 
     async def update_user_token(self, user_id: str):
         print(f'updating user token: {user_id}')
@@ -213,3 +230,15 @@ class MLM2PROAPI:
         else:
             print('Failed to update user token')
             raise Exception('Failed to update user token from web API')
+
+    async def disarm(self):
+        byte_array = bytearray.fromhex("010D0000000000")
+        await self.write_command(byte_array)
+        print(f'Disarm command sent')
+
+    async def disconnect(self):
+        byte_array = bytearray([0, 0, 0, 0, 0, 0, 0])
+        await self.write_command(byte_array)
+        print(f'Disconnect command sent')
+        await self.mlm2pro_client.unsubscribe_to_characteristics()
+

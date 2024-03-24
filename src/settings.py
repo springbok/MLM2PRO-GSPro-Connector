@@ -77,7 +77,7 @@ class Settings(SettingsBase):
         if not hasattr(self, 'web_api'):
             self.web_api = {
                 "url": "https://mlm.rapsodo.com/api/simulator/user/",
-                "secret": "d3d4baff-02c7-4c91-8100-2e362936e06e",
+                "secret": "b78d7771e5fa9a0fdb59e818bf5ff557d98e3775489fd6a9c9d961637ed3ee7054a6d387f681078ea8c5c8bbd257fb24f3f778b8b7bd820c410d43e3db284030c9b5802d9190dc2f68c5874f71294a6d",
                 "token": "",
                 "user_id": 0,
                 "token_expiry": 0,
