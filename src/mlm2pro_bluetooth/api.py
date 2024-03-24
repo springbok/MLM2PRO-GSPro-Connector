@@ -105,14 +105,7 @@ class MLM2PROAPI:
                         else:
                             raise Exception('Auth failed')
                     print('Auth success, send initial params')
-                    byte_array = data[2:]
-                    print(f'byte array: {byte_array}')
-                    byte_array2 = byte_array[:4]
-                    user_id = MLM2PROUtils.bytes_to_int(byte_array2, True)
-                    print(f'User ID generated from device: {user_id}')
-                    self.settings.web_api['user_id'] = user_id
-                    self.settings.save()
-                    asyncio.create_task(self.update_user_token(user_id))
+                    asyncio.create_task(self.send_initial_params(data))
             else:
                 print('Connected to MLM2PRO, initial parameters not required')
 
@@ -188,22 +181,23 @@ class MLM2PROAPI:
             raise Exception('Client not connected')
         if self.general_service is None:
             raise Exception('General service not initialized')
-        int_to_byte_array = MLM2PROUtils.int_to_byte_array(1, True, False)
-        encryption_type_bytes = self.encryption.get_encryption_type_bytes()
-        key_bytes = self.encryption.get_key_bytes()
-        if key_bytes == None: raise Exception('Key bytes not generated')
-        b_arr = bytearray(int_to_byte_array + encryption_type_bytes + key_bytes)
-        b_arr[:len(int_to_byte_array)] = int_to_byte_array
-        b_arr[len(int_to_byte_array):len(int_to_byte_array) + len(encryption_type_bytes)] = encryption_type_bytes
-        start_index = len(int_to_byte_array) + len(encryption_type_bytes)
-        end_index = start_index + len(key_bytes)
-        b_arr[start_index:end_index] = key_bytes
-        print(f'Auth request: {MLM2PROUtils.byte_array_to_hex_string(b_arr)}')
+        print(f'Write config: {MLM2PROUtils.byte_array_to_hex_string(data)}')
         await self.mlm2pro_client.write_characteristic(self.general_service,
-            b_arr,
-            MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
+            self.encryption.encrypt(data),
+            MLM2PROAPI.CONFIGURE_CHARACTERISTIC_UUID, True)
 
-    async def send_(self, data):
+    async def send_initial_params(self, data):
+        byte_array = data[2:]
+        print(f'byte array: {byte_array}')
+        byte_array2 = byte_array[:4]
+        user_id = MLM2PROUtils.bytes_to_int(byte_array2, True)
+        print(f'User ID generated from device: {user_id}')
+        self.settings.web_api['user_id'] = user_id
+        self.settings.save()
+        await self.update_user_token(user_id)
+        params = self.device.get_initial_parameters(self.settings.web_api['token'])
+        print(f'Initial parameters: {params}')
+        await self.__write_config(params)
 
     async def update_user_token(self, user_id: str):
         print(f'updating user token: {user_id}')
@@ -216,8 +210,6 @@ class MLM2PROAPI:
             self.settings.web_api['token_expiry'] = response['user']['expireDate']
             self.settings.web_api['device_id'] = response['user']['id']
             self.settings.save()
-            params = self.device.get_initial_parameters(response['user']['token'])
-            print(f'Initial parameters: {params}')
         else:
             print('Failed to update user token')
             raise Exception('Failed to update user token from web API')
