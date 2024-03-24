@@ -11,7 +11,7 @@ class MLM2PRODevice:
         self.ball_type = 2
         self.environment = 0
         self.altitude_metres = 0.0
-        self.temperature_celsius = 20.0
+        self.temperature_celsius = 15.0
         self.quit_event = 0
         self.power_mode = 0
         self.serial_number = ""
@@ -68,7 +68,7 @@ class MLM2PRODevice:
 
         # Generate required byte arrays
         air_pressure_bytes = MLM2PROUtils.get_air_pressure_bytes(0.0)
-        temperature_bytes = MLM2PROUtils.get_temperature_bytes(15.0)
+        temperature_bytes = MLM2PROUtils.get_temperature_bytes(self.temperature_celsius)
         long_to_uint_to_byte_array = MLM2PROUtils.long_to_uint_to_byte_array(int(self.user_token), True)
 
         # Concatenate all byte arrays

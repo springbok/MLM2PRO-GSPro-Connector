@@ -23,12 +23,12 @@ class MLM2PROUtils:
     def get_air_pressure_bytes(d):
         d2 = d * 0.0065
         value = (int((((math.pow(1.0 - (d2 / ((15.0 + d2) + 273.15)), 5.257) * 1013.25) * 0.1) - 50.0) * 1000.0))
-        return MLM2PROUtils.short_to_byte_array(value, True)
+        return MLM2PROUtils.int_to_byte_array(value, True)
 
     @staticmethod
     def get_temperature_bytes(d):
         value = int(d * 100.0)
-        return MLM2PROUtils.short_to_byte_array(value, True)
+        return MLM2PROUtils.int_to_byte_array(value, True)
 
     @staticmethod
     def long_to_uint_to_byte_array(j, little_endian):
@@ -42,12 +42,22 @@ class MLM2PROUtils:
         return ''.join('{:02X}'.format(b) for b in b)
 
     @staticmethod
-    def int_to_short(i):
-        return struct.pack('h', i)
+    def int_to_byte_array(n, little_endian):
+        hex_value = hex(n)[2:]  # Convert to hex and remove '0x'
+        hex_value = hex_value.zfill(8)  # Pad with zeros to ensure it's 4 bytes
+        bytes_value = bytes.fromhex(hex_value)  # Convert hex to bytes
+        format_string = '<I' if little_endian else '>I'
+        value = struct.pack(format_string, n)
+        value = MLM2PROUtils.int_byte_array_to_short_byte_array(value, little_endian)
+        return value
 
     @staticmethod
-    def short_to_byte_array(s, little_endian):
-        if s > 32767 or s < -32768:
-            s = 0
-        format_string = '<h' if little_endian else '>h'
-        return struct.pack(format_string, s)
+    def int_byte_array_to_short_byte_array(int_byte_array, is_little_endian):
+        short_byte_array = bytearray()
+        for i in range(0, len(int_byte_array), 4):
+            int_bytes = int_byte_array[i:i+4]
+            format_string = '<I' if is_little_endian else '>I'
+            int_value = struct.unpack(format_string, int_bytes)[0]
+            short_bytes = struct.pack('<H' if is_little_endian else '>H', int_value)
+            short_byte_array.extend(short_bytes)
+        return short_byte_array
