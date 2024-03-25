@@ -1,5 +1,7 @@
 import asyncio
 from PySide6.QtWidgets import QMessageBox
+
+from src.log_message import LogMessageTypes, LogMessageSystems
 from src.worker_device_launch_monitor_bluetooth_mlm import WorkerDeviceLaunchMonitorBluetoothMLM
 
 
@@ -16,23 +18,53 @@ class DeviceLaunchMonitorBluetoothMLM2PRO:
         self.device_worker.no_device_found.connect(self.__no_device_found)
         self.device_worker.scanning.connect(self.__scanning)
         self.device_worker.device_found.connect(self.__device_found)
+        self.device_worker.connecting.connect(self.__connecting)
+        self.device_worker.connected.connect(self.__connected)
+        self.device_worker.disconnected.connect(self.__disconnected)
+        self.device_worker.disconnecting.connect(self.__disconnecting)
+        self.device_worker.error.connect(self.__device_worker_error)
         #self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         #self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
         #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
     def __not_connected_status(self):
+        print('__not_connected_status')
         self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', 'green', True)
 
     def __scanning(self, message):
+        print('__scanning')
         self.__update_ui(message, 'orange', 'No Device', 'red', 'Stop', False)
 
     def __device_found(self, device):
+        print('__device_found')
         self.__update_ui('Not Connected', 'red', device, 'green', 'Stop', False)
 
     def __no_device_found(self, message):
+        print('__no_device_found')
         self.__not_connected_status()
         QMessageBox.warning(self.main_window, "No Device Found", 'No device found. Please ensure your launch monitor is turned on and a STREADY RED light is showing.')
+
+    def __connecting(self, device):
+        print('__connecting')
+        self.__update_ui('Connecting...', 'orange', device, 'green', 'Stop', False)
+
+    def __disconnecting(self, device):
+        print('__disconnecting')
+        self.__update_ui('Disconnecting...', 'orange', device, 'green', 'Stop', False)
+
+    def __connected(self, device):
+        print('__connected')
+        self.__update_ui('Connected', 'green', device, 'green', 'Stop', True)
+
+    def __disconnected(self, device):
+        print('__disconnected')
+        self.__not_connected_status()
+
+    def __device_worker_error(self, error):
+        msg = f"An unexpected error has occurred.\nException: {format(error[0])}"
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.CONNECTOR, msg)
+        QMessageBox.warning(self.main_window, "Connector Error", msg)
 
     def device_worker_paused(self):
         status = 'Not Connected'
@@ -71,6 +103,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO:
         else:
             print('stop')
             self.__not_connected_status()
+            self.device_worker.shutdown()
             #self.shutdown()
 
     def shutdown(self):

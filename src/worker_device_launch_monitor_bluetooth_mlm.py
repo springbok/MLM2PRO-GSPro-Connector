@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import traceback
 from dataclasses import dataclass
 
 from PySide6.QtCore import Signal
@@ -21,6 +23,10 @@ class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
     no_device_found = Signal(str)
     scanning = Signal(str)
     device_found = Signal(str)
+    connecting = Signal(str)
+    connected = Signal(str)
+    disconnected = Signal(str)
+    disconnecting = Signal(str)
 
     def __init__(self):
         WorkerBase.__init__(self)
@@ -50,20 +56,56 @@ class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
         self.running = False
 
     async def start_bluetooth(self) -> None:
-        self.running = True
-        self.scanning.emit(BluetoothStatus.SCANNING)
-        await self.__scan_for_mlm2pro()
-        if self.device is None:
-            print('no device found')
-            self.no_device_found.emit(BluetoothStatus.NO_DEVICE_FOUND)
+        try:
+            self.running = True
+            self.scanning.emit(BluetoothStatus.SCANNING)
+            await self.__scan_for_mlm2pro()
+            if self.device is None:
+                print('no device found')
+                self.no_device_found.emit(BluetoothStatus.NO_DEVICE_FOUND)
+                self.running = False
+            else:
+                self.device_found.emit(self.device.name)
+                self.mlm2pro_client = MLM2PROClient(self.device)
+                print('setup signal')
+                self.__setup_client_signals()
+                print('bef start')
+                await self.mlm2pro_client.start()
+                if self.mlm2pro_client.is_connected:
+                    self.__connected()
+                    self.mlm2pro_api = MLM2PROAPI(self.mlm2pro_client)
+                    await self.mlm2pro_api.start()
+                    #result = await self.mlm2pro_api.auth()
+                    #print(f'result: {result}')
+                    while not self._shutdown.is_set():
+                        await asyncio.sleep(1)
+        except Exception as e:
+            traceback.print_exc()
+            logging.debug(f'Error in process {self.name}: {format(e)}, {traceback.format_exc()}')
+            self.error.emit((e, traceback.format_exc()))
             self.running = False
-        else:
-            self.device_found.emit(self.device.name)
-            #self.mlm2pro_client = MLM2PROClient(self.device)
-            #await self.mlm2pro_client.start()
-            #print(self.mlm2pro_client.is_connected)
-            #if self.mlm2pro_client.is_connected:
-            #    self.mlm2pro_api = MLM2PROAPI(self.mlm2pro_client)
-            #    await self.mlm2pro_api.start()
-            #    result = await self.mlm2pro_api.auth()
-            #    print(f'result: {result}')
+
+    def __setup_client_signals(self):
+        if self.mlm2pro_client is not None:
+            print('signal setup x')
+            self.mlm2pro_client.mlm_client_connecting.connect(self.__connecting)
+            self.mlm2pro_client.mlm_client_disconnected.connect(self.__disconnected)
+            self.mlm2pro_client.mlm_client_disconnecting.connect(self.__disconnecting)
+
+    def __connected(self):
+        self.connected.emit(self.device.name)
+        self.running = True
+
+    def __disconnected(self):
+        self.disconnected.emit(self.device.name)
+        self.running = False
+
+    def __connecting(self):
+        self.connecting.emit(self.device.name)
+
+    def __disconnecting(self):
+        self.disconnecting.emit(self.device.name)
+
+    def shutdown(self):
+        super().shutdown()
+        self.stop_bluetooth()

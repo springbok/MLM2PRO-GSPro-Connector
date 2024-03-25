@@ -2,6 +2,7 @@ import asyncio
 import binascii
 import datetime
 import json
+import logging
 
 from bleak import BleakGATTCharacteristic
 
@@ -157,10 +158,11 @@ class MLM2PROAPI:
                 break
             except Exception as e:
                 if i == 2:
-                    raise Exception('Error while connecting WindowsError: {e}')
+                    await self.mlm2pro_client.stop()
+                    raise Exception(f'Error while connecting WindowsError: {e}')
                 else:
                     await asyncio.sleep(1)
-                    print(f'Error while connecting WindowsError: {e}')
+                    logging.debug(f'Error while connecting WindowsError: {e}')
                     await self.mlm2pro_client.stop()
                     await self.mlm2pro_client.start()
 
