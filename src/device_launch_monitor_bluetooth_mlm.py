@@ -15,6 +15,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO:
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
         self.device_worker.no_device_found.connect(self.__no_device_found)
         self.device_worker.scanning.connect(self.__scanning)
+        self.device_worker.device_found.connect(self.__device_found)
         #self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         #self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
         #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
@@ -25,6 +26,9 @@ class DeviceLaunchMonitorBluetoothMLM2PRO:
 
     def __scanning(self, message):
         self.__update_ui(message, 'orange', 'No Device', 'red', 'Stop', False)
+
+    def __device_found(self, device):
+        self.__update_ui('Not Connected', 'red', device, 'green', 'Stop', False)
 
     def __no_device_found(self, message):
         self.__not_connected_status()
@@ -63,6 +67,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO:
         if not self.device_worker.running:
             QMessageBox.warning(self.main_window, "Starting LM connector", 'Before starting Bluetooth connection ensure your launch monitor is turned on and a STREADY RED light is showing.')
             asyncio.ensure_future(self.device_worker.start_bluetooth())
+            print('xxx asyncio process done')
         else:
             print('stop')
             self.__not_connected_status()

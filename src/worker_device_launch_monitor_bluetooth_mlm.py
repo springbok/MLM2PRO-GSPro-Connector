@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 from PySide6.QtCore import Signal
@@ -19,6 +20,7 @@ class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
 
     no_device_found = Signal(str)
     scanning = Signal(str)
+    device_found = Signal(str)
 
     def __init__(self):
         WorkerBase.__init__(self)
@@ -49,7 +51,6 @@ class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
 
     async def start_bluetooth(self) -> None:
         self.running = True
-        print('start scan')
         self.scanning.emit(BluetoothStatus.SCANNING)
         await self.__scan_for_mlm2pro()
         if self.device is None:
@@ -57,11 +58,12 @@ class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
             self.no_device_found.emit(BluetoothStatus.NO_DEVICE_FOUND)
             self.running = False
         else:
-            self.mlm2pro_client = MLM2PROClient(self.device)
-            await self.mlm2pro_client.start()
-            print(self.mlm2pro_client.is_connected)
-            if self.mlm2pro_client.is_connected:
-                self.mlm2pro_api = MLM2PROAPI(self.mlm2pro_client)
-                await self.mlm2pro_api.start()
-                result = await self.mlm2pro_api.auth()
-                print(f'result: {result}')
+            self.device_found.emit(self.device.name)
+            #self.mlm2pro_client = MLM2PROClient(self.device)
+            #await self.mlm2pro_client.start()
+            #print(self.mlm2pro_client.is_connected)
+            #if self.mlm2pro_client.is_connected:
+            #    self.mlm2pro_api = MLM2PROAPI(self.mlm2pro_client)
+            #    await self.mlm2pro_api.start()
+            #    result = await self.mlm2pro_api.auth()
+            #    print(f'result: {result}')

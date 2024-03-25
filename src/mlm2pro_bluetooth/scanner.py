@@ -22,6 +22,7 @@ class MLM2PROScanner:
             self.scanning.clear()
 
     async def run(self):
+        logging.debug('Scanning for Bluetooth devices')
         await self._scanner.start()
         self.scanning.set()
         end_time = asyncio.get_event_loop().time() + MLM2PROScanner.timeout_seconds
