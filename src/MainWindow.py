@@ -1,7 +1,5 @@
-import asyncio
 import logging
 import os
-import sys
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime

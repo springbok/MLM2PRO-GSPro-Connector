@@ -2,7 +2,7 @@ from PySide6.QtCore import QPoint, Qt, Slot
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QDialog, QListWidgetItem, QListWidget, QMenu
 from PySide6.QtBluetooth import (QBluetoothAddress, QBluetoothDeviceDiscoveryAgent,
-                                 QBluetoothDeviceInfo, QBluetoothLocalDevice)
+                                 QBluetoothDeviceInfo, QBluetoothLocalDevice, QBluetoothServiceDiscoveryAgent)
 
 from device_ui import Ui_DeviceDiscovery
 from service import ServiceDiscoveryDialog
@@ -55,7 +55,7 @@ class DeviceDiscoveryDialog(QDialog):
 
     @Slot()
     def start_scan(self):
-        self._discovery_agent.start()
+        self._discovery_agent.start(QBluetoothDeviceDiscoveryAgent.LowEnergyMethod)
         self._ui.scan.setEnabled(False)
 
     @Slot()

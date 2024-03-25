@@ -75,8 +75,7 @@ class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
                     self.__connected()
                     self.mlm2pro_api = MLM2PROAPI(self.mlm2pro_client)
                     await self.mlm2pro_api.start()
-                    #result = await self.mlm2pro_api.auth()
-                    #print(f'result: {result}')
+                    result = await self.mlm2pro_api.auth()
                     while not self._shutdown.is_set():
                         await asyncio.sleep(1)
         except Exception as e:
