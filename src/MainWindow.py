@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import sys
@@ -11,7 +12,7 @@ from src.SettingsForm import SettingsForm
 from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
-from src.device_launch_monitor_relay_server_mlm import DeviceLaunchMonitorRelayServerMLM
+from src.device_launch_monitor_bluetooth_mlm import DeviceLaunchMonitorBluetoothMLM2PRO
 from src.devices import Devices
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
 from src.putting_settings import PuttingSettings
@@ -122,6 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__find_edit_fields()
 
     def __auto_start(self):
+        return
         # If a default device is specified try and start all components
         if self.settings.device_id != LaunchMonitor.R10 and self.settings.device_id != LaunchMonitor.MLM2PRO_BT and hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
             self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Default Device specified, attempting to auto start all software')
@@ -157,7 +159,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.settings.device_id == LaunchMonitor.R10:
                 self.launch_monitor = DeviceLaunchMonitorRelayServerR10(self)
             else:
-                self.launch_monitor = DeviceLaunchMonitorRelayServerMLM(self)
+                self.launch_monitor = DeviceLaunchMonitorBluetoothMLM2PRO(self)
             self.actionDevices.setEnabled(False)
         self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
@@ -177,7 +179,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gspro_connection.shutdown()
         self.putting.shutdown()
         self.launch_monitor.shutdown()
-        sys.exit()
 
     def __settings(self):
         self.settings_form.show()

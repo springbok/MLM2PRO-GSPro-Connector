@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 from bleak import BleakScanner, BLEDevice, AdvertisementData
 
 
@@ -13,10 +15,9 @@ class MLM2PROScanner:
         self.device = None
 
     def __detection_callback(self, device: BLEDevice, advertisement_data: AdvertisementData):
-        print(f'detection_callback: {device}')
+        print(f'Found Bluetooth device: {device}')
         if device.name and (device.name.startswith(MLM2PROScanner.MLM2PRO_NAME_PREFIX) or device.name.startswith(MLM2PROScanner.BLUEZ_NAME_PREFIX)):
-            print(f"{device.name} {device.address} {advertisement_data}")
-            print(f"Device found: {device.name}")
+            logging.debug(f"Device found: {device.name} {device.address} {advertisement_data}")
             self.device = device
             self.scanning.clear()
 
@@ -27,6 +28,6 @@ class MLM2PROScanner:
         while self.scanning.is_set():
             if asyncio.get_event_loop().time() > end_time:
                 self.scanning.clear()
-                print('Scan has timed out, no device found')
-            await asyncio.sleep(0.1)
+                logging.debug('Timeout while scanning for MLM2PRO device, no devices found.')
+            await asyncio.sleep(0.5)
         await self._scanner.stop()

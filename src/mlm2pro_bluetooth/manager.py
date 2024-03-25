@@ -16,12 +16,17 @@ class MLM2PROBluetoothManager:
         self.mlm2pro_scanner = MLM2PROScanner()
 
     async def scan_for_mlm2pro(self) -> bool:
+        if self.mlm2pro_scanner is None:
+            self.mlm2pro_scanner = MLM2PROScanner()
         loop = asyncio.get_event_loop()
         await self.mlm2pro_scanner.run()
         self.device = self.mlm2pro_scanner.device
         return (self.device is not None)
 
     async def stop(self) -> None:
+        if self.mlm2pro_scanner is not None:
+            self.mlm2pro_scanner.scanning.clear()
+            self.mlm2pro_scanner = None
         if self.mlm2pro_api is not None:
             await self.mlm2pro_api.stop()
             self.mlm2pro_api = None
