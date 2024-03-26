@@ -32,16 +32,18 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
     def not_connected_status(self):
-        print('not_connected_status')
-        self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', 'green', True)
+        self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', True)
 
-    def __update_ui(self, message, color, status, status_color, button, button_color, enabled=True):
-        self.main_window.server_connection_label.setText(status)
-        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : {status_color}; color : white; }}")
-        self.main_window.start_server_button.setText(button)
+    def __update_ui(self, message, color, status, status_color, button, enabled=True):
+        if status is not None:
+            self.main_window.server_connection_label.setText(status)
+            self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : {status_color}; color : white; }}")
+        if button is not None:
+            self.main_window.start_server_button.setText(button)
         self.main_window.start_server_button.setEnabled(enabled)
-        self.main_window.server_status_label.setText(message)
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+        if message is not None:
+            self.main_window.server_status_label.setText(message)
+            self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def __shot_sent(self, shot_data):
         data = json.loads(shot_data.decode("utf-8"))
@@ -61,8 +63,15 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         pass
 
     def setup_worker_signal(self):
-        #self.device_worker.club_selected(self.main_window.gspro_connection.current_club)
-        pass
+        if self.device_worker is not None and self.device_worker.scanner is not None:
+            self.device_worker.scanner.status_update.connect(self.__scanning)
+            self.device_worker.scanner.device_update.connect(self.__device_found)
+
+    def __scanning(self, status_message):
+        self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
+
+    def __device_found(self, device):
+        self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
 
     def device_worker_error(self, error):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'Error: {format(error)}')
