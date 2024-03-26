@@ -65,15 +65,29 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         pass
 
     def setup_worker_signal(self):
-        if self.device_worker is not None and self.device_worker.scanner is not None:
-            self.device_worker.scanner.status_update.connect(self.__scanning)
-            self.device_worker.scanner.device_update.connect(self.__device_found)
+        if self.device_worker is not None:
+            if self.device_worker.scanner is not None:
+                self.device_worker.scanner.status_update.connect(self.__scanning)
+                self.device_worker.scanner.device_update.connect(self.__device_found)
+                self.device_worker.error.connect(self.__scanner_error)
+            if self.device_worker.client is not None:
+                self.device_worker.client.status_update.connect(self.__client_status_update)
+                self.device_worker.client.error.connect(self.__send_shot_error)
+
+
+    def __scanner_error(self, error):
+        msg = f"The following error occurred while scanning for devices:\n{error}"
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}')
+        QMessageBox.warning(self.main_window, "Error while scanning for devices", msg)
 
     def __scanning(self, status_message):
         self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
 
     def __device_found(self, device: QBluetoothDeviceInfo):
         self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
+
+    def __client_status_update(self, status):
+        self.__update_ui(status, 'orange', None, 'red', 'Stop', False)
 
     def device_worker_error(self, error):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'Error: {format(error)}')

@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Signal
 class DeviceScanner(QObject):
     device_update = Signal(object)
     status_update = Signal(str)
-    scan_error = Signal(str)
+    error = Signal(str)
 
     def __init__(self, launch_minitor_names: list[str]):
         super().__init__()
@@ -37,4 +37,4 @@ class DeviceScanner(QObject):
 
     def _handle_scan_error(self, error):
         logging.debug(f'Error while scanning for device {error}')
-        self.scan_error.emit(error)
+        self.error.emit(error)
