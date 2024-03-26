@@ -5,20 +5,18 @@ from threading import Event
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
 
 from src.bluetooth.bluetooth_client import BluetoothClient
-from src.bluetooth.device_scanner import DeviceScanner
 from src.settings import Settings
 from src.worker_base import WorkerBase
 
 
 class WorkerDeviceLaunchMonitorBluetoothBase(WorkerBase):
 
-    def __init__(self, settings: Settings, api, device_names: list[str]):
+    def __init__(self, settings: Settings, api, device: QBluetoothDeviceInfo):
         WorkerBase.__init__(self)
         self.settings = settings
         self.api = api
-        self.device_names = device_names
+        self.device = device
         self.name = 'WorkerDeviceLaunchMonitorBluetoothBase'
-        self.scanner = DeviceScanner(self.device_names)
         self.client = BluetoothClient()
         self._shutdown = Event()
 
@@ -26,24 +24,20 @@ class WorkerDeviceLaunchMonitorBluetoothBase(WorkerBase):
         try:
             self.started.emit()
             self._pause.wait()
-            # Scan for devices
-            self.scanner.device_update.connect(self.__device_found)
-            self.scanner.scan()
-            print('after scan')
+            print('connecting to device')
+            self.client.connect_client(self.device)
+            while not self._shutdown.is_set():
+                # When _pause is clear we wait(suspended) if set we process
+                self._pause.wait()
+                Event().wait(1)
         except Exception as e:
             logging.debug(f'Error in process {self.name}: {format(e)}, {traceback.format_exc()}')
             self.error.emit((e, traceback.format_exc()))
         finally:
-            pass
+            print('reset client')
+            self.client.reset_connection()
         self.finished.emit()
         print('worker finished')
-
-    def __device_found(self, device: QBluetoothDeviceInfo) -> None:
-        print('__device_found')
-        logging.debug(f'__device_found {device.name()} uuid: {device.address().toString()}')
-        self.client.connect_client(device)
-        while not self._shutdown.is_set():
-            Event().wait(1000 / 1000)
 
     def shutdown(self) -> None:
         super().shutdown()

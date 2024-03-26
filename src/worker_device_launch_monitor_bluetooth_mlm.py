@@ -18,7 +18,7 @@ class BluetoothStatus:
     NO_DEVICE_FOUND = 'No Device Found'
 
 
-class WorkerDeviceLaunchMonitorBluetoothMLM(WorkerBase):
+class WorkerDeviceLaunchMonitorBluetoothMLM1(WorkerBase):
 
     no_device_found = Signal(str)
     scanning = Signal(str)
