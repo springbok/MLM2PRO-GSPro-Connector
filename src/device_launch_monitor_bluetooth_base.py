@@ -1,5 +1,7 @@
 import json
 import logging
+
+from PySide6.QtBluetooth import QBluetoothDeviceInfo
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
 from src.device_base import DeviceBase
@@ -70,7 +72,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __scanning(self, status_message):
         self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
 
-    def __device_found(self, device):
+    def __device_found(self, device: QBluetoothDeviceInfo):
         self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
 
     def device_worker_error(self, error):

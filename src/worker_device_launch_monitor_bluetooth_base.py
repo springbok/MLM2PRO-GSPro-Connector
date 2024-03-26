@@ -2,6 +2,8 @@ import logging
 import traceback
 from threading import Event
 
+from PySide6.QtBluetooth import QBluetoothDeviceInfo
+
 from src.bluetooth.device_scanner import DeviceScanner
 from src.settings import Settings
 from src.worker_base import WorkerBase
@@ -34,13 +36,13 @@ class WorkerDeviceLaunchMonitorBluetoothBase(WorkerBase):
         self.finished.emit()
         print('worker finished')
 
-    def __device_found(self, device):
+    def __device_found(self, device: QBluetoothDeviceInfo) -> None:
         print('__device_found')
-        logging.debug(f'__device_found {device.name} uuid: {device.deviceUuid().toString()}')
+        logging.debug(f'__device_found {device.name()} uuid: {device.address().toString()}')
         while not self._shutdown.is_set():
             Event().wait(1000 / 1000)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         super().shutdown()
         #if self.connection:
         #    self.connection.close()

@@ -11,10 +11,10 @@ class WorkerDeviceLaunchMonitorBluetoothMLM2PRO(WorkerDeviceLaunchMonitorBluetoo
     BLUEZ_NAME_PREFIX = "BlueZ"
 
     def __init__(self, settings: Settings, api):
-        WorkerDeviceLaunchMonitorBluetoothBase.__init__(self, settings,
-                                                        api,
-                                                        [WorkerDeviceLaunchMonitorBluetoothMLM2PRO.MLM2PRO_NAME_PREFIX,
-                                                         WorkerDeviceLaunchMonitorBluetoothMLM2PRO.BLUEZ_NAME_PREFIX])
+        #device_name = [WorkerDeviceLaunchMonitorBluetoothMLM2PRO.MLM2PRO_NAME_PREFIX,
+        #                WorkerDeviceLaunchMonitorBluetoothMLM2PRO.BLUEZ_NAME_PREFIX]
+        device_name = ['KICKR']
+        WorkerDeviceLaunchMonitorBluetoothBase.__init__(self, settings, api, device_name)
         self.putting_rois_reload = True
         self.settings = settings
         self.name = 'WorkerDeviceLaunchMonitorBluetoothMLM2PRO'

@@ -26,12 +26,12 @@ class DeviceScanner(QObject):
     def _handle_scan_result(self):
         self.device = None
         for d in self.scanner.discoveredDevices():
-            logging.debug(f'Found device: {d.name()} uuid: {d.deviceUuid().toString()}')
+            logging.debug(f'Found device: {d.name()} uuid: {d.address().toString()}')
             if d.name() and any(d.name().startswith(name) for name in self.launch_minitor_names):
                 self.device = d
                 break
         if self.device is not None:
-            logging.debug(f'Launch monitor found: {self.device.name()} uuid: {self.device.deviceUuid().toString()}')
+            logging.debug(f'Launch monitor found: {self.device.name()} uuid: {self.device.address().toString()}')
             self.status_update.emit('Device found')
             self.device_update.emit(self.device)
 
