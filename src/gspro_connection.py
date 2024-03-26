@@ -198,7 +198,9 @@ class GSProConnection(QObject):
                 self.main_window.log_message(LogMessageTypes.ALL, LogMessageSystems.CONNECTOR, f"GSPro not running, starting")
                 try:
                     if not gspro_running:
-                        subprocess.Popen(settings.gspro_path)
+                        logging.debug(f'Starting GSPro app: {settings.gspro_path}')
+                        DETACHED_PROCESS = 0x00000008
+                        subprocess.Popen([settings.gspro_path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(settings.gspro_path), shell=False)
                     if auto_start:
                         self.gspro_start_thread = QThread()
                         self.gspro_start_worker = WorkerGSProStart(settings)
