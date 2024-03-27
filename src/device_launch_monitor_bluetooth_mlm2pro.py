@@ -18,7 +18,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
     def device_found(self, device: BLEDevice) -> None:
         print(f"DeviceLaunchMonitorBluetoothMLM2PRO Device found: {device.name}")
         super().device_found(device)
-        #if self.client is not None:
+        if self.client is not None:
         #    self.client.reset_connection()
         #    self.client = None
         #self.device_worker = WorkerDeviceLaunchMonitorBluetoothMLM2PRO(self.main_window.settings, self.api, device)

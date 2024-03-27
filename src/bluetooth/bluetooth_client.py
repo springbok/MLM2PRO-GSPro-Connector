@@ -1,11 +1,7 @@
 import logging
 
-from PySide6.QtBluetooth import QLowEnergyController, QLowEnergyService, QBluetoothDeviceInfo, QLowEnergyCharacteristic, \
-    QBluetoothUuid
 from PySide6.QtCore import QObject, QByteArray, Signal
-from typing import Union
-
-from src.bluetooth.service_info import ServiceInfo
+from bleak import BLEDevice, BleakClient
 
 
 class BluetoothClient(QObject):
@@ -17,28 +13,44 @@ class BluetoothClient(QObject):
     In Qt terminology client=central, server=peripheral.
     """
 
-    #ibi_update = Signal(object)
     status_update = Signal(str)
     error = Signal(str)
-    client_disconnected = Signal()
 
-    def __init__(self):
+    connecting = Signal()
+    disconnected = Signal()
+    disconnecting = Signal()
+
+    def __init__(
+        self,
+        connect_timeout: float = 10
+    ) -> None:
         super().__init__()
-        self.device = None
-        self.client: Union[None, QLowEnergyController] = None
-        self.service: Union[None, QLowEnergyService] = None
-        #self.hr_notification: Union[None, QLowEnergyDescriptor] = None
-        #self.ENABLE_NOTIFICATION: QByteArray = QByteArray.fromHex(b"0100")
-        #self.DISABLE_NOTIFICATION: QByteArray = QByteArray.fromHex(b"0000")
-        #self.service: QBluetoothUuid.ServiceClassUuid = (
-        #    QBluetoothUuid.ServiceClassUuid.HeartRate
-        #)
-        #self.HR_CHARACTERISTIC: QBluetoothUuid.CharacteristicType = (
-        #    QBluetoothUuid.CharacteristicType.HeartRateMeasurement
-        #)
+        self.bleak_client = BleakClient(device, timeout=connect_timeout, disconnected_callback=self.__disconnected)
+        self.device = device
+        self.connect_timeout = connect_timeout
+        self.subscriptions = []
+        self.started = False
 
-    #def _sensor_address(self):
-    #    return get_sensor_remote_address(self.client)
+    async def connect(self, device: BLEDevice) -> None:
+        if not self.is_connected:
+            logging.debug(f'Attempting to connect to device: {self.device.name} {self.device.address}')
+            for i in range(3):
+                try:
+                    print('bleak connect')
+                    await self.bleak_client.connect()
+                    print('connected')
+                    break
+                except WindowsError as e:
+                    logging.debug(f'Error while connecting WindowsError: {e}')
+                    await asyncio.sleep(1)
+
+    async def __disconnect(self) -> None:
+        if self.is_connected:
+            logging.debug(f'Disconnecting from device: {self.device.name} {self.device.address}')
+            #await self.bleak_client.unpair()
+            await self.bleak_client.disconnect()  # type: ignore
+
+
 
     def connect_client(self, device: QBluetoothDeviceInfo):
         print(f'connect_client {device.name()}')
