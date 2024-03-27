@@ -4,6 +4,7 @@ from PySide6 import QtWidgets
 from qasync import QEventLoop
 
 from src.MainWindow import MainWindow
+from src.asyncio_thread import AsyncioThread
 from src.get_mutex import GetMutex
 
 
