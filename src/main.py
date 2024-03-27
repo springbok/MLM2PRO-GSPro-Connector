@@ -1,10 +1,6 @@
-import asyncio
 import sys
-from PySide6 import QtWidgets
-from qasync import QEventLoop
-
+from PySide6 import QtWidgets, QtAsyncio
 from src.MainWindow import MainWindow
-from src.asyncio_thread import AsyncioThread
 from src.get_mutex import GetMutex
 
 
@@ -16,11 +12,7 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-
     window = MainWindow(app)
     window.show()
 
-    with loop:
-        loop.run_forever()
+    QtAsyncio.run()

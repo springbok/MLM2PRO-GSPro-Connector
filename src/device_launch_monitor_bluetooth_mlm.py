@@ -5,7 +5,7 @@ from src.log_message import LogMessageTypes, LogMessageSystems
 from src.worker_device_launch_monitor_bluetooth_mlm import WorkerDeviceLaunchMonitorBluetoothMLM
 
 
-class DeviceLaunchMonitorBluetoothMLM2PRO:
+class DeviceLaunchMonitorBluetoothMLM2PRO1:
 
     def __init__(self, main_window):
         self.main_window = main_window
