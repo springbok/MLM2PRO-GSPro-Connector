@@ -1,5 +1,6 @@
-from bleak import BLEDevice
+from bleak import BLEDevice, AdvertisementData
 
+from src.bluetooth.mlm2pro_device import MLM2PRODevice
 from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoothBase
 
 
@@ -14,9 +15,10 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         #device_names = ['KICKR']
         DeviceLaunchMonitorBluetoothBase.__init__(self, main_window=main_window, device_names=device_names)
 
-    def _device_found(self, device: BLEDevice) -> None:
-        print(f"DeviceLaunchMonitorBluetoothMLM2PRO Device found: {device.name}")
-        super()._device_found(device)
+    def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
+        print(f'_device_found derived: {device.name}')
+        super()._device_found(device, advertised_data)
+        mlm2pro_devide = MLM2PRODevice(device, advertised_data)
 
         #if self.client is not None:
         #    self.client.reset_connection()

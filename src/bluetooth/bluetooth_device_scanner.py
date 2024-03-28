@@ -10,7 +10,7 @@ class BluetoothDeviceScanner(QObject):
     device_update = Signal(object)
     status_update = Signal(str)
     error = Signal(str)
-    device_found = Signal(BLEDevice)
+    device_found = Signal(BLEDevice, AdvertisementData)
     stopped = Signal()
     device_not_found = Signal()
     finished = Signal()
@@ -32,7 +32,7 @@ class BluetoothDeviceScanner(QObject):
                 print(f"Device found: {device.name} {device.address} {advertisement_data}")
                 self.device = device
                 self._scanning.clear()
-                self.device_found.emit(device)
+                self.device_found.emit(device, advertisement_data)
 
     async def scan(self) -> None:
         if self._scanner_active:

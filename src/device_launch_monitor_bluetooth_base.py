@@ -3,7 +3,7 @@ import json
 import logging
 
 from PySide6.QtWidgets import QMessageBox
-from bleak import BLEDevice
+from bleak import BLEDevice, AdvertisementData
 
 from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
@@ -45,8 +45,18 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
-    def _device_found(self, device: BLEDevice) -> None:
+    def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
+        print(f'_device_found base: {device.name}')
         self.__update_ui('Found', 'orange', device.name, 'red', 'Stop', True)
+        self.main_window.launch_monitor_rssi_label.setText(f"RSSI: {advertised_data.rssi}")
+        if advertised_data.rssi < -50 and advertised_data.rssi > -70:
+            color = 'green'
+        elif advertised_data.rssi < -70 and advertised_data.rssi > -80:
+            color = 'orange'
+        else:
+            color = 'red'
+        self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+
 
     def __no_device_found(self):
         print('__no_device_found')
@@ -90,8 +100,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         else:
             print('api not none')
             #self.device_worker.stop()
-            #self.shutdown()
-            self.not_connected_status()
+            self.shutdown()
 
     def start_message(self) -> str:
         return ' '
@@ -171,3 +180,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}\nException: {format(error)}')
         QMessageBox.warning(self.main_window, "Relay Send to GSPro Error", msg)
+
+    def shutdown(self):
+        self.api = None
+        self.not_connected_status()

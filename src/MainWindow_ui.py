@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -69,10 +69,9 @@ class Ui_MainWindow(object):
         self.actionShop.setIcon(icon7)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.main_tab = QTabWidget(self.centralwidget)
         self.main_tab.setObjectName(u"main_tab")
+        self.main_tab.setGeometry(QRect(9, 9, 1284, 569))
         self.connector_tab = QWidget()
         self.connector_tab.setObjectName(u"connector_tab")
         self.verticalLayout_7 = QVBoxLayout(self.connector_tab)
@@ -93,7 +92,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.gspro_connect_button = QPushButton(self.groupBox)
         self.gspro_connect_button.setObjectName(u"gspro_connect_button")
-        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gspro_connect_button.sizePolicy().hasHeightForWidth())
@@ -104,7 +103,7 @@ class Ui_MainWindow(object):
 
         self.gspro_status_label = QLabel(self.groupBox)
         self.gspro_status_label.setObjectName(u"gspro_status_label")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.gspro_status_label.sizePolicy().hasHeightForWidth())
@@ -130,7 +129,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.club_selection)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
 
@@ -178,7 +177,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.putting_server_status_label)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
@@ -202,7 +201,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.select_device_button = QPushButton(self.device_control_widget)
         self.select_device_button.setObjectName(u"select_device_button")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.select_device_button.sizePolicy().hasHeightForWidth())
@@ -223,7 +222,7 @@ class Ui_MainWindow(object):
 
         self.selected_mirror_app = QLabel(self.device_control_widget)
         self.selected_mirror_app.setObjectName(u"selected_mirror_app")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.selected_mirror_app.sizePolicy().hasHeightForWidth())
@@ -253,7 +252,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addWidget(self.restart_button)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_8.addItem(self.verticalSpacer_4)
 
@@ -292,7 +291,29 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.server_connection_label)
 
-        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.launch_monitor_battery_label = QLabel(self.server_control_widget)
+        self.launch_monitor_battery_label.setObjectName(u"launch_monitor_battery_label")
+        sizePolicy3.setHeightForWidth(self.launch_monitor_battery_label.sizePolicy().hasHeightForWidth())
+        self.launch_monitor_battery_label.setSizePolicy(sizePolicy3)
+        self.launch_monitor_battery_label.setMinimumSize(QSize(0, 0))
+        self.launch_monitor_battery_label.setFont(font)
+        self.launch_monitor_battery_label.setAlignment(Qt.AlignCenter)
+        self.launch_monitor_battery_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.launch_monitor_battery_label)
+
+        self.launch_monitor_rssi_label = QLabel(self.server_control_widget)
+        self.launch_monitor_rssi_label.setObjectName(u"launch_monitor_rssi_label")
+        sizePolicy3.setHeightForWidth(self.launch_monitor_rssi_label.sizePolicy().hasHeightForWidth())
+        self.launch_monitor_rssi_label.setSizePolicy(sizePolicy3)
+        self.launch_monitor_rssi_label.setMinimumSize(QSize(0, 0))
+        self.launch_monitor_rssi_label.setFont(font)
+        self.launch_monitor_rssi_label.setAlignment(Qt.AlignCenter)
+        self.launch_monitor_rssi_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.launch_monitor_rssi_label)
+
+        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_12.addItem(self.verticalSpacer_7)
 
@@ -360,7 +381,7 @@ class Ui_MainWindow(object):
         self.edit_field_layout1.setSizeConstraint(QLayout.SetFixedSize)
         self.speed_edit = QTextEdit(self.launch_monitor_groupbox)
         self.speed_edit.setObjectName(u"speed_edit")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.speed_edit.sizePolicy().hasHeightForWidth())
@@ -553,9 +574,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_9.addWidget(self.log_table)
 
         self.main_tab.addTab(self.log_tab, "")
-
-        self.horizontalLayout_4.addWidget(self.main_tab)
-
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -625,6 +643,8 @@ class Ui_MainWindow(object):
         self.start_server_button.setText(QCoreApplication.translate("MainWindow", u"Start", None))
         self.server_status_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.server_connection_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.launch_monitor_battery_label.setText("")
+        self.launch_monitor_rssi_label.setText("")
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Ball Speed", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Spin Axis", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Spin Rate", None))
