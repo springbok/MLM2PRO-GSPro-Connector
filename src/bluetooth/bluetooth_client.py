@@ -105,6 +105,15 @@ class BluetoothClient(QObject):
                 await self.bleak_client.stop_notify(subscription)
             self.subscriptions = []
 
+    async def write_characteristic(self, service: BleakGATTService,  data: bytearray, characteristic_uuid: str, response: bool = False) -> None:
+        if service is None:
+            raise Exception('Service not initialized')
+        characteristic = service.get_characteristic(characteristic_uuid)
+        if characteristic is None or "write" not in characteristic.properties:
+            raise Exception(f'Characteristic: {characteristic_uuid} not found or not writable')
+        logging.debug(f'Writing characteristic: {characteristic} {characteristic.properties}')
+        result = await self.bleak_client.write_gatt_char(characteristic.uuid, data, response)
+        return result
 
 '''
 

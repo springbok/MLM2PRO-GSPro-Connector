@@ -1,8 +1,17 @@
+import asyncio
+import binascii
+import json
 import logging
 import traceback
 
+from bleak import BleakGATTCharacteristic
+
 from src.bluetooth.bluetooth_api_base import BluetoothAPIBase
+from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.mlm2pro_device import MLM2PRODevice
+from src.bluetooth.mlm2pro_encryption import MLM2PROEncryption
+from src.bluetooth.mlm2pro_secret import MLM2PROSecret
+from src.bluetooth.mlm2pro_web_api import MLM2PROWebApi
 
 
 class MLM2PROAPI(BluetoothAPIBase):
@@ -32,27 +41,140 @@ class MLM2PROAPI(BluetoothAPIBase):
             MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID,
             MLM2PROAPI.MEASUREMENT_CHARACTERISTIC_UUID
         ]
+        self.web_api = MLM2PROWebApi(self.settings.web_api['url'], MLM2PROSecret.decrypt(self.settings.web_api['secret']))
+        self.encryption = MLM2PROEncryption()
 
-    async def start(self):
+    async def start(self) -> None:
+        await super().start()
         print('api start')
         try:
             await self.client.client_connect()
             await self.__setup_device()
         except Exception as e:
+            print('def start exception')
             logging.debug(f'Error: {format(e)}, {traceback.format_exc()}')
+            self.error.emit((e, traceback.format_exc()))
             raise e
 
-    async def __setup_device(self):
+    async def __setup_device(self) -> None:
         print(f'Setting up device: {self.device.ble_device.name} {self.device.ble_device.address}')
         logging.debug(f'Setting up device: {self.device.ble_device.name} {self.device.ble_device.address}')
         self._get_service(MLM2PROAPI.SERVICE_UUID)
         await self._subscribe_to_characteristics()
-        #self.set_next_expected_heartbeat()
-        #self.start_heartbeat_task()
-        #self.started = True
+        self._set_next_expected_heartbeat()
+        self._start_heartbeat_task()
+        await self.__authenticate()
         print('setup completed')
-        #if self.client.is_connected:
-        #    result = await self.__authenticate()
 
-    async def stop(self):
+    async def stop(self) -> None:
+        print('xxxxx api stop ')
+        await super().stop()
         await self.client.client_disconnect()
+        
+    async def __authenticate(self) -> None:
+        if not self.client.is_connected:
+            raise Exception('Client not connected')
+        if self.service is None:
+            raise Exception('General service not initialized')
+        logging.debug('Authenticating...')
+        int_to_byte_array = BluetoothUtils.int_to_byte_array(1, True, False)
+        encryption_type_bytes = self.encryption.get_encryption_type_bytes()
+        key_bytes = self.encryption.get_key_bytes()
+        if key_bytes == None: raise Exception('Key bytes not generated')
+        b_arr = bytearray(int_to_byte_array + encryption_type_bytes + key_bytes)
+        b_arr[:len(int_to_byte_array)] = int_to_byte_array
+        b_arr[len(int_to_byte_array):len(int_to_byte_array) + len(encryption_type_bytes)] = encryption_type_bytes
+        start_index = len(int_to_byte_array) + len(encryption_type_bytes)
+        end_index = start_index + len(key_bytes)
+        b_arr[start_index:end_index] = key_bytes
+        logging.debug(f'Auth request: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
+        print(f'Auth request: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
+        await self.client.write_characteristic(self.service,
+                                                           b_arr,
+                                                           MLM2PROAPI.AUTH_CHARACTERISTIC_UUID, True)
+
+    def _notification_handler(self, characteristic: BleakGATTCharacteristic, data: bytearray) -> None:
+        print(f'notification received: {characteristic.description} {binascii.hexlify(data).decode()}')
+        if characteristic.uuid.upper() == MLM2PROAPI.WRITE_RESPONSE_CHARACTERISTIC_UUID:
+            int_array = BluetoothUtils.bytearray_to_int_array(data)
+            print(f'Write response {characteristic.uuid}: {int_array}')
+            self.__process_write_response(int_array)
+        elif characteristic.uuid.upper() == MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID:
+            print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
+            self._set_next_expected_heartbeat()
+            
+
+    def __process_write_response(self, data: list[int]) -> None:
+        if len(data) >= 2:
+            if len(data) > 2:
+                if data[0] == MLM2PROAPI.MLM2PRO_SEND_INITIAL_PARAMS:
+                    print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
+                    if data[1] != MLM2PROAPI.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
+                        print(f'Auth failed: {data[1]}')
+                        if data[1] == MLM2PROAPI.MLM2PRO_RAPSODO_AUTH_FAILED:
+                            msg = 'Awesome Golf authorisation has expired, please re-authorise in the Rapsodo app and try again once that has been done.'
+                            self.error.emit(msg)
+                            return
+                        else:
+                            msg = ('Authentication failed.')
+                            logging.debug(msg)
+                            self.error.emit(msg)
+                            return
+                    print('Auth success, send initial params')
+                    asyncio.create_task(self.__send_initial_params(data))
+            else:
+                print('Connected to MLM2PRO, initial parameters not required')
+
+    async def __send_initial_params(self, data) -> None:
+        byte_array = data[2:]
+        print(f'byte array: {byte_array}')
+        byte_array2 = byte_array[:4]
+        user_id = BluetoothUtils.bytes_to_int(byte_array2, True)
+        print(f'User ID generated from device: {user_id}')
+        self.settings.web_api['user_id'] = user_id
+        self.settings.save()
+        await self.__update_user_token(user_id)
+        params = self.device. get_initial_parameters(self.settings.web_api['token'])
+        print(f'Initial parameters: {params}')
+        await self.__write_command(params)
+
+    async def __update_user_token(self, user_id: int) -> None:
+        print(f'updating user token: {user_id}')
+        result = self.web_api.send_request(user_id)
+        print(f'update user token response: {result}')
+        if result is not None:
+            response = json.loads(result)
+            print('User token updated successfully')
+            self.settings.web_api['token'] = response['user']['token']
+            self.settings.web_api['token_expiry'] = response['user']['expireDate']
+            self.settings.web_api['device_id'] = response['user']['id']
+            self.settings.save()
+        else:
+            print('Failed to update user token')
+            raise Exception('Failed to update user token from web API')
+
+    async def _send_heartbeat(self) -> None:
+        await self.client.write_characteristic(
+            self.service, bytearray([0x01]),
+            MLM2PROAPI.HEARTBEAT_CHARACTERISTIC_UUID)
+
+
+    async def __write_command(self, data):
+        if not self.client.is_connected:
+            raise Exception('Client not connected')
+        if self.service is None:
+            raise Exception('General service not initialized')
+        print(f'Write config: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        await self.client.write_characteristic(self.service,
+            self.encryption.encrypt(data),
+            MLM2PROAPI.CONFIGURE_CHARACTERISTIC_UUID, True)
+
+    async def write_command(self, data):
+        if not self.client.is_connected:
+            raise Exception('Client not connected')
+        if self.service is None:
+            raise Exception('General service not initialized')
+        print(f'Write command: {BluetoothUtils.bytearray_to_int_array(data)}')
+        await self.client.write_characteristic(self.service,
+            self.encryption.encrypt(data),
+            MLM2PROAPI.COMMAND_CHARACTERISTIC_UUID, True)

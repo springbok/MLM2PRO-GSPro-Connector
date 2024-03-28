@@ -21,6 +21,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.scanner = BluetoothDeviceScanner(self.device_names)
         self.setup_signals()
         self.__not_connected_status()
+        self.launch_monitor_task = None
 
     def setup_device_thread(self) -> None:
         pass
@@ -53,7 +54,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.api.client.client_connecting.connect(self.__client_connecting)
             self.api.client.client_connected.connect(self.__client_connected)
             self.api.client.client_connecting.connect(self.__client_connecting)
-            self.api.client.client_error.connect(self._unexpected_error)
+            self.api.error.connect(self._unexpected_error)
 
     def __client_connecting(self, device):
         self.__update_ui('Connecting...', 'orange', device, 'green', 'Stop', False)
@@ -62,7 +63,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__update_ui('Disconnecting...', 'orange', device, 'green', 'Stop', False)
 
     def __client_connected(self, device):
-        self.__update_ui('Connected', 'green', device, 'green', 'Stop', True)
+        self.__update_ui('Connected', 'orange', device, 'green', 'Stop', True)
 
     def __client_disconnected(self, device):
         self.__not_connected_status()
@@ -193,19 +194,23 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def _unexpected_error(self, error):
         self.shutdown()
-        msg = f"An unexpected error occurred.\nPlease restart the connection to the Bluetooth Device.\nError: {format(error)}"
+        msg = f"An error has occurred when connecting to your device.\n\nError: {format(error)}\n\nPlease fix the error and retry the connection to the Bluetooth Device."
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, msg)
         QMessageBox.warning(self.main_window, "Bluetooth Connector Error", msg)
 
     def shutdown(self):
         if self.api is not None:
             print('stopping api')
+            if self.launch_monitor_task is not None and not self.launch_monitor_task.done() and not self.launch_monitor_task.cancelled():
+                print('xxxx cancel taks')
+                self.launch_monitor_task.cancel()
+            print('stop')
             asyncio.ensure_future(self.api.stop())
 
     def _start_api(self):
         if self.api is not None:
             try:
-                asyncio.ensure_future(self.api.start())
+                self.launch_monitor_task = asyncio.ensure_future(self.api.start())
             except Exception as e:
                 self._unexpected_error((e, traceback.format_exc()))
 
