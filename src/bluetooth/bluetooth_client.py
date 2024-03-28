@@ -1,7 +1,11 @@
+import asyncio
 import logging
+import traceback
 
 from PySide6.QtCore import QObject, QByteArray, Signal
 from bleak import BLEDevice, BleakClient
+
+from src.bluetooth.bluetooth_device import BluetoothDevice
 
 
 class BluetoothClient(QObject):
@@ -13,55 +17,76 @@ class BluetoothClient(QObject):
     In Qt terminology client=central, server=peripheral.
     """
 
-    status_update = Signal(str)
-    error = Signal(str)
-
-    connecting = Signal()
-    disconnected = Signal()
-    disconnecting = Signal()
+    client_error = Signal(str)
+    client_connecting = Signal(str)
+    client_disconnected = Signal(str)
+    client_disconnecting = Signal(str)
+    client_connected = Signal(str)
 
     def __init__(
         self,
+        device: BluetoothDevice,
         connect_timeout: float = 10
     ) -> None:
         super().__init__()
-        self.bleak_client = BleakClient(device, timeout=connect_timeout, disconnected_callback=self.__disconnected)
+        if device is None:
+            raise Exception("Device is None")
+        self.bleak_client = BleakClient(device.ble_device, timeout=connect_timeout, disconnected_callback=self.__disconnected)
         self.device = device
         self.connect_timeout = connect_timeout
         self.subscriptions = []
         self.started = False
 
-    async def connect(self, device: BLEDevice) -> None:
+    @property
+    def is_connected(self) -> bool:
+        return self.bleak_client.is_connected
+
+    def __disconnected(self, client: BleakClient):
+        self.client_disconnected.emit(self.device.ble_device.name)
+        logging.debug(f'Disconnected from device: {self.device.ble_device.name} {self.device.ble_device.address}')
+
+    async def client_connect(self) -> None:
+        print('bluetooth_client connect')
         if not self.is_connected:
-            logging.debug(f'Attempting to connect to device: {self.device.name} {self.device.address}')
+            logging.debug(f'Attempting to connect to device: {self.device.ble_device.name} {self.device.ble_device.address}')
+            self.client_connecting.emit(self.device.ble_device.name)
             for i in range(3):
                 try:
                     print('bleak connect')
                     await self.bleak_client.connect()
-                    print('connected')
+                    print(f'connected self.bleak_client.is_connected {self.bleak_client.is_connected}')
+                    self.client_connected.emit(self.device.ble_device.name)
                     break
                 except WindowsError as e:
                     logging.debug(f'Error while connecting WindowsError: {e}')
                     await asyncio.sleep(1)
+                except Exception as e:
+                    logging.debug(f'Error: {format(e)}, {traceback.format_exc()}')
+                    print(f'Error: {format(e)}, {traceback.format_exc()}')
+                    raise e
 
-    async def __disconnect(self) -> None:
+
+    async def client_disconnect(self) -> None:
+        print(f'disconnect {self.bleak_client.is_connected}')
         if self.is_connected:
-            logging.debug(f'Disconnecting from device: {self.device.name} {self.device.address}')
+            print('disconnecting')
+            logging.debug(f'Disconnecting from device: {self.device.ble_device.name} {self.device.ble_device.address}')
             #await self.bleak_client.unpair()
+            self.client_disconnecting.emit(self.device.ble_device.name)
             await self.bleak_client.disconnect()  # type: ignore
 
-
+'''
 
     def connect_client(self, device: QBluetoothDeviceInfo):
         print(f'connect_client {device.name()}')
         if self.client is not None:
-            logging.debug(f"Currently connected to {self.device.name()} at {self.device.remoteAddress().toString()}.")
+            logging.debug(f"Currently connected to {self.device.ble_device.name()} at {self.device.ble_device.remoteAddress().toString()}.")
             self.status_update.emit('Connected')
             return
         print(f'Connecting to {device.name()}')
-        self.device = device
+        self.device.ble_device = device
         self.status_update.emit('Connecting...')
-        self.client = QLowEnergyController.createCentral(self.device)
+        self.client = QLowEnergyController.createCentral(self.device.ble_device)
         self.client.setRemoteAddressType(QLowEnergyController.RemoteAddressType.PublicAddress)
         self.client.errorOccurred.connect(self.catch_error)
         self.client.connected.connect(self.discover_services)
@@ -84,7 +109,6 @@ class BluetoothClient(QObject):
 
 
     def disconnect_client(self):
-        '''
         if self.hr_notification is not None and self.service is not None:
             if not self.hr_notification.isValid():
                 return
@@ -92,7 +116,6 @@ class BluetoothClient(QObject):
             self.service.writeDescriptor(
                 self.hr_notification, self.DISABLE_NOTIFICATION
             )
-        '''
         if self.client is not None:
             self.status_update.emit('Disconnecting...')
             self.client.disconnectFromDevice()
@@ -100,7 +123,7 @@ class BluetoothClient(QObject):
     def discover_services(self):
         print('discover services')
         if self.client is not None:
-            logging.debug(f'Discovering services for {self.device.name()}')
+            logging.debug(f'Discovering services for {self.device.ble_device.name()}')
             self.status_update.emit('Discovering services...')
             self.client.discoverServices()
 
@@ -108,7 +131,7 @@ class BluetoothClient(QObject):
         print('connect_to_service')
         if self.client is None:
             return
-        print(f'connect_to_service {self.device.name()}')
+        print(f'connect_to_service {self.device.ble_device.name()}')
         for s in self.client.services():
             service = self.controller.createServiceObject(service_uuid)
             serv = ServiceInfo(s)
@@ -118,12 +141,12 @@ class BluetoothClient(QObject):
             s for s in self.client.services() if s == self.service
         ]
         if not hr_service:
-            print(f"Couldn't find HR service on {self.device.remoteAddress().toString()}.")
+            print(f"Couldn't find HR service on {self.device.ble_device.remoteAddress().toString()}.")
             return
         self.service = self.client.createServiceObject(hr_service[0])
         if not self.service:
             print(
-                f"Couldn't establish connection to HR service on {self.device.remoteAddress().toString()}."
+                f"Couldn't establish connection to HR service on {self.device.ble_device.remoteAddress().toString()}."
             )
             return
         self.service.stateChanged.connect(self._start_hr_notification)
@@ -139,7 +162,7 @@ class BluetoothClient(QObject):
             self.HR_CHARACTERISTIC
         )
         if not hr_char.isValid():
-            print(f"Couldn't find HR characterictic on {self.device.remoteAddress().toString()}.")
+            print(f"Couldn't find HR characterictic on {self.device.ble_device.remoteAddress().toString()}.")
         self.hr_notification = hr_char.descriptor(
             QBluetoothUuid.DescriptorType.ClientCharacteristicConfiguration
         )
@@ -185,4 +208,6 @@ class BluetoothClient(QObject):
         """
         `data` GATT data
         """
-        print(f'received data from {self.device.name()} at {self.device.remoteAddress().toString()}: {data.toStdString()}')
+        print(f'received data from {self.device.ble_device.name()} at {self.device.ble_device.remoteAddress().toString()}: {data.toStdString()}')
+        
+'''

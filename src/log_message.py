@@ -9,6 +9,7 @@ class LogMessageSystems:
     WEBCAM_PUTTING = "Webcam Putting"
     EXPUTT_PUTTING = "ExPutt"
     RELAY_SERVER = "Relay Server"
+    BLUETOOTH_CONNECTOR = "Bluetooth Connector"
 
 
 @dataclass

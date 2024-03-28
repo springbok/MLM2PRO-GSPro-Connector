@@ -1,8 +1,10 @@
+import traceback
+
 from bleak import BLEDevice, AdvertisementData
 
 from src.bluetooth.mlm2pro_device import MLM2PRODevice
 from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoothBase
-
+from src.bluetooth.mlm2pro_api import MLM2PROAPI
 
 class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
 
@@ -18,14 +20,10 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
     def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
         print(f'_device_found derived: {device.name}')
         super()._device_found(device, advertised_data)
-        mlm2pro_devide = MLM2PRODevice(device, advertised_data)
-
-        #if self.client is not None:
-        #    self.client.reset_connection()
-        #    self.client = None
-        #self.device_worker = WorkerDeviceLaunchMonitorBluetoothMLM2PRO(self.main_window.settings, self.api, device)
-        #self.client = BluetoothClient()
-        #self.client.connect_client(device)
+        mlm2pro_device = MLM2PRODevice(device, advertised_data)
+        self.api = MLM2PROAPI(mlm2pro_device)
+        self._setup_api_signals()
+        self._start_api()
 
     def start_message(self) -> str:
         return 'Before starting Bluetooth connection ensure your launch monitor is turned on and a STEADY RED light is showing.'
