@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from src.bluetooth.bluetooth_api_base import BluetoothAPIBase
 from src.bluetooth.mlm2pro_device import MLM2PRODevice
@@ -34,17 +35,18 @@ class MLM2PROAPI(BluetoothAPIBase):
 
     async def start(self):
         print('api start')
-        await self.client.client_connect()
-        await self.__setup_device()
+        try:
+            await self.client.client_connect()
+            await self.__setup_device()
+        except Exception as e:
+            logging.debug(f'Error: {format(e)}, {traceback.format_exc()}')
+            raise e
 
     async def __setup_device(self):
         print(f'Setting up device: {self.device.ble_device.name} {self.device.ble_device.address}')
         logging.debug(f'Setting up device: {self.device.ble_device.name} {self.device.ble_device.address}')
-        logging.debug(f'Setting up service: {MLM2PROAPI.SERVICE_UUID}')
-        await self._get_service(MLM2PROAPI.SERVICE_UUID)
-        if self.service is None:
-            raise Exception(f'Service {MLM2PROAPI.SERVICE_UUID} not found')
-        #await self.subscribe_to_characteristics()
+        self._get_service(MLM2PROAPI.SERVICE_UUID)
+        await self._subscribe_to_characteristics()
         #self.set_next_expected_heartbeat()
         #self.start_heartbeat_task()
         #self.started = True

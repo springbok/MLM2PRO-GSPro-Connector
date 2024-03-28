@@ -1,9 +1,11 @@
 import asyncio
 import logging
 import traceback
+from typing import Callable
 
 from PySide6.QtCore import QObject, QByteArray, Signal
 from bleak import BLEDevice, BleakClient
+from bleak.backends.service import BleakGATTService
 
 from src.bluetooth.bluetooth_device import BluetoothDevice
 
@@ -74,6 +76,35 @@ class BluetoothClient(QObject):
             #await self.bleak_client.unpair()
             self.client_disconnecting.emit(self.device.ble_device.name)
             await self.bleak_client.disconnect()  # type: ignore
+            logging.debug(f'Disconnected from device: {self.device.ble_device.name} {self.device.ble_device.address}')
+            print(f'Disconnected from device: {self.device.ble_device.name} {self.device.ble_device.address}')
+
+    def get_service(self, uuid) -> BleakGATTService:
+        logging.debug(f'Getting service: {uuid}')
+        service = self.bleak_client.services.get_service(uuid)
+        if service is None:
+            raise Exception(f"Service {uuid} not found")
+        else:
+            logging.debug(f'Found service: {service}')
+            return service
+
+    async def subscribe_to_characteristics(self, characteristics: list[str], notification_handler: Callable) -> None:
+        self.subscriptions = []
+        if self.is_connected:
+            logging.debug('Subscribing to characteristics')
+            for characteristic in characteristics:
+                logging.debug(f'Subscribe to: {characteristic}')
+                await self.bleak_client.start_notify(characteristic, notification_handler)
+                self.subscriptions.append(characteristic)
+
+    async def unsubscribe_to_characteristics(self):
+        if self.is_connected and len(self.subscriptions) > 0:
+            logging.debug('Unsubscribing to characteristics')
+            for subscription in self.subscriptions:
+                logging.debug(f'Unsubscribe from: {subscription}')
+                await self.bleak_client.stop_notify(subscription)
+            self.subscriptions = []
+
 
 '''
 

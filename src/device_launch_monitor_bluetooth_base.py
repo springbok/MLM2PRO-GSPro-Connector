@@ -53,7 +53,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.api.client.client_connecting.connect(self.__client_connecting)
             self.api.client.client_connected.connect(self.__client_connected)
             self.api.client.client_connecting.connect(self.__client_connecting)
-            #self.api.client.client_error.connect(self.__client_error)
+            self.api.client.client_error.connect(self._unexpected_error)
 
     def __client_connecting(self, device):
         self.__update_ui('Connecting...', 'orange', device, 'green', 'Stop', False)
@@ -68,6 +68,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__not_connected_status()
         self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
         self.main_window.launch_monitor_rssi_label.setText("")
+        self.api = None
 
     def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
         print(f'_device_found base: {device.name}')
@@ -127,12 +128,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def start_message(self) -> str:
         return ' '
-
-    def __client_disconnected(self, device):
-        print('__client_disconnected')
-        self.not_connected_status()
-        print('api set to none')
-        self.api = None
 
     def __scanner_error(self, error):
         msg = f"The following error occurred while scanning for devices:\n{error}"
