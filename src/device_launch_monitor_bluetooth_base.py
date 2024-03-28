@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMessageBox
 from bleak import BLEDevice
 
 from src.ball_data import BallData
-from src.bluetooth.device_scanner import DeviceScanner
+from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 
@@ -16,9 +16,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __init__(self, main_window, device_names: list[str]):
         DeviceBase.__init__(self, main_window)
         self.api = None
-        self.client = None
         self.device_names = device_names
-        self.scanner = DeviceScanner(self.device_names)
+        self.scanner = BluetoothDeviceScanner(self.device_names)
         self.__setup_signals()
         self.__not_connected_status()
 
@@ -36,7 +35,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
         # Scanner signals
         self.scanner.status_update.connect(self.__scanning)
-        self.scanner.device_update.connect(self.device_found)
+        self.scanner.device_found.connect(self._device_found)
         self.scanner.error.connect(self.__scanner_error)
         self.scanner.device_not_found.connect(self.__no_device_found)
 
@@ -46,8 +45,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
-    def device_found(self, device: BLEDevice) -> None:
-        self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', True)
+    def _device_found(self, device: BLEDevice) -> None:
+        self.__update_ui('Found', 'orange', device.name, 'red', 'Stop', True)
 
     def __no_device_found(self):
         print('__no_device_found')
@@ -84,12 +83,14 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.device_worker.send_msg(message)
 
     def __server_start_stop(self) -> None:
-        if self.device_worker is None:
+        print('__server_start_stop')
+        if self.api is None:
             QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message())
             asyncio.ensure_future(self.scanner.scan())
         else:
+            print('api not none')
             #self.device_worker.stop()
-            self.shutdown()
+            #self.shutdown()
             self.not_connected_status()
 
     def start_message(self) -> str:
@@ -170,8 +171,3 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}\nException: {format(error)}')
         QMessageBox.warning(self.main_window, "Relay Send to GSPro Error", msg)
-
-    def shutdown(self):
-        if self.client is not None:
-            self.client.disconnect_client()
-            self.client = None

@@ -4,7 +4,7 @@ from PySide6.QtCore import QObject, Signal
 from bleak import BleakScanner, BLEDevice, AdvertisementData
 
 
-class DeviceScanner(QObject):
+class BluetoothDeviceScanner(QObject):
     TIMEOUT_SECONDS = 20
 
     device_update = Signal(object)
@@ -44,7 +44,7 @@ class DeviceScanner(QObject):
         self.status_update.emit("Scanning...")
         logging.debug('Scanning for Bluetooth devices')
         await self._scanner.start()
-        end_time = asyncio.get_event_loop().time() + DeviceScanner.TIMEOUT_SECONDS
+        end_time = asyncio.get_event_loop().time() + BluetoothDeviceScanner.TIMEOUT_SECONDS
         self._scanning.set()
         while self._scanning.is_set():
             if asyncio.get_event_loop().time() > end_time:
