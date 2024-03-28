@@ -41,7 +41,7 @@ class BluetoothDeviceScanner(QObject):
         self.started.emit()
         self._scanner_active = True
         logging.debug(f'Searching for following launch monitor names: {self.launch_minitor_names}')
-        self.status_update.emit("Scanning...")
+        self.status_update.emit("Scanning for devices...")
         logging.debug('Scanning for Bluetooth devices')
         await self._scanner.start()
         end_time = asyncio.get_event_loop().time() + BluetoothDeviceScanner.TIMEOUT_SECONDS

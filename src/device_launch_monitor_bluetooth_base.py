@@ -66,7 +66,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __client_disconnected(self, device):
         self.__not_connected_status()
-
+        self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
+        self.main_window.launch_monitor_rssi_label.setText("")
 
     def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
         print(f'_device_found base: {device.name}')
