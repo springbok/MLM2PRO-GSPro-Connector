@@ -36,9 +36,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def setup_signals(self) -> None:
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
         # Scanner signals
-        self.scanner.status_update.connect(self.__scanning)
+        self.scanner.started.connect(
+            self.__update_ui('Scanning for devices...', 'orange', 'No Device', 'red', 'Stop', False)
+        )
         self.scanner.device_found.connect(self._device_found)
-        self.scanner.error.connect(self.__scanner_error)
         self.scanner.device_not_found.connect(self.__no_device_found)
         # Bluetooth client
 
@@ -46,6 +47,28 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         #self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
         #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
+
+    def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
+        print(f'_device_found base: {device.name}')
+        self.__update_ui('Found', 'orange', device.name, 'red', 'Stop', True)
+        self.main_window.launch_monitor_rssi_label.setText(f"RSSI: {advertised_data.rssi}")
+        if advertised_data.rssi < -50 and advertised_data.rssi > -70:
+            color = 'green'
+        elif advertised_data.rssi < -70 and advertised_data.rssi > -80:
+            color = 'orange'
+        else:
+            color = 'red'
+        self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+
+    def __no_device_found(self):
+        self.__not_connected_status()
+        QMessageBox.warning(self.main_window,
+                            "No Device Found",
+                            self._start_message)
+
+    def __error(self, heading, error):
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, error)
+        QMessageBox.warning(self.main_window, heading, error)
 
     def _setup_api_signals(self):
         if self.api is not None and self.api.client is not None:
@@ -70,23 +93,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
         self.main_window.launch_monitor_rssi_label.setText("")
         self.api = None
-
-    def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
-        print(f'_device_found base: {device.name}')
-        self.__update_ui('Found', 'orange', device.name, 'red', 'Stop', True)
-        self.main_window.launch_monitor_rssi_label.setText(f"RSSI: {advertised_data.rssi}")
-        if advertised_data.rssi < -50 and advertised_data.rssi > -70:
-            color = 'green'
-        elif advertised_data.rssi < -70 and advertised_data.rssi > -80:
-            color = 'orange'
-        else:
-            color = 'red'
-        self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-
-    def __no_device_found(self):
-        print('__no_device_found')
-        self.__not_connected_status()
-        QMessageBox.warning(self.main_window, "No Device Found", 'No device found. Please ensure your launch monitor is turned on and a STREADY RED light is showing.')
 
 
     def __not_connected_status(self) -> None:
@@ -120,7 +126,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __server_start_stop(self) -> None:
         print('__server_start_stop')
         if self.api is None:
-            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message())
+            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self._start_message)
             asyncio.ensure_future(self.scanner.scan())
         else:
             print('api not none')
@@ -129,14 +135,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def start_message(self) -> str:
         return ' '
-
-    def __scanner_error(self, error):
-        msg = f"The following error occurred while scanning for devices:\n{error}"
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, f'{msg}')
-        QMessageBox.warning(self.main_window, "Error while scanning for devices", msg)
-
-    def __scanning(self, status_message):
-        self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
 
     def __client_status_update(self, status):
         print(f'__client_status_update: {status}' )

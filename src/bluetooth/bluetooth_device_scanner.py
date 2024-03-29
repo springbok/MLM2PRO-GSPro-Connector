@@ -7,11 +7,7 @@ from bleak import BleakScanner, BLEDevice, AdvertisementData
 class BluetoothDeviceScanner(QObject):
     TIMEOUT_SECONDS = 20
 
-    device_update = Signal(object)
-    status_update = Signal(str)
-    error = Signal(str)
     device_found = Signal(BLEDevice, AdvertisementData)
-    stopped = Signal()
     device_not_found = Signal()
     finished = Signal()
     started = Signal()
@@ -41,14 +37,12 @@ class BluetoothDeviceScanner(QObject):
         self.started.emit()
         self._scanner_active = True
         logging.debug(f'Searching for following launch monitor names: {self.launch_minitor_names}')
-        self.status_update.emit("Scanning for devices...")
         logging.debug('Scanning for Bluetooth devices')
         await self._scanner.start()
         end_time = asyncio.get_event_loop().time() + BluetoothDeviceScanner.TIMEOUT_SECONDS
         self._scanning.set()
         while self._scanning.is_set():
             if asyncio.get_event_loop().time() > end_time:
-                self.status_update.emit("Timeout")
                 self._scanning.clear()
                 logging.debug('Timeout while scanning for devices, no devices found.')
             await asyncio.sleep(0.1)
