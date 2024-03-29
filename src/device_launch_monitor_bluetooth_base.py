@@ -8,6 +8,7 @@ from bleak import BLEDevice, AdvertisementData
 
 from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
+from src.bluetooth.bluetooth_signal import BluetoothSignal
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 
@@ -16,12 +17,11 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __init__(self, main_window, device_names: list[str]):
         DeviceBase.__init__(self, main_window)
-        self.api = None
+        self.device = None
         self.device_names = device_names
         self.scanner = BluetoothDeviceScanner(self.device_names)
         self.setup_signals()
         self.__not_connected_status()
-        self.launch_monitor_task = None
 
     def setup_device_thread(self) -> None:
         pass
@@ -36,9 +36,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def setup_signals(self) -> None:
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
         # Scanner signals
-        self.scanner.started.connect(
-            self.__update_ui('Scanning for devices...', 'orange', 'No Device', 'red', 'Stop', False)
-        )
+        self.scanner.started.connect(self.__update_status)
         self.scanner.device_found.connect(self._device_found)
         self.scanner.device_not_found.connect(self.__no_device_found)
         # Bluetooth client
@@ -64,50 +62,47 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__not_connected_status()
         QMessageBox.warning(self.main_window,
                             "No Device Found",
-                            self._start_message)
+                            f'No device was found during the scan. {self._start_message}')
 
-    def __error(self, heading, error):
+    def _setup_device_signals(self):
+        if self.device is not None:
+            # Bluetooth client
+            self.device.device_disconnecting.connect(self.__update_status)
+            self.device.device_disconnected.connect(self.__client_disconnected)
+            self.device.device_connecting.connect(self.__update_status)
+            self.device.device_connected.connect(self.__update_status)
+            self.device.device_setting_up.connect(self.__update_status)
+            self.device.device_error.connect(self.__device_error)
+
+    def __update_status(self, signal: BluetoothSignal):
+        self.__update_ui(signal.connection_status, signal.connection_color,
+                         signal.device_message, signal.device_color,
+                         signal.button_message, signal.button_enabled)
+
+    def __device_error(self, heading, error):
+        print(f'__device_error: {error} {heading}')
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, error)
         QMessageBox.warning(self.main_window, heading, error)
 
-    def _setup_api_signals(self):
-        if self.api is not None and self.api.client is not None:
-            # Bluetooth client
-            self.api.client.client_disconnected.connect(self.__client_disconnected)
-            self.api.client.client_connecting.connect(self.__client_connecting)
-            self.api.client.client_connected.connect(self.__client_connected)
-            self.api.client.client_connecting.connect(self.__client_connecting)
-            self.api.error.connect(self._unexpected_error)
-
-    def __client_connecting(self, device):
-        self.__update_ui('Connecting...', 'orange', device, 'green', 'Stop', False)
-
-    def __client_disconnecting(self, device):
-        self.__update_ui('Disconnecting...', 'orange', device, 'green', 'Stop', False)
-
-    def __client_connected(self, device):
-        self.__update_ui('Connected', 'orange', device, 'green', 'Stop', True)
-
-    def __client_disconnected(self, device):
+    def __client_disconnected(self):
         self.__not_connected_status()
         self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
         self.main_window.launch_monitor_rssi_label.setText("")
-        self.api = None
-
+        self.device = None
 
     def __not_connected_status(self) -> None:
         self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', True)
 
-    def __update_ui(self, message, color, status, status_color, button, enabled=True) -> None:
-        if status is not None:
-            self.main_window.server_connection_label.setText(status)
-            self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : {status_color}; color : white; }}")
-        if button is not None:
-            self.main_window.start_server_button.setText(button)
-        self.main_window.start_server_button.setEnabled(enabled)
-        if message is not None:
-            self.main_window.server_status_label.setText(message)
-            self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+    def __update_ui(self, connection_status, connection_color, device_message, device_color, button_message, button_enabled=True) -> None:
+        if button_message is not None:
+            self.main_window.server_connection_label.setText(device_message)
+            self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : {device_color}; color : white; }}")
+        if button_message is not None:
+            self.main_window.start_server_button.setText(button_message)
+        self.main_window.start_server_button.setEnabled(button_enabled)
+        if connection_status is not None:
+            self.main_window.server_status_label.setText(connection_status)
+            self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {connection_color}; color : white; }}")
 
     def __shot_sent(self, shot_data) -> None:
         data = json.loads(shot_data.decode("utf-8"))
@@ -124,62 +119,15 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.device_worker.send_msg(message)
 
     def __server_start_stop(self) -> None:
-        print('__server_start_stop')
-        if self.api is None:
+        if self.device is None:
             QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self._start_message)
             asyncio.ensure_future(self.scanner.scan())
         else:
-            print('api not none')
             #self.device_worker.stop()
-            self.shutdown()
+            self.__shutdown()
 
     def start_message(self) -> str:
         return ' '
-
-    def __client_status_update(self, status):
-        print(f'__client_status_update: {status}' )
-        self.__update_ui(status, 'orange', None, 'red', 'Stop', False)
-
-    def device_worker_error(self, error):
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, f'Error: {format(error)}')
-        QMessageBox.warning(self.main_window, "LM Error", f'{format(error)}')
-        self.stop()
-
-    def __listening(self):
-        self.main_window.start_server_button.setText('Stop')
-        self.main_window.server_status_label.setText('Running')
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.relay_server_ip_address}:{self.main_window.settings.relay_server_port}')
-        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
-
-    def not_connected_status(self):
-        status = 'Not Running'
-        color = 'red'
-        button = 'Start'
-        if self.is_running():
-            button = 'Stop'
-            if self.main_window.gspro_connection.connected:
-                color = 'orange'
-                status = 'Paused'
-            else:
-                status = 'Waiting GSPro'
-                color = 'red'
-        else:
-            self.main_window.server_connection_label.setText('No Connection')
-            self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
-        self.main_window.start_server_button.setText(button)
-        self.main_window.server_status_label.setText(status)
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-
-    def device_worker_resumed(self):
-        self.main_window.start_server_button.setText('Stop')
-        msg = 'Running'
-        color = 'green'
-        if not self.main_window.gspro_connection.connected:
-            msg = 'Waiting GSPro'
-            color = 'red'
-        self.main_window.server_status_label.setText(msg)
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def __club_selected(self, club_data):
         self.device_worker.club_selected(club_data['Player']['Club'])
@@ -190,31 +138,23 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, f'{msg}\nException: {format(error)}')
         QMessageBox.warning(self.main_window, "Relay Send to GSPro Error", msg)
 
-    def _unexpected_error(self, error):
-        self.shutdown()
-        msg = f"An error has occurred when connecting to your device.\n\nError: {format(error)}\n\nPlease fix the error and retry the connection to the Bluetooth Device."
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH_CONNECTOR, msg)
-        QMessageBox.warning(self.main_window, "Bluetooth Connector Error", msg)
+    def __shutdown(self):
+        if self.device is not None:
+            self.device.stop()
+            self.device = None
+            self.__client_disconnected()
 
-    def shutdown(self):
-        if self.api is not None:
-            print('stopping api')
-            if self.launch_monitor_task is not None and not self.launch_monitor_task.done() and not self.launch_monitor_task.cancelled():
-                print('xxxx cancel taks')
-                self.launch_monitor_task.cancel()
-            print('stop')
-            asyncio.ensure_future(self.api.stop())
-
-    def _start_api(self):
-        if self.api is not None:
+    def _connect_device(self):
+        if self.device is not None:
             try:
-                self.launch_monitor_task = asyncio.ensure_future(self.api.start())
+                asyncio.ensure_future(self.device.connect_device())
             except Exception as e:
-                self._unexpected_error((e, traceback.format_exc()))
+                self.__shutdown()
+                self.__device_error('Connection error', traceback.format_exc())
 
         # if self.client is not None:
         #    self.client.reset_connection()
         #    self.client = None
-        # self.device_worker = WorkerDeviceLaunchMonitorBluetoothMLM2PRO(self.main_window.settings, self.api, device)
+        # self.device_worker = WorkerDeviceLaunchMonitorBluetoothMLM2PRO(self.main_window.settings, self.device, device)
         # self.client = BluetoothClient()
         # self.client.connect_client(device)

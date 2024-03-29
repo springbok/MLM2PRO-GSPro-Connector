@@ -3,6 +3,8 @@ import logging
 from PySide6.QtCore import QObject, Signal
 from bleak import BleakScanner, BLEDevice, AdvertisementData
 
+from src.bluetooth.bluetooth_signal import BluetoothSignal
+
 
 class BluetoothDeviceScanner(QObject):
     TIMEOUT_SECONDS = 20
@@ -10,7 +12,7 @@ class BluetoothDeviceScanner(QObject):
     device_found = Signal(BLEDevice, AdvertisementData)
     device_not_found = Signal()
     finished = Signal()
-    started = Signal()
+    started = Signal(BluetoothSignal)
 
     def __init__(self, launch_minitor_names: list[str]):
         super().__init__()
@@ -34,7 +36,7 @@ class BluetoothDeviceScanner(QObject):
         if self._scanner_active:
             logging.debug("Already searching for devices.")
             return
-        self.started.emit()
+        self.started.emit(BluetoothSignal('Scanning for device...', 'orange', 'No Device', 'red', 'Stop', False))
         self._scanner_active = True
         logging.debug(f'Searching for following launch monitor names: {self.launch_minitor_names}')
         logging.debug('Scanning for Bluetooth devices')

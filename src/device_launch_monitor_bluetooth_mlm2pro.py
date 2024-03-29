@@ -20,10 +20,9 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
     def _device_found(self, device: BLEDevice, advertised_data: AdvertisementData) -> None:
         print(f'_device_found derived: {device.name}')
         super()._device_found(device, advertised_data)
-        mlm2pro_device = MLM2PRODevice(device, advertised_data)
-        self.api = MLM2PROAPI(mlm2pro_device)
-        self._setup_api_signals()
-        self._start_api()
+        self.device = MLM2PRODevice(device, advertised_data)
+        self._setup_device_signals()
+        self._connect_device()
 
     @property
     def _start_message(self) -> str:
