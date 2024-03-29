@@ -18,7 +18,6 @@ class BluetoothClient(QObject):
 
     In Qt terminology client=central, server=peripheral.
     """
-
     client_error = Signal(str)
     client_connecting = Signal(str)
     client_disconnected = Signal(str)
@@ -37,11 +36,44 @@ class BluetoothClient(QObject):
         self.device = device
         self.connect_timeout = connect_timeout
         self.subscriptions = []
-        self.started = False
+        self.disconnection_request = asyncio.Event()
+        self.client_lock = asyncio.Lock()
 
     @property
     def is_connected(self) -> bool:
         return self.bleak_client.is_connected
+
+    def disconnect_client(self):    # regular subroutines are called from main (GUI) thread with `call_soon_threadsafe`
+        """Disconnect from current BLE server."""
+        if not self.client_lock.locked():    # early return if no sensor is connected
+            logging.debug("Disconnect client: currently there is no device connected.")
+        else:
+            logging.debug(f"Disconnecting from device: {self.device.ble_device.name}")
+        self.disconnection_request.set()
+        self.disconnection_request.clear()
+
+    async def connect_client(self, address):    # async methods are called from the main (GUI) thread with `run_coroutine_threadsafe`
+        """Connect to BLE server at address."""
+        if self.client_lock.locked():    # don't allow new connection while current client is (dis-)connecting or connected
+            msg = f"Device {self.device.ble_device.name} is already connected."
+            self.client_error.emit(msg)
+            logging.debug(f"Device {self.device.ble_device.name} is already connected.")
+        else:
+            async with self.client_lock:    # client_lock context exits and releases lock once client is disconnected, either through regular disconnection or failed connection attempt
+                logging.debug(
+                    f'Attempting to connect to device: {self.device.ble_device.name} {self.device.ble_device.address}')
+                self.client_connecting.emit(self.device.ble_device.name)
+                async with BleakClient(address, disconnected_callback=self._reconnect_client) as client:    # __aenter__() calls client.connect() and raises if connection attempt fails
+                    try:
+                        await client.start_notify(HR_UUID, self._data_handler)
+                        print(f"Connected to sensor at {client.address}.")
+                        await self.disconnection_request.wait()    # block until `disconnection_request` is set
+                        client.set_disconnected_callback(None)
+                    except Exception as e:
+                        print(e)
+
+            print(f"Disconnected from sensor at {address}.")
+
 
     def __disconnected(self, client: BleakClient):
         self.client_disconnected.emit(self.device.ble_device.name)
