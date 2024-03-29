@@ -75,6 +75,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.device.device_error.connect(self.__device_error)
 
     def __update_status(self, signal: BluetoothSignal):
+        print(f'__update_status: {signal.connection_status} {signal.connection_color} {signal.device_message} {signal.device_color} {signal.button_message} {signal.button_enabled}')
         self.__update_ui(signal.connection_status, signal.connection_color,
                          signal.device_message, signal.device_color,
                          signal.button_message, signal.button_enabled)

@@ -43,7 +43,9 @@ class BluetoothDevice(QObject):
         self.disconnection_request.set()
         self.disconnection_request.clear()
 
-    async def connect_device(self, address) -> None:    # async methods are called from the main (GUI) thread with `run_coroutine_threadsafe`
+    async def connect_device(self) -> None:    # async methods are called from the main (GUI) thread with `run_coroutine_threadsafe`
+        if self.ble_device is None:
+            raise Exception('ble_device is None')
         """Connect to BLE server at address."""
         if self.device_lock.locked():    # don't allow new connection while current client is (dis-)connecting or connected
             msg = f"Device {self.ble_device.name} is already connected."
@@ -52,14 +54,14 @@ class BluetoothDevice(QObject):
             async with self.device_lock:    # device_lock context exits and releases lock once client is disconnected, either through regular disconnection or failed connection attempt
                 logging.debug(
                     f'Attempting to connect to device: {self.ble_device.name} {self.ble_device.address}')
-                self.device_connecting.emit(BluetoothSignal('Connecting...', 'orange', self.ble_device, 'red', 'Stop', False))
-                async with BleakClient(address, disconnected_callback=self.__reconnect_client) as client:    # __aenter__() calls client.connect() and raises if connection attempt fails
+                self.device_connecting.emit(BluetoothSignal('Connecting...', 'orange', self.ble_device.name, 'red', 'Stop', False))
+                async with BleakClient(self.ble_device.name, disconnected_callback=self.__reconnect_client) as client:    # __aenter__() calls client.connect() and raises if connection attempt fails
                     try:
                         logging.debug(f'Setting up & configuring device {self.ble_device.name}')
-                        self.device_setting_up.emit(BluetoothSignal('Setting up device...', 'orange', self.ble_device, 'red', 'Stop', False))
+                        self.device_setting_up.emit(BluetoothSignal('Setting up device...', 'orange', self.ble_device.name, 'red', 'Stop', False))
                         await self._setup_device()
                         logging.debug(f'Device connected {self.ble_device.name}')
-                        self.device_connected.emit(BluetoothSignal('Connected', 'green', self.ble_device, 'red', 'Stop', True))
+                        self.device_connected.emit(BluetoothSignal('Connected', 'green', self.ble_device.name, 'red', 'Stop', True))
                         await self.disconnection_request.wait()    # block until `disconnection_request` is set
                         client.set_disconnected_callback(None)
                     except Exception as e:
