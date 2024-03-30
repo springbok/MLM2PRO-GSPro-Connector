@@ -58,7 +58,7 @@ class BluetoothDeviceScanner(QObject):
         logging.debug(f'Error while scanning for device {error}')
         self.error.emit(error)
 
-    def __scanning_finished(self):
+    def __scanning_finished(self) -> None:
         if self.device is None:
             logging.debug('No device found')
             self.status_update.emit('No device found')

@@ -13,8 +13,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __init__(self, main_window, device_names: list[str]):
         DeviceBase.__init__(self, main_window)
-        self.api = None
-        self.client = None
+        self.device = None
         self.device_names = device_names
         self.scanner = BluetoothDeviceScanner(self.device_names)
         self.__setup_signals()
@@ -27,12 +26,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         #self.device_worker.finished.connect(self.__not_connected_status)
         #self.device_worker.shot_error.connect(self.__send_shot_error)
         #self.device_worker.disconnected.connect(self.__listening)
-        #self.device_worker.relay_server_shot.connect(self.__shot_sent)
+        #self.device_worker.BLUETOOTH_shot.connect(self.__shot_sent)
 
     def __setup_signals(self) -> None:
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
         # Scanner signals
-        self.scanner.status_update.connect(self.__scanning)
+        self.scanner.status_update.connect(self.__status_update)
         self.scanner.device_found.connect(self.device_found)
         self.scanner.device_not_found.connect(self.__device_not_found)
         self.scanner.error.connect(self.__scanner_error)
@@ -43,26 +42,50 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
         #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
 
+    def __server_start_stop(self) -> None:
+        if self.device is None:
+            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message)
+            self.scanner.scan()
+        else:
+            self.__disconnect_device()
+
     def device_found(self, device: QBluetoothDeviceInfo) -> None:
         self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
 
     def __scanner_error(self, error) -> None:
         msg = f"The following error occurred while scanning for a device:\n\n{error}"
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}')
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, f'{msg}')
         QMessageBox.warning(self.main_window, "Error while scanning for a device", msg)
         self.__not_connected_status()
 
     def __device_not_found(self) -> None:
         msg = f"No device found.\n\n{self.start_message}"
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}')
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, f'{msg}')
         QMessageBox.warning(self.main_window, "No device found", msg)
         self.__not_connected_status()
 
-    def __scanning(self, status_message) -> None:
+    def __status_update(self, status_message) -> None:
         self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
 
     def __not_connected_status(self) -> None:
         self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', True)
+
+
+    def _setup_device_signals(self) -> None:
+        self.device.status_update.connect(self.__device_status_update)
+        self.device.error.connect(self.__device_error)
+
+        #self.device.error.connect(self.__send_shot_error)
+        #self.device.client_disconnected.connect(self.__disconnected)
+
+    def __device_status_update(self, status_message, device_name) -> None:
+        self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)
+
+    def __device_error(self, error) -> None:
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
+        QMessageBox.warning(self.main_window, "Unexpected error", error)
+        self.__not_connected_status()
+
 
     def __update_ui(self, message, color, status, status_color, button, enabled=True) -> None:
         if status is not None:
@@ -89,15 +112,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __gspro_message(self, message) -> None:
         self.device_worker.send_msg(message)
 
-    def __server_start_stop(self) -> None:
-        if self.device_worker is None:
-            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message)
-            self.scanner.scan()
-        else:
-            #self.device_worker.stop()
-            self.shutdown()
-            self.__not_connected_status()
-
     @property
     def start_message(self) -> str:
         return ' '
@@ -117,7 +131,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__update_ui(status, 'orange', None, 'red', 'Stop', False)
 
     def device_worker_error(self, error):
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'Error: {format(error)}')
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, f'Error: {format(error)}')
         QMessageBox.warning(self.main_window, "LM Error", f'{format(error)}')
         self.stop()
 
@@ -125,11 +139,11 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.start_server_button.setText('Stop')
         self.main_window.server_status_label.setText('Running')
         self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.relay_server_ip_address}:{self.main_window.settings.relay_server_port}')
+        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.BLUETOOTH_ip_address}:{self.main_window.settings.BLUETOOTH_port}')
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
 
     def __connected(self):
-        self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.relay_server_ip_address}:{self.main_window.settings.relay_server_port}')
+        self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.BLUETOOTH_ip_address}:{self.main_window.settings.BLUETOOTH_port}')
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def device_worker_resumed(self):
@@ -148,10 +162,13 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __send_shot_error(self, error):
         msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}\nException: {format(error)}')
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, f'{msg}\nException: {format(error)}')
         QMessageBox.warning(self.main_window, "Relay Send to GSPro Error", msg)
 
-    def shutdown(self):
-        if self.client is not None:
-            self.client.disconnect_client()
-            self.client = None
+    def __disconnect_device(self):
+        if self.device is not None:
+            logging.debug(f'Disconnecting from device: {self.device.name()}')
+            self.device.disconnect_device()
+            self.device = None
+            self.__not_connected_status()
+
