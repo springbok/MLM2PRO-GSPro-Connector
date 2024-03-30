@@ -16,11 +16,11 @@ class BluetoothDeviceScanner(QObject):
         self.launch_minitor_names = launch_minitor_names
         self.scanner = QBluetoothDeviceDiscoveryAgent()
         #self.scanner.setLowEnergyDiscoveryTimeout(BluetoothDeviceScanner.SCANNER_TIMEOUT*1000)
-        #self.scanner.finished.connect(self._handle_scan_result)
         self.scanner.deviceDiscovered.connect(self.__add_device)
         self.scanner.errorOccurred.connect(self.__handle_scan_error)
         self.scanner.finished.connect(self.__scanning_finished)
         self.scan_timer = QTimer()
+        self.device = None
 
     def scan(self) -> None:
         print(f'scan timeout {self.scanner.lowEnergyDiscoveryTimeout()}')
