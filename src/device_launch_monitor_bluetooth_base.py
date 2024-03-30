@@ -74,6 +74,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def _setup_device_signals(self) -> None:
         self.device.status_update.connect(self.__device_status_update)
         self.device.error.connect(self.__device_error)
+        self.device.rssi.connect(self.__update_rssi)
 
         #self.device.error.connect(self.__send_shot_error)
         #self.device.client_disconnected.connect(self.__disconnected)
@@ -85,6 +86,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
         QMessageBox.warning(self.main_window, "Unexpected error", error)
         self.__not_connected_status()
+
+    def __update_rssi(self, rssi) -> None:
+        self.main_window.rssi_label.setText(f"RSSI: {rssi}")
+        
 
 
     def __update_ui(self, message, color, status, status_color, button, enabled=True) -> None:

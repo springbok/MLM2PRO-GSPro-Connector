@@ -23,6 +23,7 @@ class BluetoothDeviceBase(QObject):
     connecting = Signal(str)
     connected = Signal(str)
     status_update = Signal(str, str)
+    rssi_read = Signal(int)
 
     def __init__(self, device: QBluetoothDeviceInfo):
         super().__init__()
@@ -56,10 +57,15 @@ class BluetoothDeviceBase(QObject):
         self.client.setRemoteAddressType(QLowEnergyController.RemoteAddressType.PublicAddress)
         self.client.errorOccurred.connect(self.__catch_error)
         self.client.connected.connect(self.__discover_services)
+        self.client.rssiRead.connect()
         self.client.serviceDiscovered.connect(self.__service_found)
         #self.client.discoveryFinished.connect(self.connect_to_service)
         self.client.disconnected.connect(self.__reset_connection)
+        self.client.rssiRead.connect(self.__rssi_read)
         self.client.connectToDevice()
+
+    def __rssi_read(self, rssi: int):
+        self.rssi_read.emit(rssi)
 
     def __service_found(self, service_uuid: QBluetoothUuid):
         print(f'__service_found {service_uuid}')
@@ -91,6 +97,9 @@ class BluetoothDeviceBase(QObject):
     def __discover_services(self):
         print('discover services')
         if self.client is not None:
+            logging.debug(f'Reading RSSI for {self.device.name()}')
+            self.client.readRssi()
+
             logging.debug(f'Discovering services for {self.device.name()}')
             self.status_update.emit('Discovering services...', self.device.name())
             self.client.discoverServices()
