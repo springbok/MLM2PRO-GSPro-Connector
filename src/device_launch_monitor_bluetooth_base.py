@@ -4,7 +4,7 @@ import logging
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
-from src.bluetooth.device_scanner import DeviceScanner
+from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
 
@@ -16,15 +16,15 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.api = None
         self.client = None
         self.device_names = device_names
-        self.scanner = DeviceScanner(self.device_names)
+        self.scanner = BluetoothDeviceScanner(self.device_names)
         self.__setup_signals()
-        self.not_connected_status()
+        self.__not_connected_status()
 
     def setup_device_thread(self) -> None:
         super().setup_device_thread()
         #self.device_worker.listening.connect(self.__listening)
         #self.device_worker.connected.connect(self.__connected)
-        #self.device_worker.finished.connect(self.not_connected_status)
+        #self.device_worker.finished.connect(self.__not_connected_status)
         #self.device_worker.shot_error.connect(self.__send_shot_error)
         #self.device_worker.disconnected.connect(self.__listening)
         #self.device_worker.relay_server_shot.connect(self.__shot_sent)
@@ -33,7 +33,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
         # Scanner signals
         self.scanner.status_update.connect(self.__scanning)
-        self.scanner.device_update.connect(self.device_found)
+        self.scanner.device_found.connect(self.device_found)
+        self.scanner.device_not_found.connect(self.__device_not_found)
         self.scanner.error.connect(self.__scanner_error)
 
 
@@ -45,8 +46,22 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def device_found(self, device: QBluetoothDeviceInfo) -> None:
         self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
 
+    def __scanner_error(self, error) -> None:
+        msg = f"The following error occurred while scanning for a device:\n\n{error}"
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}')
+        QMessageBox.warning(self.main_window, "Error while scanning for a device", msg)
+        self.__not_connected_status()
 
-    def not_connected_status(self) -> None:
+    def __device_not_found(self) -> None:
+        msg = f"No device found.\n\n{self.start_message}"
+        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}')
+        QMessageBox.warning(self.main_window, "No device found", msg)
+        self.__not_connected_status()
+
+    def __scanning(self, status_message) -> None:
+        self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
+
+    def __not_connected_status(self) -> None:
         self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', True)
 
     def __update_ui(self, message, color, status, status_color, button, enabled=True) -> None:
@@ -76,13 +91,14 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __server_start_stop(self) -> None:
         if self.device_worker is None:
-            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message())
+            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message)
             self.scanner.scan()
         else:
             #self.device_worker.stop()
             self.shutdown()
-            self.not_connected_status()
+            self.__not_connected_status()
 
+    @property
     def start_message(self) -> str:
         return ' '
 
@@ -95,17 +111,9 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __disconnected(self, device):
         print('__disconnected')
-        self.not_connected_status()
+        self.__not_connected_status()
 
-    def __scanner_error(self, error):
-        msg = f"The following error occurred while scanning for devices:\n{error}"
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'{msg}')
-        QMessageBox.warning(self.main_window, "Error while scanning for devices", msg)
-
-    def __scanning(self, status_message):
-        self.__update_ui(status_message, 'orange', 'No Device', 'red', 'Stop', False)
-
-    def __client_status_update(self, status):
+    def __client_status_update(self, status) -> None:
         self.__update_ui(status, 'orange', None, 'red', 'Stop', False)
 
     def device_worker_error(self, error):
@@ -123,25 +131,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __connected(self):
         self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.relay_server_ip_address}:{self.main_window.settings.relay_server_port}')
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-
-    def not_connected_status(self):
-        status = 'Not Running'
-        color = 'red'
-        button = 'Start'
-        if self.is_running():
-            button = 'Stop'
-            if self.main_window.gspro_connection.connected:
-                color = 'orange'
-                status = 'Paused'
-            else:
-                status = 'Waiting GSPro'
-                color = 'red'
-        else:
-            self.main_window.server_connection_label.setText('No Connection')
-            self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : red; color : white; }}")
-        self.main_window.start_server_button.setText(button)
-        self.main_window.server_status_label.setText(status)
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def device_worker_resumed(self):
         self.main_window.start_server_button.setText('Stop')
