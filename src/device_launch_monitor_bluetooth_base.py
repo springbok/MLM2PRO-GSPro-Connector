@@ -51,6 +51,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def device_found(self, device: QBluetoothDeviceInfo) -> None:
         self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
+        self.__update_rssi(device.rssi())
 
     def __scanner_error(self, error) -> None:
         msg = f"The following error occurred while scanning for a device:\n\n{error}"
@@ -74,7 +75,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def _setup_device_signals(self) -> None:
         self.device.status_update.connect(self.__device_status_update)
         self.device.error.connect(self.__device_error)
-        self.device.rssi.connect(self.__update_rssi)
 
         #self.device.error.connect(self.__send_shot_error)
         #self.device.client_disconnected.connect(self.__disconnected)
@@ -86,11 +86,17 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
         QMessageBox.warning(self.main_window, "Unexpected error", error)
         self.__not_connected_status()
+        self.__disconnect_device()
 
     def __update_rssi(self, rssi) -> None:
-        self.main_window.rssi_label.setText(f"RSSI: {rssi}")
-        
-
+        self.main_window.launch_monitor_rssi_label.setText(f"RSSI: {rssi}")
+        if rssi < -50 and rssi > -70:
+            color = 'green'
+        elif rssi < -70 and rssi > -80:
+            color = 'orange'
+        else:
+            color = 'red'
+        self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def __update_ui(self, message, color, status, status_color, button, enabled=True) -> None:
         if status is not None:
@@ -172,7 +178,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __disconnect_device(self):
         if self.device is not None:
-            logging.debug(f'Disconnecting from device: {self.device.name()}')
             self.device.disconnect_device()
             self.device = None
             self.__not_connected_status()
