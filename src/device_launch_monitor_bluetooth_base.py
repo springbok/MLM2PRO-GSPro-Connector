@@ -70,7 +70,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __not_connected_status(self) -> None:
         self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', True)
-
+        self.main_window.launch_monitor_rssi_label.setText('')
+        self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
 
     def _setup_device_signals(self) -> None:
         self.device.status_update.connect(self.__device_status_update)
