@@ -100,6 +100,7 @@ class BluetoothDeviceBase(QObject):
             self.client.discoverServices()
 
     def __connect_to_service(self):
+        self.status_update.emit('Connecting to service...')
         print(f'__connect_to_service {self.client.services()}')
         primary_service: list[QBluetoothUuid] = [
             s for s in self.client.services() if self.service_uuid.toString().upper() in s.toString().upper()
@@ -122,6 +123,7 @@ class BluetoothDeviceBase(QObject):
         self.service.discoverDetails()
 
     def __start_notifications(self, state: QLowEnergyService.ServiceState):
+        self.status_update.emit('Subscribing to notifications...')
         if state != QLowEnergyService.ServiceState.RemoteServiceDiscovered:
             return
         if self.service is None:
