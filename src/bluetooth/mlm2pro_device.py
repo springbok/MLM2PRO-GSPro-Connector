@@ -12,8 +12,8 @@ from src.bluetooth.mlm2pro_web_api import MLM2PROWebApi
 
 
 class MLM2PRODevice(BluetoothDeviceBase):
-    HEARTBEAT_INTERVAL = 2
-    MLM2PRO_HEARTBEAT_INTERVAL = 20
+    HEARTBEAT_INTERVAL = 2000
+    MLM2PRO_HEARTBEAT_INTERVAL = 20000
 
     MLM2PRO_SEND_INITIAL_PARAMS = 2
     MLM2PRO_AUTH_SUCCESS = 0
@@ -50,6 +50,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
 
     def _authenticate(self):
         print('authenticating')
+        logging.debug('Authenticating')
         if self._is_connected() is False:
             self.error.emit('Device not connected')
             return
