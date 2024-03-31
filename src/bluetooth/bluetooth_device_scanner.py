@@ -4,7 +4,7 @@ from PySide6.QtCore import QObject, Signal, QTimer
 
 
 class BluetoothDeviceScanner(QObject):
-    SCANNER_TIMEOUT = 20000
+    SCANNER_TIMEOUT = 40000
 
     device_found = Signal(object)
     device_not_found = Signal()

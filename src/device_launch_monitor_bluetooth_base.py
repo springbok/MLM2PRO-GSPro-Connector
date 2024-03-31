@@ -183,3 +183,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.device = None
             self.__not_connected_status()
 
+    def shutdown(self):
+        self.__disconnect_device()
+        super().shutdown()
