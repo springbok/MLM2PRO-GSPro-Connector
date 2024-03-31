@@ -90,7 +90,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
         if len(data) >= 2:
             if len(data) > 2:
                 if data[0] == MLM2PRODevice.MLM2PRO_SEND_INITIAL_PARAMS:
-                    logging.debug(f'Authentication requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
+                    logging.debug(f'Authentication requested {data[0]}: Initial parameters need to be sent to MLM2PRO')
                     print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
                     if data[1] != MLM2PRODevice.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
                         print(f'Auth failed: {data[1]}')
