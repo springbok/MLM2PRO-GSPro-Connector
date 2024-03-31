@@ -1,4 +1,3 @@
-import binascii
 import logging
 
 from PySide6.QtBluetooth import QLowEnergyController, QLowEnergyService, QBluetoothDeviceInfo, QLowEnergyCharacteristic, \
@@ -46,7 +45,7 @@ class BluetoothDeviceBase(QObject):
         #    QBluetoothUuid.CharacteristicType.HeartRateMeasurement
         #)
 
-    def __sensor_address(self):
+    def _sensor_address(self):
         return self.client.remoteAddress().toString()
 
     def connect_device(self):
@@ -108,23 +107,23 @@ class BluetoothDeviceBase(QObject):
             s for s in self.client.services() if self.service_uuid.toString().upper() in s.toString().upper()
         ]
         if not primary_service:
-            msg = f"Could not find primary service on {self.__sensor_address()}."
+            msg = f"Could not find primary service on {self._sensor_address()}."
             logging.debug(msg)
             self.error.emit(msg)
             return
-        logging.debug(f'Connecting to service {primary_service[0].toString()} on {self.__sensor_address()}')
+        logging.debug(f'Connecting to service {primary_service[0].toString()} on {self._sensor_address()}')
         self.service = self.client.createServiceObject(primary_service[0])
         if not self.service:
-            msg = f"Couldn't establish connection to HR service on {self.__sensor_address()}."
+            msg = f"Couldn't establish connection to HR service on {self._sensor_address()}."
             logging.debug(msg)
             self.error.emit(msg)
             return
-        logging.debug(f'Connected to service {self.service.serviceUuid().toString()} on {self.__sensor_address()}')
+        logging.debug(f'Connected to service {self.service.serviceUuid().toString()} on {self._sensor_address()}')
         self.service.stateChanged.connect(self.__start_notifications)
         self.service.characteristicChanged.connect(self._data_handler)
         self.do_authenticate.connect(self._authenticate)
-        print(f'Discovering service details {self.service.serviceUuid().toString()} on {self.__sensor_address()}')
-        logging.debug(f'Discovering service details {self.service.serviceUuid().toString()} on {self.__sensor_address()}')
+        print(f'Discovering service details {self.service.serviceUuid().toString()} on {self._sensor_address()}')
+        logging.debug(f'Discovering service details {self.service.serviceUuid().toString()} on {self._sensor_address()}')
         self.service.discoverDetails()
 
     def __start_notifications(self, state: QLowEnergyService.ServiceState):
@@ -134,12 +133,12 @@ class BluetoothDeviceBase(QObject):
         if self.service is None:
             return
         for uuid in self.notification_uuids:
-            msg = f"Subscribing to notifications for {uuid.toString()} on {self.__sensor_address()}."
+            msg = f"Subscribing to notifications for {uuid.toString()} on {self._sensor_address()}."
             logging.debug(msg)
             print(msg)
             characteristic = self.service.characteristic(uuid)
             if not characteristic.isValid():
-                msg = f"Couldn't find characteristic {uuid.toString()} on {self.__sensor_address()}."
+                msg = f"Couldn't find characteristic {uuid.toString()} on {self._sensor_address()}."
                 logging.debug(msg)
                 self.error.emit(msg)
                 return
@@ -155,7 +154,7 @@ class BluetoothDeviceBase(QObject):
             self.notifications.append(descriptor)
             # Subscribe to notifications for the characteristic
             self.service.writeDescriptor(descriptor, self.ENABLE_NOTIFICATION)
-            print(f'Subscribed to notifications for {uuid.toString()} on {self.__sensor_address()}')
+            print(f'Subscribed to notifications for {uuid.toString()} on {self._sensor_address()}')
         print('emit do_authenticate')
         self.do_authenticate.emit()
 
@@ -210,14 +209,8 @@ class BluetoothDeviceBase(QObject):
         self.error.emit(msg)
         self.__reset_connection()
 
-    def _data_handler(self, char: QLowEnergyCharacteristic, data: QByteArray):  # _ is unused but mandatory argument
-        """
-        `data` GATT data
-        """
-        print('_data_handler')
-        print(f'char: {char.uuid().toString()} data: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
-        print(f'received data from {self.ble_device.name()} at {self.__sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
-
+    def _data_handler(self, char: QLowEnergyCharacteristic, data: QByteArray):
+        pass
 
     def _write_characteristic(self, characteristic_uuid: QBluetoothUuid, data: bytearray) -> None:
         if self.service is None:

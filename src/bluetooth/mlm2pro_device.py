@@ -1,5 +1,7 @@
-from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid
-from PySide6.QtCore import QUuid
+import logging
+
+from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
+from PySide6.QtCore import QUuid, QByteArray
 
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_utils import BluetoothUtils
@@ -59,3 +61,10 @@ class MLM2PRODevice(BluetoothDeviceBase):
         end_index = start_index + len(key_bytes)
         b_arr[start_index:end_index] = key_bytes
         self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
+
+    def _data_handler(self, char: QLowEnergyCharacteristic, data: QByteArray):  # _ is unused but mandatory argument
+        """
+        `data` GATT data
+        """
+        print(f'char: {char.uuid().toString()} data: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
+        logging.debug(f'received data from {self.ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
