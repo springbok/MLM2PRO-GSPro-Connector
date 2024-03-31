@@ -45,9 +45,12 @@ class MLM2PROUtils:
     def int_to_byte_array(n, little_endian, as_short=False):
         hex_value = hex(n)[2:]  # Convert to hex and remove '0x'
         hex_value = hex_value.zfill(8)  # Pad with zeros to ensure it's 4 bytes
+        print(f'hex_value: {hex_value}')
         bytes_value = bytes.fromhex(hex_value)  # Convert hex to bytes
+        print(f'bytes_value: {bytes_value}')
         format_string = '<I' if little_endian else '>I'
         value = struct.pack(format_string, n)
+        print(f'value: {value}')
         if as_short:
             value = MLM2PROUtils.int_byte_array_to_short_byte_array(value, little_endian)
         return value
