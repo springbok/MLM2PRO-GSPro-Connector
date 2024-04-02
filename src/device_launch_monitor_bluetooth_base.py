@@ -84,6 +84,11 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.device.error.connect(self.__device_error)
         self.device.connected.connect(self.__device_connected)
         self.device.update_battery.connect(self.__update_battery)
+        self.device.shot.connect(self.__shot_sent)
+
+    def __shot_sent(self, ball_data: BallData) -> None:
+        print(f"Shot sent: {json.dumps(ball_data.to_json())}")
+        #self.main_window.shot_sent(ball_data)
 
     def __update_battery(self, battery: int) -> None:
         self.main_window.launch_monitor_battery_label.setText(f"Battery: {battery}")
@@ -128,17 +133,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         if message is not None:
             self.main_window.server_status_label.setText(message)
         self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-
-    def __shot_sent(self, shot_data) -> None:
-        data = json.loads(shot_data.decode("utf-8"))
-        balldata = BallData()
-        balldata.from_gspro(data)
-        balldata.club = self.main_window.gspro_connection.current_club
-        print(f'balldata: {balldata.to_json()} club: {self.main_window.gspro_connection.current_club}')
-        balldata.good_shot = True
-        if self.prev_shot is None or self.prev_shot.eq(balldata) > 0:
-            self.main_window.shot_sent(balldata)
-            self.prev_shot = balldata
 
     def __gspro_message(self, message) -> None:
         self.device_worker.send_msg(message)

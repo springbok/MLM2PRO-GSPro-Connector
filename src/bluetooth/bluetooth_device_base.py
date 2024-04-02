@@ -7,7 +7,7 @@ from PySide6.QtCore import QObject, QByteArray, Signal, QTimer
 from typing import Union, List
 
 from src.appdata import AppDataPaths
-from src.bluetooth.bluetooth_utils import BluetoothUtils
+from src.ball_data import BallData
 from src.settings import Settings
 
 
@@ -29,6 +29,8 @@ class BluetoothDeviceBase(QObject):
     rssi_read = Signal(int)
     do_authenticate = Signal()
     update_battery = Signal(int)
+    shot = Signal(BallData)
+    launch_monitor_connected = Signal()
 
     def __init__(self, device: QBluetoothDeviceInfo, 
                  service_uuid: QBluetoothUuid, 
@@ -50,6 +52,7 @@ class BluetoothDeviceBase(QObject):
         self._set_next_expected_heartbeat()
         self._app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self._settings = Settings(self._app_paths)
+        self._armed = False
 
         #self.hr_notification: Union[None, QLowEnergyDescriptor] = None
         #self._service: QBluetoothUuid.ServiceClassUuid = (
@@ -81,9 +84,24 @@ class BluetoothDeviceBase(QObject):
         self._controller.serviceDiscovered.connect(self.__service_found)
         self._controller.discoveryFinished.connect(self.__connect_to_service)
         self._controller.disconnected.connect(self.__reset_connection)
+        self.launch_monitor_connected.connect(self._connected)
         #self._controller.rssiRead.connect(self.__rssi_read)
         self._controller.disconnectFromDevice()
         self._controller.connectToDevice()
+
+    def _connected(self):
+        print('connected')
+        self.connected.emit('Connected')
+        self._set_next_expected_heartbeat()
+        self._heartbeat_timer.start()
+        self._arm_device()
+        self._armed = True
+
+    def _arm_device(self):
+        pass
+
+    def _disarm_device(self):
+        pass
 
     def __rssi_read(self, rssi: int):
         self.rssi_read.emit(rssi)
@@ -96,6 +114,8 @@ class BluetoothDeviceBase(QObject):
         pass
 
     def disconnect_device(self):
+        if self._armed:
+            self._disarm_device()
         print(f'self._notifications: {self._notifications}')
         if len(self._notifications) > 0 and self._service is not None:
             logging.debug('Unsubscribing from notifications')

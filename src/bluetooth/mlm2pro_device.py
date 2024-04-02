@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
 from PySide6.QtCore import QUuid, QByteArray, QTimer, Signal
 
+from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.mlm2pro_encryption import MLM2PROEncryption
@@ -106,8 +107,8 @@ class MLM2PRODevice(BluetoothDeviceBase):
         if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             self.__process_write_response(byte_array)
         elif characteristic.uuid() == MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
-            print(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
-            logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
+            #print(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
+            #logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             self._set_next_expected_heartbeat()
         elif characteristic.uuid() == MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID:
             self.__process_events(byte_array)
@@ -131,6 +132,9 @@ class MLM2PRODevice(BluetoothDeviceBase):
             msg = f'>>>> Measurement decrypted data: {BluetoothUtils.bytearray_to_int_array(bytearray(decrypted))}'
             print(msg)
             logging.debug(msg)
+            shot_data = BallData()
+            msg = f'>>>> Calculated shot data: {shot_data.to_json()}'
+            shot_data.from_mlm2pro_bt(bytearray(decrypted))
         except Exception as e:
             msg = f'Error when decrypting measurement data: {format(e)}'
             print(msg)
@@ -205,18 +209,16 @@ class MLM2PRODevice(BluetoothDeviceBase):
                     print('Auth success, send initial params')
                     logging.debug('Authentication success, send initial params')
                     QTimer().singleShot(0, lambda: self.__send_initial_params(data))
-                    # Start heartbeat
-                    self._heartbeat_timer.start()
                 elif data[0] == MLM2PRODevice.MLM2PRO_AUTH_SUCCESS:
                     logging.debug(f'Authentication successful {data[0]}')
                     print(f'Authentication successful {data[0]}')
-                    self.connected.emit('Connected')
+                    self.launch_monitor_connected.emit()
                 else:
                     logging.debug(f'Invalid Write response: {int_array}')
                     print(f'Invalid Write response: {int_array}')
             else:
                 logging.debug('Connected to MLM2PRO, initial parameters not required')
-                self.connected.emit('Connected')
+                self.launch_monitor_connected.emit()
 
     def _heartbeat(self) -> None:
         print('Sending heartbeat')
@@ -282,13 +284,13 @@ class MLM2PRODevice(BluetoothDeviceBase):
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
         self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID, config_data)
 
-    def __disarm(self) -> None:
+    def _disarm_device(self) -> None:
         byte_array = bytearray.fromhex("010D0000000000")
         self.__write_command(byte_array)
         print(f'Disarm command sent')
         logging.debug(f'Disarm command sent')
 
-    def __arm(self) -> None:
+    def _arm_device(self) -> None:
         byte_array = bytearray.fromhex("010D0001000000")
         self.__write_command(byte_array)
         print(f'Arm command sent')
