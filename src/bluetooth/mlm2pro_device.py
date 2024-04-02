@@ -1,8 +1,10 @@
+import datetime
 import json
 import logging
+from dataclasses import dataclass
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
-from PySide6.QtCore import QUuid, QByteArray, QTimer
+from PySide6.QtCore import QUuid, QByteArray, QTimer, Signal
 
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_utils import BluetoothUtils
@@ -10,8 +12,15 @@ from src.bluetooth.mlm2pro_encryption import MLM2PROEncryption
 from src.bluetooth.mlm2pro_secret import MLM2PROSecret
 from src.bluetooth.mlm2pro_web_api import MLM2PROWebApi
 
+@dataclass
+class TokenExpiryStates:
+    TOKEN_EXPIRY_3HOURS = 'orange'
+    TOKEN_EXPIRED = 'red'
+    TOKEN_EXPIRY_OK = 'green'
 
 class MLM2PRODevice(BluetoothDeviceBase):
+    token_expiry = Signal(TokenExpiryStates, str)
+
     HEARTBEAT_INTERVAL = 2000
     MLM2PRO_HEARTBEAT_INTERVAL = 20000
 
@@ -148,6 +157,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
             self._settings.web_api['token_expiry'] = response['user']['expireDate']
             self._settings.web_api['device_id'] = response['user']['id']
             self._settings.save()
+            self.__token_expiry_date_state(response['user']['expireDate'])
         else:
             logging.debug('Failed to update user token')
             self.error.emit('Failed to update user token from web API')
@@ -186,3 +196,18 @@ class MLM2PRODevice(BluetoothDeviceBase):
         logging.debug(f'Write command: {BluetoothUtils.byte_array_to_hex_string(data)}')
         self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID,
                                    bytearray(self._encryption.encrypt(data)))
+
+    def __token_expiry_date_state(self, token_expiry: float) -> None:
+        # Assuming token expiry is the Unix timestamp
+        expire_date = datetime.datetime.fromtimestamp(token_expiry)
+        # Convert to local datetime
+        local_expire_date = expire_date.astimezone()
+        # Get current datetime
+        now = datetime.datetime.now().astimezone()
+        # Check if expire_date is in the future and less than 3 hours from now
+        token_state = TokenExpiryStates.TOKEN_EXPIRY_OK
+        if now < local_expire_date < now + datetime.timedelta(hours=3):
+            token_state = TokenExpiryStates.TOKEN_EXPIRY_3HOURS
+        elif local_expire_date < now:
+            token_state = TokenExpiryStates.TOKEN_EXPIRED
+        self.token_expiry.emit(token_state, local_expire_date.strftime("%Y-%m-%d %H:%M:%S"))

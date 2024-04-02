@@ -69,9 +69,10 @@ class Ui_MainWindow(object):
         self.actionShop.setIcon(icon7)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
+        self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.main_tab = QTabWidget(self.centralwidget)
         self.main_tab.setObjectName(u"main_tab")
-        self.main_tab.setGeometry(QRect(9, 9, 1284, 569))
         self.connector_tab = QWidget()
         self.connector_tab.setObjectName(u"connector_tab")
         self.verticalLayout_7 = QVBoxLayout(self.connector_tab)
@@ -291,17 +292,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.server_connection_label)
 
-        self.launch_monitor_battery_label = QLabel(self.server_control_widget)
-        self.launch_monitor_battery_label.setObjectName(u"launch_monitor_battery_label")
-        sizePolicy3.setHeightForWidth(self.launch_monitor_battery_label.sizePolicy().hasHeightForWidth())
-        self.launch_monitor_battery_label.setSizePolicy(sizePolicy3)
-        self.launch_monitor_battery_label.setMinimumSize(QSize(0, 0))
-        self.launch_monitor_battery_label.setFont(font)
-        self.launch_monitor_battery_label.setAlignment(Qt.AlignCenter)
-        self.launch_monitor_battery_label.setMargin(5)
-
-        self.verticalLayout_12.addWidget(self.launch_monitor_battery_label)
-
         self.launch_monitor_rssi_label = QLabel(self.server_control_widget)
         self.launch_monitor_rssi_label.setObjectName(u"launch_monitor_rssi_label")
         sizePolicy3.setHeightForWidth(self.launch_monitor_rssi_label.sizePolicy().hasHeightForWidth())
@@ -312,6 +302,28 @@ class Ui_MainWindow(object):
         self.launch_monitor_rssi_label.setMargin(5)
 
         self.verticalLayout_12.addWidget(self.launch_monitor_rssi_label)
+
+        self.token_expiry_label = QLabel(self.server_control_widget)
+        self.token_expiry_label.setObjectName(u"token_expiry_label")
+        sizePolicy3.setHeightForWidth(self.token_expiry_label.sizePolicy().hasHeightForWidth())
+        self.token_expiry_label.setSizePolicy(sizePolicy3)
+        self.token_expiry_label.setMinimumSize(QSize(0, 0))
+        self.token_expiry_label.setFont(font)
+        self.token_expiry_label.setAlignment(Qt.AlignCenter)
+        self.token_expiry_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.token_expiry_label)
+
+        self.launch_monitor_battery_label = QLabel(self.server_control_widget)
+        self.launch_monitor_battery_label.setObjectName(u"launch_monitor_battery_label")
+        sizePolicy3.setHeightForWidth(self.launch_monitor_battery_label.sizePolicy().hasHeightForWidth())
+        self.launch_monitor_battery_label.setSizePolicy(sizePolicy3)
+        self.launch_monitor_battery_label.setMinimumSize(QSize(0, 0))
+        self.launch_monitor_battery_label.setFont(font)
+        self.launch_monitor_battery_label.setAlignment(Qt.AlignCenter)
+        self.launch_monitor_battery_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.launch_monitor_battery_label)
 
         self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -574,6 +586,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_9.addWidget(self.log_table)
 
         self.main_tab.addTab(self.log_tab, "")
+
+        self.horizontalLayout_4.addWidget(self.main_tab)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -643,8 +658,9 @@ class Ui_MainWindow(object):
         self.start_server_button.setText(QCoreApplication.translate("MainWindow", u"Start", None))
         self.server_status_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.server_connection_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
-        self.launch_monitor_battery_label.setText("")
         self.launch_monitor_rssi_label.setText("")
+        self.token_expiry_label.setText("")
+        self.launch_monitor_battery_label.setText("")
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Ball Speed", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Spin Axis", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Spin Rate", None))
