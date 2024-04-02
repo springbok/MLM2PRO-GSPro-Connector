@@ -81,6 +81,7 @@ class BluetoothDeviceBase(QObject):
         self._controller.discoveryFinished.connect(self.__connect_to_service)
         self._controller.disconnected.connect(self.__reset_connection)
         #self._controller.rssiRead.connect(self.__rssi_read)
+        self._controller.disconnectFromDevice()
         self._controller.connectToDevice()
 
     def __rssi_read(self, rssi: int):
@@ -106,6 +107,7 @@ class BluetoothDeviceBase(QObject):
         if self._heartbeat_timer.isActive():
             self._heartbeat_timer.stop()
         if self._controller is not None:
+            print('xxxx disconnecting')
             self.disconnecting.emit('Disconnecting...')
             self._controller.disconnectFromDevice()
 
@@ -136,20 +138,24 @@ class BluetoothDeviceBase(QObject):
             self.error.emit(msg)
             return
         logging.debug(f'Connected to service {self._service.serviceUuid().toString()} on {self._sensor_address()}')
-        self._service.stateChanged.connect(self._subscribe_to_notifications)
+        self._service.stateChanged.connect(self.__service_state_changed)
         self._service.characteristicChanged.connect(self._data_handler)
         self.do_authenticate.connect(self._authenticate)
         print(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         logging.debug(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         self._service.discoverDetails()
 
-    def _subscribe_to_notifications(self, state: QLowEnergyService.ServiceState):
+    def __service_state_changed(self, state: QLowEnergyService.ServiceState):
         self.status_update.emit('Subscribing...', self._ble_device.name())
-        print(f'subscribe_to_notifications {state}')
+        print(f'subscribe_to_notifications {state} {QLowEnergyService.ServiceState.RemoteServiceDiscovered}')
         if state != QLowEnergyService.ServiceState.RemoteServiceDiscovered:
             return
         if self._service is None:
             return
+        self._subscribe_to_notifications()
+        self.do_authenticate.emit()
+
+    def _subscribe_to_notifications(self):
         for uuid in self._notification_uuids:
             msg = f"Subscribing to notifications for {uuid.toString()} on {self._sensor_address()}."
             logging.debug(msg)
@@ -174,7 +180,6 @@ class BluetoothDeviceBase(QObject):
             self._service.writeDescriptor(descriptor, self.ENABLE_NOTIFICATION)
             print(f'Subscribed to notifications for {uuid.toString()} on {self._sensor_address()}')
         print('emit do_authenticate')
-        self.do_authenticate.emit()
 
     def _authenticate(self):
         pass
@@ -194,6 +199,7 @@ class BluetoothDeviceBase(QObject):
         if self._service is None:
             return
         try:
+            print('Deleting bluetooth service')
             logging.debug('Deleting bluetooth service')
             self._service.deleteLater()
         except Exception as e:
@@ -206,6 +212,7 @@ class BluetoothDeviceBase(QObject):
         if self._controller is None:
             return
         try:
+            print('Deleting bluetooth client')
             logging.debug('Deleting bluetooth client')
             self._controller.disconnected.disconnect()
             self._controller.deleteLater()

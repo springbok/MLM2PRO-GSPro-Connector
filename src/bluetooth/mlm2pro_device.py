@@ -49,6 +49,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._web_api = MLM2PROWebApi(self._settings.web_api['url'], MLM2PROSecret.decrypt(self._settings.web_api['secret']))
 
     def _authenticate(self):
+        self._subscribe_to_notifications()
         print('authenticating')
         logging.debug('Authenticating')
         if self._is_connected() is False:
@@ -79,8 +80,8 @@ class MLM2PRODevice(BluetoothDeviceBase):
         byte_array = data.data()
         if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             int_array = BluetoothUtils.bytearray_to_int_array(byte_array)
-            print(f'Write response {characteristic.uuid}: {int_array}')
-            logging.debug(f'Write response {characteristic.uuid}: {int_array}')
+            print(f'Write response {characteristic.uuid()}: {int_array}')
+            logging.debug(f'Write response {characteristic.uuid()}: {int_array}')
             self.__process_write_response(int_array)
         elif characteristic.uuid() == MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
             print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')

@@ -37,7 +37,8 @@ class BluetoothDeviceScanner(QObject):
             self.scan_timer.start()
 
     def stop_scanning(self) -> None:
-        self.scanner.stop()
+        if self.scanner.isActive():
+            self.scanner.stop()
         if self.device is None:
             logging.debug('Timeout, no device found')
             self.status_update.emit('Timeout')
