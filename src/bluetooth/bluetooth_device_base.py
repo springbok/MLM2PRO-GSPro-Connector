@@ -2,8 +2,8 @@ import datetime
 import logging
 
 from PySide6.QtBluetooth import QLowEnergyController, QLowEnergyService, QBluetoothDeviceInfo, QLowEnergyCharacteristic, \
-    QBluetoothUuid
-from PySide6.QtCore import QObject, QByteArray, Signal, QTimer
+    QBluetoothUuid, QBluetoothSocket, QBluetoothServiceInfo, QBluetoothServiceDiscoveryAgent, QBluetoothAddress
+from PySide6.QtCore import QObject, QByteArray, Signal, QTimer, QIODeviceBase
 from typing import Union, List
 
 from src.appdata import AppDataPaths
@@ -24,7 +24,7 @@ class BluetoothDeviceBase(QObject):
     disconnecting = Signal(str)
     disconnected = Signal(str)
     connecting = Signal(str)
-    connected = Signal(str)
+    socket_connected = Signal(str)
     status_update = Signal(str, str)
     rssi_read = Signal(int)
     do_authenticate = Signal()
@@ -34,8 +34,8 @@ class BluetoothDeviceBase(QObject):
                  heartbeat_interval: int,
                  device_heartbeat_interval: int) -> None:
         super().__init__()
-        self._ble_device = device
-        self._controller: Union[None, QLowEnergyController] = None
+        self._ble_device: QBluetoothDeviceInfo = device
+        self._socket: Union[None, QBluetoothSocket] = None
         self._service: Union[None, QLowEnergyService] = None
         self._service_uuid: QBluetoothUuid = service_uuid
         self._notification_uuids: List[QBluetoothUuid] = []
@@ -50,6 +50,8 @@ class BluetoothDeviceBase(QObject):
         self._app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self._settings = Settings(self._app_paths)
 
+        self._agent: QBluetoothServiceDiscoveryAgent = None
+
         #self.hr_notification: Union[None, QLowEnergyDescriptor] = None
         #self._service: QBluetoothUuid.ServiceClassUuid = (
         #    QBluetoothUuid.ServiceClassUuid.HeartRate
@@ -59,29 +61,52 @@ class BluetoothDeviceBase(QObject):
         #)
 
     def _sensor_address(self):
-        return self._controller.remoteAddress().toString()
+        return self._socket.peerAddress().toString()
 
     def connect_device(self):
+        print(f'services {self._ble_device.address().toString() } service uuids: {self._ble_device.serviceIds()} {self._ble_device.serviceClasses()} {self._ble_device.serviceData()}')
+        self._agent = QBluetoothServiceDiscoveryAgent(self._ble_device.address())
+
+        # Connect the serviceDiscovered signal to a slot
+        #self._agent.serviceDiscovered.connect(
+        #    lambda service: print(f"Found service: {service.serviceName()}, {service.serviceUuid().toString()}"))
+        #self._agent.errorOccurred.connect(self.__catch_error)
+
+        # Start the discovery process
+        #self._agent.start(QBluetoothServiceDiscoveryAgent.DiscoveryMode.FullDiscovery)
         if self._ble_device is None:
             self.error.emit("No device to connect to.")
             return
         print(f'connect_client {self._ble_device.name()}')
-        if self._controller is not None:
+        if self._socket is not None:
             logging.debug(f"Currently connected to {self._ble_device.name()} at {self._ble_device.remoteAddress().toString()}.")
             self.connected.emit('Connected')
             return
         print(f'Connecting to {self._ble_device.name()}')
         self.status_update.emit('Connecting...', self._ble_device.name())
-        self._controller = QLowEnergyController.createCentral(self._ble_device)
-        self._controller.setRemoteAddressType(QLowEnergyController.RemoteAddressType.PublicAddress)
-        self._controller.errorOccurred.connect(self.__catch_error)
-        self._controller.connected.connect(self.__discover_services)
-        self._controller.rssiRead.connect(self.__rssi_read)
-        self._controller.serviceDiscovered.connect(self.__service_found)
-        self._controller.discoveryFinished.connect(self.__connect_to_service)
-        self._controller.disconnected.connect(self.__reset_connection)
+        self._socket = socket = QBluetoothSocket(QBluetoothServiceInfo.Protocol.RfcommProtocol)
+        #self._controller = QLowEnergyController.createCentral(self._ble_device)
+        #self._controller.setRemoteAddressType(QLowEnergyController.RemoteAddressType.PublicAddress)
+        self._socket.readyRead.connect(self._read_socket)
+        self._socket.errorOccurred.connect(self.__catch_error)
+        self._socket.connected.connect(self.__connected)
+        #self._controller.serviceDiscovered.connect(self.__service_found)
+        #self._controller.discoveryFinished.connect(self.__connect_to_service)
+        self._socket.disconnected.connect(self.__reset_connection)
         #self._controller.rssiRead.connect(self.__rssi_read)
-        self._controller.connectToDevice()
+        self.do_authenticate.connect(self._authenticate)
+        print(f'connecting to {self._ble_device.address().toString()} {self._service_uuid.toString()}')
+        self._socket.connectToService(self._ble_device.address(), 1,
+                                  QIODeviceBase.OpenModeFlag.ReadWrite)
+        print('aft connect')
+        #self._controller.connectToDevice()
+
+    def __connected(self):
+        print('emit do_authenticate')
+        self.do_authenticate.emit()
+        print(f'xxx connected {self._ble_device.name()} {self._socket.peerName()}')
+        self.socket_connected.emit('Connected')
+        self.status_update.emit('Connected', self._ble_device.name())
 
     def __rssi_read(self, rssi: int):
         self.rssi_read.emit(rssi)
@@ -105,9 +130,9 @@ class BluetoothDeviceBase(QObject):
             logging.debug(f'Disconnecting from device: {self._ble_device.name()}')
         if self._heartbeat_timer.isActive():
             self._heartbeat_timer.stop()
-        if self._controller is not None:
+        if self._socket is not None:
             self.disconnecting.emit('Disconnecting...')
-            self._controller.disconnectFromDevice()
+            self._socket.disconnectFromService()
 
 
     def __discover_services(self):
@@ -138,7 +163,6 @@ class BluetoothDeviceBase(QObject):
         logging.debug(f'Connected to service {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         self._service.stateChanged.connect(self._subscribe_to_notifications)
         self._service.characteristicChanged.connect(self._data_handler)
-        self.do_authenticate.connect(self._authenticate)
         print(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         logging.debug(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         self._service.discoverDetails()
@@ -176,17 +200,19 @@ class BluetoothDeviceBase(QObject):
         self.do_authenticate.emit()
 
     def _authenticate(self):
+        print('parent authenticate')
         pass
 
     def _is_connected(self) -> bool:
-        print(f'is_connected {self._controller.state()} {self._controller and self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState}')
-        return self._controller and self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState
+        print(f'is_connected {self._socket.state()}')
+        return self._socket and self._socket.state() == QBluetoothSocket.SocketState.ConnectedState
 
     def __reset_connection(self) -> None:
+        print('reset connection')
         self.disconnected.emit('Disconnected')
         logging.debug(f"Disconnected from device, cleaning up")
         self.__remove_service()
-        self.__remove_client()
+        self.__remove_socket()
         self._ble_device = None
 
     def __remove_service(self) -> None:
@@ -201,13 +227,13 @@ class BluetoothDeviceBase(QObject):
             self._service = None
             self._notifications = []
 
-    def __remove_client(self) -> None:
-        if self._controller is None:
+    def __remove_socket(self) -> None:
+        if self._socket is None:
             return
         try:
             logging.debug('Deleting bluetooth client')
-            self._controller.disconnected.disconnect()
-            self._controller.deleteLater()
+            self._socket.disconnected.disconnect()
+            self._socket.deleteLater()
         except Exception as e:
             print(f"Couldn't remove client: {e}")
         finally:
@@ -219,14 +245,27 @@ class BluetoothDeviceBase(QObject):
         elif error == QLowEnergyController.Error.AuthorizationError:
             msg = f'The device is not authorized to connect to the device.'
         else:
-            msg = f'An unknown error has occurred.'
-        if self._controller is not None:
-            msg = f'{self._controller.errorString()} {msg}'
+            msg = f'An unknown error has occurred {error}.'
+        #if self._socket is not None:
+        #    msg = f'{self._socket.errorString()} {msg}'
         logging.debug(msg)
         self.error.emit(msg)
         self.__reset_connection()
 
-    def _data_handler(self, char: QLowEnergyCharacteristic, data: QByteArray):
+    def _read_socket(self):
+        if self._socket is None:
+            return
+
+        while self._socket.readyRead():
+            data: QByteArray = self._socket.readLine().trimmed()
+            print(f'line: {data.data().decode()}')
+            logging.debug(f'line: {data.data().decode()}')
+            if not data.isEmpty():
+                self._data_handler(data.data())
+            #    self.messageReceived(self._socket.peerName(),
+            #                         str(line.constData(), line.length()))
+
+    def _data_handler(self, data: QByteArray):
         pass
 
     def _write_characteristic(self, characteristic_uuid: QBluetoothUuid, data: bytearray) -> None:
@@ -250,3 +289,13 @@ class BluetoothDeviceBase(QObject):
     @property
     def _heartbeat_overdue(self):
         return datetime.datetime.utcnow() > self._next_heartbeat
+
+    def _send_data(self, data: bytearray) -> None:
+        if self._socket is None or not self._is_connected():
+            self.error.emit('Not connected')
+            return
+        logging.debug(f'Writing data: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        print(f'Writing data: {BluetoothUtils.byte_array_to_hex_string(data)}')
+
+        self._socket.write(data)
+

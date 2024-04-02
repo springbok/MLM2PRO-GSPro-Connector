@@ -8,7 +8,7 @@ from src.worker_device_launch_monitor_bluetooth_mlm2pro import WorkerDeviceLaunc
 
 class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
 
-    MLM2PRO_NAME_PREFIX = "MLM2-"
+    MLM2PRO_NAME_PREFIX = "MLM2_"
     BLUEZ_NAME_PREFIX = "BlueZ"
 
     def __init__(self, main_window):

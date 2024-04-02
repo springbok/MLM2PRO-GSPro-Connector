@@ -49,7 +49,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._web_api = MLM2PROWebApi(self._settings.web_api['url'], MLM2PROSecret.decrypt(self._settings.web_api['secret']))
 
     def _authenticate(self):
-        print('authenticating')
+        print('authenticating123')
         logging.debug('Authenticating')
         if self._is_connected() is False:
             self.error.emit('Device not connected')
@@ -68,15 +68,17 @@ class MLM2PRODevice(BluetoothDeviceBase):
         start_index = len(int_to_byte_array) + len(encryption_type_bytes)
         end_index = start_index + len(key_bytes)
         b_arr[start_index:end_index] = key_bytes
-        self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
+        #self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
+        self._send_data(b_arr)
 
-    def _data_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray):  # _ is unused but mandatory argument
+    def _data_handler(self, data: bytearray):  # _ is unused but mandatory argument
         """
         `data` GATT data
         """
-        print(f'Received data for characteristic {characteristic.uuid().toString()}from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
-        logging.debug(f'Received data for characteristic {characteristic.uuid().toString()}from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
-        byte_array = data.data()
+        print(f'Received data from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        logging.debug(f'Received data for characteristic from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        byte_array = data
+        '''
         if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             int_array = BluetoothUtils.bytearray_to_int_array(byte_array)
             print(f'Write response {characteristic.uuid}: {int_array}')
@@ -86,6 +88,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
             print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
             logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
             self._set_next_expected_heartbeat()
+        '''
 
     def __process_write_response(self, data: list[int]) -> None:
         if len(data) >= 2:

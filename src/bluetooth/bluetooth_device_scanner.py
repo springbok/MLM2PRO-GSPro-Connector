@@ -23,13 +23,13 @@ class BluetoothDeviceScanner(QObject):
         self.device = None
 
     def scan(self) -> None:
-        print(f'scan timeout {self.scanner.lowEnergyDiscoveryTimeout()}')
+        print(f'scan timeout {self.scanner.lowEnergyDiscoveryTimeout()} methods: {QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods()}')
         if self.scanner.isActive():
             logging.debug("Already searching for device.")
         else:
             logging.debug(f'Searching for the following launch monitor names: {self.launch_minitor_names}')
             self.status_update.emit("Scanning for device...")
-            self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().LowEnergyMethod)
+            self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().ClassicMethod)
             # For some reason the setLowEnergyDiscoveryTimeout doesn't work
             self.scan_timer.setSingleShot(True)
             self.scan_timer.setInterval(BluetoothDeviceScanner.SCANNER_TIMEOUT)
@@ -44,8 +44,8 @@ class BluetoothDeviceScanner(QObject):
             self.device_not_found.emit()
 
     def __add_device(self, device) -> None:
-        print(f'info: {device.name()} {device.name().startswith("MLM2-") or device.name().startswith("BlueZ ")}')
-        if device.coreConfigurations() & QBluetoothDeviceInfo.CoreConfiguration.LowEnergyCoreConfiguration and \
+        print(f'info: {QBluetoothDeviceInfo.CoreConfiguration} {device.name()} {device.name().startswith("MLM2") or device.name().startswith("BlueZ ")}')
+        if device.coreConfigurations() & QBluetoothDeviceInfo.CoreConfiguration.BaseRateAndLowEnergyCoreConfiguration and \
                 device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names):
             self.device = device
             self.scanner.stop()

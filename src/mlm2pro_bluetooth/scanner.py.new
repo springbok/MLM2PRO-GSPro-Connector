@@ -4,7 +4,7 @@ from bleak import BleakScanner
 
 class MLM2PROScanner:
     MLM2PRO_NAME_PREFIX = "MLM2-"
-    BLUEZ_NAME_PREFIX = "BlueZ"
+    BLUEZ_NAME_PREFIX = "BlueZ "
 
     @classmethod
     async def discover(cls, timeout: float = 5) -> list[BLEDevice]:
