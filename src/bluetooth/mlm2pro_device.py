@@ -105,8 +105,9 @@ class MLM2PRODevice(BluetoothDeviceBase):
                     print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
                     if data[1] != MLM2PRODevice.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
                         print(f'Auth failed: {data[1]}')
+                        token_expiry = self.__token_expiry_date_state(self._settings.web_api['token_expiry'])
                         if data[1] == MLM2PRODevice.MLM2PRO_RAPSODO_AUTH_FAILED:
-                            self.error.emit('Awesome Golf authorisation has expired, please re-authorise in the Rapsodo app and try again once that has been done.')
+                            self.error.emit(f'Your 3rd party authorisation expired on {token_expiry}, please re-authorise in the Rapsodo app and try again once that has been done.')
                             return
                         else:
                             self.error.emit('Authentication failed.')
@@ -197,7 +198,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID,
                                    bytearray(self._encryption.encrypt(data)))
 
-    def __token_expiry_date_state(self, token_expiry: float) -> None:
+    def __token_expiry_date_state(self, token_expiry: float) -> str:
         # Assuming token expiry is the Unix timestamp
         expire_date = datetime.datetime.fromtimestamp(token_expiry)
         # Convert to local datetime
@@ -211,3 +212,4 @@ class MLM2PRODevice(BluetoothDeviceBase):
         elif local_expire_date < now:
             token_state = TokenExpiryStates.TOKEN_EXPIRED
         self.token_expiry.emit(token_state, local_expire_date.strftime("%Y-%m-%d %H:%M:%S"))
+        return local_expire_date
