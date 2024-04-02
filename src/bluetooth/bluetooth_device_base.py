@@ -73,7 +73,7 @@ class BluetoothDeviceBase(QObject):
         print(f'Connecting to {self._ble_device.name()}')
         self.status_update.emit('Connecting...', self._ble_device.name())
         self._controller = QLowEnergyController.createCentral(self._ble_device)
-        self._controller.setRemoteAddressType(QLowEnergyController.RemoteAddressType.PublicAddress)
+        #self._controller.setRemoteAddressType(QLowEnergyController.RemoteAddressType.PublicAddress)
         self._controller.errorOccurred.connect(self.__catch_error)
         self._controller.connected.connect(self.__discover_services)
         self._controller.rssiRead.connect(self.__rssi_read)
@@ -131,7 +131,7 @@ class BluetoothDeviceBase(QObject):
         logging.debug(f'Connecting to service {primary_service[0].toString()} on {self._sensor_address()}')
         self._service = self._controller.createServiceObject(primary_service[0])
         if not self._service:
-            msg = f"Couldn't establish connection to HR service on {self._sensor_address()}."
+            msg = f"Couldn't establish connection to service on {self._ble_device.name()} {self._sensor_address()}."
             logging.debug(msg)
             self.error.emit(msg)
             return
@@ -145,6 +145,7 @@ class BluetoothDeviceBase(QObject):
 
     def _subscribe_to_notifications(self, state: QLowEnergyService.ServiceState):
         self.status_update.emit('Subscribing...', self._ble_device.name())
+        print(f'subscribe_to_notifications {state}')
         if state != QLowEnergyService.ServiceState.RemoteServiceDiscovered:
             return
         if self._service is None:
@@ -215,11 +216,11 @@ class BluetoothDeviceBase(QObject):
 
     def __catch_error(self, error) -> None:
         if error == QLowEnergyController.Error.ConnectionError:
-            msg = f'Make sure the device is turned on and in range.'
+            msg = f'Make sure the device is turned on and in range, error: {error}'
         elif error == QLowEnergyController.Error.AuthorizationError:
-            msg = f'The device is not authorized to connect to the device.'
+            msg = f'The device is not authorized to connect to the device, error: {error}'
         else:
-            msg = f'An unknown error has occurred.'
+            msg = f'An unknown error has occurred: {error}'
         if self._controller is not None:
             msg = f'{self._controller.errorString()} {msg}'
         logging.debug(msg)
