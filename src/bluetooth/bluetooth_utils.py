@@ -36,7 +36,8 @@ class BluetoothUtils:
         return struct.pack(format_string, j)
 
     @staticmethod
-    def byte_array_to_hex_string(b) -> str:
+    def byte_array_to_hex_string(b:bytearray) -> str:
+        print(f'byte_array_to_hex_string {b}')
         if b is None:
             return ''
         return ''.join('{:02X}'.format(b) for b in b)

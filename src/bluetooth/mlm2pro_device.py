@@ -48,7 +48,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._encryption = MLM2PROEncryption()
         self._web_api = MLM2PROWebApi(self._settings.web_api['url'], MLM2PROSecret.decrypt(self._settings.web_api['secret']))
 
-    def _authenticate(self):
+    def _authenticate(self) -> None:
         self._subscribe_to_notifications()
         print('authenticating')
         logging.debug('Authenticating')
@@ -71,21 +71,21 @@ class MLM2PRODevice(BluetoothDeviceBase):
         b_arr[start_index:end_index] = key_bytes
         self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
 
-    def _data_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray):  # _ is unused but mandatory argument
+    def _data_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         """
         `data` GATT data
         """
-        print(f'Received data for characteristic {characteristic.uuid().toString()}from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
-        logging.debug(f'Received data for characteristic {characteristic.uuid().toString()}from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
+        print(f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
+        logging.debug(f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
         byte_array = data.data()
         if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             int_array = BluetoothUtils.bytearray_to_int_array(byte_array)
-            print(f'Write response {characteristic.uuid()}: {int_array}')
+            print(f'Write response {characteristic.uuid().toString()}: {int_array}')
             logging.debug(f'Write response {characteristic.uuid()}: {int_array}')
             self.__process_write_response(int_array)
         elif characteristic.uuid() == MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
-            print(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
-            logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid}')
+            print(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
+            logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             self._set_next_expected_heartbeat()
 
     def __process_write_response(self, data: list[int]) -> None:
@@ -110,7 +110,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
             else:
                 print('Connected to MLM2PRO, initial parameters not required')
                 
-    def _heartbeat(self):
+    def _heartbeat(self) -> None:
         print('Sending heartbeat')
         if self._is_connected():
             if self._heartbeat_overdue:
@@ -120,7 +120,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
                 self._set_next_expected_heartbeat()
             self._write_characteristic(MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID, bytearray([0x01]))
 
-    def __send_initial_params(self, data):
+    def __send_initial_params(self, data: bytearray) -> None:
         byte_array = data[2:]
         print(f'byte array: {byte_array}')
         byte_array2 = byte_array[:4]
@@ -131,10 +131,9 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._settings.save()
         self.__update_user_token(user_id)
         params = self.__get_initial_parameters(self._settings.web_api['token'])
-        print(f'Initial parameters: {params}')
         self.__write_config(params)
 
-    def __update_user_token(self, user_id: int):
+    def __update_user_token(self, user_id: int) -> None:
         print(f'updating user token: {user_id}')
         logging.debug(f'Updating user token: {user_id}')
         result = self._web_api.send_request(user_id)
@@ -153,7 +152,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
             logging.debug('Failed to update user token')
             self.error.emit('Failed to update user token from web API')
 
-    def __get_initial_parameters(self, token_input):
+    def __get_initial_parameters(self, token_input: int) -> bytearray:
         print("GetInitialParameters: UserToken: " + token_input)
         # Generate required byte arrays
         air_pressure_bytes = BluetoothUtils.get_air_pressure_bytes(0.0)
@@ -168,5 +167,5 @@ class MLM2PRODevice(BluetoothDeviceBase):
         print(f'Write config: {BluetoothUtils.byte_array_to_hex_string(data)}')
         logging.debug(f'Write config: {BluetoothUtils.byte_array_to_hex_string(data)}')
         self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID,
-                                   QByteArray(self._encryption.encrypt(data)))
+                                   self._encryption.encrypt(data))
 
