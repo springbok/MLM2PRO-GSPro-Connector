@@ -111,6 +111,31 @@ class MLM2PRODevice(BluetoothDeviceBase):
             self._set_next_expected_heartbeat()
         elif characteristic.uuid() == MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID:
             self.__process_events(byte_array)
+        elif characteristic.uuid() == MLM2PRODevice.MEASUREMENT_CHARACTERISTIC_UUID:
+            self.__process_measurement(byte_array)
+
+    def __process_measurement(self, data: bytearray) -> None:
+        try:
+            msg = f'>>>> Measurement: {BluetoothUtils.byte_array_to_hex_string(data)}'
+            print(msg)
+            logging.debug(msg)
+            decrypted = self._encryption.decrypt(bytes(data))
+            if decrypted is None:
+                print('Error decrypting data')
+                logging.debug('Error decrypting data')
+                self.error.emit('Error decrypting data')
+                return
+            msg = f'>>>> Measurement decrypted data: {BluetoothUtils.byte_array_to_hex_string(decrypted)}'
+            print(msg)
+            logging.debug(msg)
+            msg = f'>>>> Measurement decrypted data: {BluetoothUtils.bytearray_to_int_array(bytearray(decrypted))}'
+            print(msg)
+            logging.debug(msg)
+        except Exception as e:
+            msg = f'Error when decrypting measurement data: {format(e)}'
+            print(msg)
+            logging.debug(msg)
+            self.error.emit(msg)
 
     def __process_events(self, data: bytearray) -> None:
         try:
@@ -154,10 +179,10 @@ class MLM2PRODevice(BluetoothDeviceBase):
 
 
         except Exception as e:
-            print(f'Error processing events: {e}')
-            logging.debug(f'Error processing events: {e}')
-            self.error.emit(f'Error when decrypting events data {format(e)}')
-
+            msg = f'Error when decrypting events data {format(e)}'
+            print(msg)
+            logging.debug(msg)
+            self.error.emit(msg)
 
     def __process_write_response(self, data: bytearray) -> None:
         int_array = BluetoothUtils.bytearray_to_int_array(data)
