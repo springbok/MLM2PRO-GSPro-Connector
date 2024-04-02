@@ -19,9 +19,18 @@ class TokenExpiryStates:
     TOKEN_EXPIRED = 'red'
     TOKEN_EXPIRY_OK = 'green'
 
+@dataclass
+class LaunchMonitorEvents:
+    SHOT = 0
+    PROCESSING_SHOT = 1
+    READY = 2
+    BATTERY = 3
+    MISREAD_OR_DISARMED = 5
+
 
 class MLM2PRODevice(BluetoothDeviceBase):
     token_expiry = Signal(TokenExpiryStates, str)
+    launch_monitor_event = Signal(str)
 
     HEARTBEAT_INTERVAL = 2000
     MLM2PRO_HEARTBEAT_INTERVAL = 20000
@@ -81,6 +90,10 @@ class MLM2PRODevice(BluetoothDeviceBase):
         start_index = len(int_to_byte_array) + len(encryption_type_bytes)
         end_index = start_index + len(key_bytes)
         b_arr[start_index:end_index] = key_bytes
+        logging.debug(
+            f'----> Writing authentication data: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
+        print(
+            f'----> Writing authentication data: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
         self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
 
     def _data_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
@@ -96,6 +109,55 @@ class MLM2PRODevice(BluetoothDeviceBase):
             print(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             self._set_next_expected_heartbeat()
+        elif characteristic.uuid() == MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID:
+            self.__process_events(byte_array)
+
+    def __process_events(self, data: bytearray) -> None:
+        try:
+            print(f'Processing Event: {BluetoothUtils.byte_array_to_hex_string(data)}')
+            logging.debug(f'Processing Event: {BluetoothUtils.byte_array_to_hex_string(data)}')
+            decrypted = self._encryption.decrypt(bytes(data))
+            if decrypted is None:
+                print('Error decrypting data')
+                logging.debug('Error decrypting data')
+                self.error.emit('Error decrypting data')
+                return
+            print(f'Decrypted Event data: {BluetoothUtils.bytearray_to_int_array(bytearray(decrypted))}')
+            event_string = None
+            match decrypted[0]:
+                case LaunchMonitorEvents.SHOT:
+                    event_string = 'SHOT READ'
+                    print('Shot event')
+                case LaunchMonitorEvents.PROCESSING_SHOT:
+                    event_string = 'PROCESSING SHOT'
+                    print('Processing shot event')
+                case LaunchMonitorEvents.READY:
+                    event_string = 'READY'
+                    print('Ready event')
+                case LaunchMonitorEvents.BATTERY:
+                    print('Battery event')
+                    logging.debug(f'Battery event: {decrypted[1]}')
+                    self.update_battery.emit(int(decrypted[1]))
+                case LaunchMonitorEvents.MISREAD_OR_DISARMED:
+                    if decrypted[1] == 0:
+                        print('Misread event')
+                        #event_string = 'MISREAD'
+                        return
+                    elif decrypted[1] == 1:
+                        print('Disarmed event')
+                        event_string = 'DISARMED'
+                case _:
+                    print('Unknown event')
+            if event_string is not None:
+                self.launch_monitor_event.emit(event_string)
+                logging.debug(f'Launch monitor event: {event_string}')
+
+
+        except Exception as e:
+            print(f'Error processing events: {e}')
+            logging.debug(f'Error processing events: {e}')
+            self.error.emit(f'Error when decrypting events data {format(e)}')
+
 
     def __process_write_response(self, data: bytearray) -> None:
         int_array = BluetoothUtils.bytearray_to_int_array(data)
@@ -187,9 +249,13 @@ class MLM2PRODevice(BluetoothDeviceBase):
 
     def __write_config(self, data: bytearray) -> None:
         print(f'Write config: {BluetoothUtils.byte_array_to_hex_string(data)}')
-        logging.debug(f'Write config: {BluetoothUtils.byte_array_to_hex_string(data)}')
-        self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID,
-                                   bytearray(self._encryption.encrypt(data)))
+        logging.debug(f'Config data: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        config_data = bytearray(self._encryption.encrypt(data))
+        logging.debug(
+            f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
+        print(
+            f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
+        self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID, config_data)
 
     def __disarm(self) -> None:
         byte_array = bytearray.fromhex("010D0000000000")
@@ -206,8 +272,12 @@ class MLM2PRODevice(BluetoothDeviceBase):
     def __write_command(self, data: bytearray) -> None:
         print(f'Write command: {BluetoothUtils.byte_array_to_hex_string(data)}')
         logging.debug(f'Write command: {BluetoothUtils.byte_array_to_hex_string(data)}')
-        self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID,
-                                   bytearray(self._encryption.encrypt(data)))
+        command_data = bytearray(self._encryption.encrypt(data))
+        logging.debug(
+            f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(command_data)}')
+        print(
+            f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(command_data)}')
+        self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID, command_data)
 
     def __token_expiry_date_state(self, token_expiry: float) -> str:
         # Assuming token expiry is the Unix timestamp

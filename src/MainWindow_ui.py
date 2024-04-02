@@ -292,6 +292,17 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.server_connection_label)
 
+        self.launch_monitor_event_label = QLabel(self.server_control_widget)
+        self.launch_monitor_event_label.setObjectName(u"launch_monitor_event_label")
+        sizePolicy3.setHeightForWidth(self.launch_monitor_event_label.sizePolicy().hasHeightForWidth())
+        self.launch_monitor_event_label.setSizePolicy(sizePolicy3)
+        self.launch_monitor_event_label.setMinimumSize(QSize(0, 0))
+        self.launch_monitor_event_label.setFont(font)
+        self.launch_monitor_event_label.setAlignment(Qt.AlignCenter)
+        self.launch_monitor_event_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.launch_monitor_event_label)
+
         self.launch_monitor_rssi_label = QLabel(self.server_control_widget)
         self.launch_monitor_rssi_label.setObjectName(u"launch_monitor_rssi_label")
         sizePolicy3.setHeightForWidth(self.launch_monitor_rssi_label.sizePolicy().hasHeightForWidth())
@@ -324,10 +335,6 @@ class Ui_MainWindow(object):
         self.launch_monitor_battery_label.setMargin(5)
 
         self.verticalLayout_12.addWidget(self.launch_monitor_battery_label)
-
-        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_12.addItem(self.verticalSpacer_7)
 
 
         self.horizontalLayout_12.addWidget(self.server_control_widget)
@@ -658,6 +665,7 @@ class Ui_MainWindow(object):
         self.start_server_button.setText(QCoreApplication.translate("MainWindow", u"Start", None))
         self.server_status_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.server_connection_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.launch_monitor_event_label.setText("")
         self.launch_monitor_rssi_label.setText("")
         self.token_expiry_label.setText("")
         self.launch_monitor_battery_label.setText("")

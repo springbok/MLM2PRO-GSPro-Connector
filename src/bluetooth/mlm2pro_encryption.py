@@ -23,7 +23,7 @@ class MLM2PROEncryption:
         ct_bytes = cipher.encrypt(pad(input, AES.block_size))
         return ct_bytes
 
-    def decrypt(self, input) -> bytes or None:
+    def decrypt(self, input: bytes) -> bytes or None:
         if input is None:
             logging.error("Decrypt received null input")
             return None

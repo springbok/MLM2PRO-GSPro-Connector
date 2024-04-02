@@ -74,19 +74,29 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
         self.main_window.token_expiry_label.setText('')
         self.main_window.token_expiry_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
+        self.main_window.launch_monitor_event_label.setText('')
+        self.main_window.launch_monitor_event_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
+        self.main_window.launch_monitor_battery_label.setText('')
+        self.main_window.launch_monitor_battery_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
 
     def _setup_device_signals(self) -> None:
         self.device.status_update.connect(self.__device_status_update)
         self.device.error.connect(self.__device_error)
         self.device.connected.connect(self.__device_connected)
+        self.device.update_battery.connect(self.__update_battery)
 
-        #self.device.error.connect(self.__send_shot_error)
-        #self.device.client_disconnected.connect(self.__disconnected)
+    def __update_battery(self, battery: int) -> None:
+        self.main_window.launch_monitor_battery_label.setText(f"Battery: {battery}")
+        if battery > 50:
+            color = 'green'
+        elif battery > 20:
+            color = 'orange'
+        else:
+            color = 'red'
+        self.main_window.launch_monitor_battery_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def __device_connected(self, status) -> None:
-        print('xxxxx connected signal')
         self.__update_ui(status, 'green', None, 'green', 'Stop', True)
-
 
     def __device_status_update(self, status_message, device_name) -> None:
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)

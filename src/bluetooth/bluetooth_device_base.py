@@ -28,6 +28,7 @@ class BluetoothDeviceBase(QObject):
     status_update = Signal(str, str)
     rssi_read = Signal(int)
     do_authenticate = Signal()
+    update_battery = Signal(int)
 
     def __init__(self, device: QBluetoothDeviceInfo, 
                  service_uuid: QBluetoothUuid, 
@@ -244,8 +245,6 @@ class BluetoothDeviceBase(QObject):
         characteristic = self._service.characteristic(characteristic_uuid)
         if characteristic.isValid() and QLowEnergyCharacteristic.PropertyType.Write & characteristic.properties():
             # Write the characteristic
-            logging.debug(f'----> Writing data: {BluetoothUtils.byte_array_to_hex_string(data)} to characteristic: {characteristic_uuid.toString()} {characteristic.properties()}')
-            print(f'Writing data: {BluetoothUtils.byte_array_to_hex_string(data)} to characteristic: {characteristic_uuid.toString()} {characteristic.properties()}')
             self._service.writeCharacteristic(characteristic, QByteArray(data))
         else:
             self.error.emit(f'Characteristic: {characteristic_uuid.toString()} not found or not writable')
