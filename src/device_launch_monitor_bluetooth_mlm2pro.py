@@ -26,8 +26,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
 
     @property
     def start_message(self) -> str:
-        return 'Before starting Bluetooth connection ensure your launch monitor is \
-        turned on and a STEADY RED light is showing.'
+        return 'Before starting Bluetooth connection ensure your launch monitor is turned on and a STEADY RED light is showing.'
 
     def _setup_device_signals(self) -> None:
         super()._setup_device_signals()
