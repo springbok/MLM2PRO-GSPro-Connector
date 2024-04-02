@@ -120,9 +120,17 @@ class MLM2PRODevice(BluetoothDeviceBase):
                     QTimer().singleShot(0, lambda: self.__send_initial_params(data))
                     # Start heartbeat
                     self._heartbeat_timer.start()
+                elif data[0] == MLM2PRODevice.MLM2PRO_AUTH_SUCCESS:
+                    logging.debug(f'Authentication successful {data[0]}')
+                    print(f'Authentication successful {data[0]}')
+                    self.connected.emit('Connected')
+                else:
+                    logging.debug(f'Invalid Write response: {int_array}')
+                    print(f'Invalid Write response: {int_array}')
             else:
-                print('Connected to MLM2PRO, initial parameters not required')
-                
+                logging.debug('Connected to MLM2PRO, initial parameters not required')
+                self.connected.emit('Connected')
+
     def _heartbeat(self) -> None:
         print('Sending heartbeat')
         if self._is_connected():

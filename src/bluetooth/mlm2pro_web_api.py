@@ -17,7 +17,7 @@ class MLM2PROWebApi:
         logging.debug(f"UserId: {user_id}, Secret Key: {self.secret_key}, Secret Value: {self.secret_value}")
         request_url = self.base_url + str(user_id)
         try:
-            response = requests.get(request_url, headers=headers)
+            response = requests.get(request_url, headers=headers, timeout=10)
             response.raise_for_status()
             print("Web API request successful.")
             logging.debug("Web API request successful.")

@@ -72,13 +72,21 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__update_ui('Not Connected', 'red', 'No Device', 'red', 'Start', True)
         self.main_window.launch_monitor_rssi_label.setText('')
         self.main_window.launch_monitor_rssi_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
+        self.main_window.token_expiry_label.setText('')
+        self.main_window.token_expiry_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
 
     def _setup_device_signals(self) -> None:
         self.device.status_update.connect(self.__device_status_update)
         self.device.error.connect(self.__device_error)
+        self.device.connected.connect(self.__device_connected)
 
         #self.device.error.connect(self.__send_shot_error)
         #self.device.client_disconnected.connect(self.__disconnected)
+
+    def __device_connected(self, status) -> None:
+        print('xxxxx connected signal')
+        self.__update_ui(status, 'green', None, 'green', 'Stop', True)
+
 
     def __device_status_update(self, status_message, device_name) -> None:
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)
@@ -103,13 +111,13 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __update_ui(self, message, color, status, status_color, button, enabled=True) -> None:
         if status is not None:
             self.main_window.server_connection_label.setText(status)
-            self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : {status_color}; color : white; }}")
+        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : {status_color}; color : white; }}")
         if button is not None:
             self.main_window.start_server_button.setText(button)
         self.main_window.start_server_button.setEnabled(enabled)
         if message is not None:
             self.main_window.server_status_label.setText(message)
-            self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
+        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
     def __shot_sent(self, shot_data) -> None:
         data = json.loads(shot_data.decode("utf-8"))
@@ -129,31 +137,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def start_message(self) -> str:
         return ' '
 
-    def setup_worker_signal(self) -> None:
-        if self.device_worker is not None:
-            if self.device_worker.client is not None:
-                self.device_worker.client.status_update.connect(self.__client_status_update)
-                self.device_worker.client.error.connect(self.__send_shot_error)
-                self.device_worker.client.client_disconnected.connect(self.__disconnected)
-
     def __disconnected(self, device):
         print('__disconnected')
         self.__not_connected_status()
 
     def __client_status_update(self, status) -> None:
         self.__update_ui(status, 'orange', None, 'red', 'Stop', False)
-
-    def device_worker_error(self, error):
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, f'Error: {format(error)}')
-        QMessageBox.warning(self.main_window, "LM Error", f'{format(error)}')
-        self.stop()
-
-    def __listening(self):
-        self.main_window.start_server_button.setText('Stop')
-        self.main_window.server_status_label.setText('Running')
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        self.main_window.server_connection_label.setText(f'Listening {self.main_window.settings.BLUETOOTH_ip_address}:{self.main_window.settings.BLUETOOTH_port}')
-        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : orange; color : white; }}")
 
     def __connected(self):
         self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.BLUETOOTH_ip_address}:{self.main_window.settings.BLUETOOTH_port}')
