@@ -169,3 +169,20 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID,
                                    self._encryption.encrypt(data))
 
+    def __disarm(self) -> None:
+        byte_array = bytearray.fromhex("010D0000000000")
+        self.__write_command(byte_array)
+        print(f'Disarm command sent')
+        logging.debug(f'Disarm command sent')
+
+    def __arm(self) -> None:
+        byte_array = bytearray.fromhex("010D0001000000")
+        self.__write_command(byte_array)
+        print(f'Arm command sent')
+        logging.debug(f'Arm command sent')
+
+    def __write_command(self, data: bytearray) -> None:
+        print(f'Write command: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        logging.debug(f'Write command: {BluetoothUtils.byte_array_to_hex_string(data)}')
+        self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID,
+                                   bytearray(self._encryption.encrypt(data)))
