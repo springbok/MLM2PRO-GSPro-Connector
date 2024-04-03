@@ -7,6 +7,7 @@ from src.settings_base import SettingsBase
 class LaunchMonitor:
     MLM2PRO = "Rapsodo MLM2PRO"
     MLM2PRO_BT = 'Rapsodo MLM2PRO BT'
+    TRACKMAN = "Trackman"
     MEVOPLUS = "MEVO+"
     R10 = "R10"
     FSKIT = "Fullswing Kit"
