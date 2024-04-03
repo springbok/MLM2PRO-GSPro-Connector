@@ -70,7 +70,6 @@ class MLM2PRODevice(BluetoothDeviceBase):
                                       MLM2PROSecret.decrypt(self._settings.web_api['secret']))
 
     def _authenticate(self) -> None:
-        self._subscribe_to_notifications()
         print('authenticating')
         logging.debug('Authenticating')
         if self._is_connected() is False:

@@ -174,7 +174,8 @@ class BluetoothDeviceBase(QObject):
         if self._service is None:
             return
         self._subscribe_to_notifications()
-        self.do_authenticate.emit()
+        print('emit do_authenticate')
+        QTimer().singleShot(2000, lambda: self.do_authenticate.emit())
 
     def _subscribe_to_notifications(self):
         for uuid in self._notification_uuids:
@@ -200,7 +201,6 @@ class BluetoothDeviceBase(QObject):
             # Subscribe to notifications for the characteristic
             self._service.writeDescriptor(descriptor, self.ENABLE_NOTIFICATION)
             print(f'Subscribed to notifications for {uuid.toString()} on {self._sensor_address()}')
-        print('emit do_authenticate')
 
     def _authenticate(self):
         pass
