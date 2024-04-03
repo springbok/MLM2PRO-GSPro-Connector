@@ -206,7 +206,6 @@ class BluetoothDeviceBase(QObject):
         pass
 
     def _is_connected(self) -> bool:
-        print(f'is_connected {self._controller.state()} {self._controller and self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState}')
         return self._controller and self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState
 
     def __reset_connection(self) -> None:

@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import re
+import struct
 from dataclasses import dataclass
 
 from src.settings import LaunchMonitor
@@ -352,15 +353,17 @@ class BallData:
         self.side_spin = round(
             self.total_spin * math.sin(math.radians(self.spin_axis)))
 
-    def from_mlm2pro_bt(self, bytes: bytearray):
+    def from_mlm2pro_bt(self, data: bytearray) -> None:
         multiplier = 2.2375
-        self.club_speed = round(int.from_bytes(bytes[0:2], byteorder='big') / 10.0 * multiplier, 2)
-        self.speed = round(int.from_bytes(bytes[2:4], byteorder='big') / 10.0 * multiplier, 2)
-        self.hla = int.from_bytes(bytes[4:6], byteorder='big') / 10.0
-        self.vla = int.from_bytes(bytes[6:8], byteorder='big') / 10.0
-        self.spin_axis = int.from_bytes(bytes[8:10], byteorder='big') / 10.0
-        self.total_spin = int.from_bytes(bytes[10:12], byteorder='big')
-        #self.Unknown1 = int.from_bytes(bytes[12:14], byteorder='big')
-        #self.Unknown2 = int.from_bytes(bytes[14:16], byteorder='big')
-
+        self.club_speed = round(int.from_bytes(data[:2], byteorder='little') / 10.0 * multiplier, 2)
+        self.speed = round(int.from_bytes(data[2:4], byteorder='little') / 10.0 * multiplier, 2)
+        # int.from_bytes generate unsigned int so use struct for signed int
+        self.hla = struct.unpack('<h', data[4:6])[0] / 10.0
+        self.vla = struct.unpack('<h', data[6:8])[0] / 10.0
+        self.spin_axis = struct.unpack('<h', data[8:10])[0] / 10.0
+        self.total_spin = int.from_bytes(data[10:12], byteorder='little')
+        #Unknown1 = int.from_bytes(bytes[12:14], byteorder='little') # carry distance?
+        #Unknown2 = int.from_bytes(bytes[14:16], byteorder='little') # // total distance? both seem lower than AG, but not crazy off...
         self.__calc_spin()
+        self.good_shot = True
+        self.new_shot = True

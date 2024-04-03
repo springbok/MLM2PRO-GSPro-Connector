@@ -133,8 +133,11 @@ class MLM2PRODevice(BluetoothDeviceBase):
             print(msg)
             logging.debug(msg)
             shot_data = BallData()
-            msg = f'>>>> Calculated shot data: {shot_data.to_json()}'
             shot_data.from_mlm2pro_bt(bytearray(decrypted))
+            self.shot.emit(shot_data)
+            msg = f'>>>> Calculated shot data: {shot_data.to_json()}'
+            print(msg)
+            logging.debug(msg)
         except Exception as e:
             msg = f'Error when decrypting measurement data: {format(e)}'
             print(msg)
@@ -151,7 +154,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
                 logging.debug('Error decrypting data')
                 self.error.emit('Error decrypting data')
                 return
-            print(f'Decrypted Event data: {BluetoothUtils.bytearray_to_int_array(bytearray(decrypted))}')
+            print(f'Decrypted Event {decrypted[0]}: {BluetoothUtils.bytearray_to_int_array(bytearray(decrypted))}')
             event_string = None
             match decrypted[0]:
                 case LaunchMonitorEvents.SHOT:
@@ -221,7 +224,6 @@ class MLM2PRODevice(BluetoothDeviceBase):
                 self.launch_monitor_connected.emit()
 
     def _heartbeat(self) -> None:
-        print('Sending heartbeat')
         if self._is_connected():
             if self._heartbeat_overdue:
                 # heartbeat not received within 20 seconds, reset subscriptions
