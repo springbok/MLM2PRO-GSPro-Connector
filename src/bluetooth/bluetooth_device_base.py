@@ -177,6 +177,9 @@ class BluetoothDeviceBase(QObject):
             return
         if self._service is None:
             return
+        QTimer().singleShot(2000, lambda: self.__init_device())
+
+    def __init_device(self):
         self._subscribe_to_notifications()
         print('emit do_authenticate')
         QTimer().singleShot(2000, lambda: self.do_authenticate.emit())

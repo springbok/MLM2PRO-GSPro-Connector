@@ -76,6 +76,8 @@ class BallData:
                         BallMetrics.CLUB_SPEED]
     must_not_be_zero_putt = [BallMetrics.SPEED]
 
+    MLM2_MISREAD_SHOT = '0000000000000000000000000000000000000000'
+
     def __init__(self, *initial_data, **kwargs):
         self.putt_type = None
         self.good_shot = False
@@ -354,16 +356,17 @@ class BallData:
             self.total_spin * math.sin(math.radians(self.spin_axis)))
 
     def from_mlm2pro_bt(self, data: bytearray) -> None:
-        multiplier = 2.2375
-        self.club_speed = round(int.from_bytes(data[:2], byteorder='little') / 10.0 * multiplier, 2)
-        self.speed = round(int.from_bytes(data[2:4], byteorder='little') / 10.0 * multiplier, 2)
-        # int.from_bytes generate unsigned int so use struct for signed int
-        self.hla = struct.unpack('<h', data[4:6])[0] / 10.0
-        self.vla = struct.unpack('<h', data[6:8])[0] / 10.0
-        self.spin_axis = struct.unpack('<h', data[8:10])[0] / 10.0
-        self.total_spin = int.from_bytes(data[10:12], byteorder='little')
-        #Unknown1 = int.from_bytes(bytes[12:14], byteorder='little') # carry distance?
-        #Unknown2 = int.from_bytes(bytes[14:16], byteorder='little') # // total distance? both seem lower than AG, but not crazy off...
-        self.__calc_spin()
-        self.good_shot = True
         self.new_shot = True
+        if data != bytearray.fromhex(BallData.MLM2_MISREAD_SHOT):
+            multiplier = 2.2375
+            self.club_speed = round(int.from_bytes(data[:2], byteorder='little') / 10.0 * multiplier, 2)
+            self.speed = round(int.from_bytes(data[2:4], byteorder='little') / 10.0 * multiplier, 2)
+            # int.from_bytes generate unsigned int so use struct for signed int
+            self.hla = struct.unpack('<h', data[4:6])[0] / 10.0
+            self.vla = struct.unpack('<h', data[6:8])[0] / 10.0
+            self.spin_axis = struct.unpack('<h', data[8:10])[0] / 10.0
+            self.total_spin = int.from_bytes(data[10:12], byteorder='little')
+            #Unknown1 = int.from_bytes(bytes[12:14], byteorder='little') # carry distance?
+            #Unknown2 = int.from_bytes(bytes[14:16], byteorder='little') # // total distance? both seem lower than AG, but not crazy off...
+            self.__calc_spin()
+            self.good_shot = True
