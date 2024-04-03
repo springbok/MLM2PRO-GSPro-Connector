@@ -203,6 +203,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
                     print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
                     if data[1] != MLM2PRODevice.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
                         print(f'Auth failed: {data[1]}')
+                        logging.debug(print(f'Authentication failed: {data[1]}'))
                         token_expiry = self.__token_expiry_date_state(self._settings.web_api['token_expiry'])
                         if data[1] == MLM2PRODevice.MLM2PRO_RAPSODO_AUTH_FAILED:
                             self.error.emit(f'Your 3rd party authorisation expired on {token_expiry}, please re-authorise in the Rapsodo app and try again once that has been done.')
