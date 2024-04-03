@@ -21,26 +21,19 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def setup_device_thread(self) -> None:
         super().setup_device_thread()
-        #self.device_worker.listening.connect(self.__listening)
-        #self.device_worker.connected.connect(self.__connected)
-        #self.device_worker.finished.connect(self.__not_connected_status)
-        #self.device_worker.shot_error.connect(self.__send_shot_error)
-        #self.device_worker.disconnected.connect(self.__listening)
-        #self.device_worker.BLUETOOTH_shot.connect(self.__shot_sent)
 
     def __setup_signals(self) -> None:
         self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
+        self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         # Scanner signals
         self.scanner.status_update.connect(self.__status_update)
         self.scanner.device_found.connect(self.device_found)
         self.scanner.device_not_found.connect(self.__device_not_found)
         self.scanner.error.connect(self.__scanner_error)
 
-
-        #self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
-        #self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
-        #self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
-        #self.main_window.gspro_connection.gspro_message.connect(self.__gspro_message)
+    def __club_selected(self, club_data):
+        self.device.club_selected(club_data['Player']['Club'])
+        logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
 
     def __server_start_stop(self) -> None:
         if self.device is None:
@@ -84,11 +77,13 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.device.error.connect(self.__device_error)
         self.device.connected.connect(self.__device_connected)
         self.device.update_battery.connect(self.__update_battery)
-        self.device.shot.connect(self.__shot_sent)
+        #self.device.shot.connect(self.__shot_sent)
+        self.device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def __shot_sent(self, ball_data: BallData) -> None:
         print(f"Shot sent: {json.dumps(ball_data.to_json())}")
-        #self.main_window.shot_sent(ball_data)
+        if self.main_window.gspro_connection.connected:
+            self.main_window.shot_sent(ball_data)
 
     def __update_battery(self, battery: int) -> None:
         self.main_window.launch_monitor_battery_label.setText(f"Battery: {battery}")
@@ -151,25 +146,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __connected(self):
         self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.BLUETOOTH_ip_address}:{self.main_window.settings.BLUETOOTH_port}')
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-
-    def device_worker_resumed(self):
-        self.main_window.start_server_button.setText('Stop')
-        msg = 'Running'
-        color = 'green'
-        if not self.main_window.gspro_connection.connected:
-            msg = 'Waiting GSPro'
-            color = 'red'
-        self.main_window.server_status_label.setText(msg)
-        self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-
-    def __club_selected(self, club_data):
-        self.device_worker.club_selected(club_data['Player']['Club'])
-        logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
-
-    def __send_shot_error(self, error):
-        msg = f"Error while trying to send shot to GSPro.\nMake sure GSPro API Connect is running.\nStart/restart API Connect from GSPro.\nPress 'Connect' to reconnect to GSPro."
-        self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, f'{msg}\nException: {format(error)}')
-        QMessageBox.warning(self.main_window, "Relay Send to GSPro Error", msg)
 
     def __disconnect_device(self):
         if self.device is not None:

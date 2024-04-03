@@ -53,6 +53,7 @@ class BluetoothDeviceBase(QObject):
         self._app_paths = AppDataPaths('mlm2pro-gspro-connect')
         self._settings = Settings(self._app_paths)
         self._armed = False
+        self._current_club = ''
 
         #self.hr_notification: Union[None, QLowEnergyDescriptor] = None
         #self._service: QBluetoothUuid.ServiceClassUuid = (
@@ -102,6 +103,9 @@ class BluetoothDeviceBase(QObject):
 
     def _disarm_device(self):
         pass
+
+    def club_selected(self, club: str):
+        self._current_club = club
 
     def __rssi_read(self, rssi: int):
         self.rssi_read.emit(rssi)
@@ -271,7 +275,7 @@ class BluetoothDeviceBase(QObject):
     def _set_next_expected_heartbeat(self):
         now = datetime.datetime.utcnow()
         self._next_heartbeat = now + datetime.timedelta(seconds=self._device_heartbeat_interval)
-        logging.debug(f'Next heartbeat expected at {self._next_heartbeat} now: {now}')
+        #logging.debug(f'Next heartbeat expected at {self._next_heartbeat} now: {now}')
 
     @property
     def _heartbeat_overdue(self):

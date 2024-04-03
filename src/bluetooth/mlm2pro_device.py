@@ -133,6 +133,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
             print(msg)
             logging.debug(msg)
             shot_data = BallData()
+            shot_data.club = self._current_club
             shot_data.from_mlm2pro_bt(bytearray(decrypted))
             self.shot.emit(shot_data)
             msg = f'>>>> Calculated shot data: {shot_data.to_json()}'
