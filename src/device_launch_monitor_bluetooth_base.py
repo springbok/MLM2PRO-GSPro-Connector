@@ -23,7 +23,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         super().setup_device_thread()
 
     def __setup_signals(self) -> None:
-        self.main_window.start_server_button.clicked.connect(self.__server_start_stop)
+        self.main_window.start_server_button.clicked.connect(self.server_start_stop)
         self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         # Scanner signals
         self.scanner.status_update.connect(self.__status_update)
@@ -35,9 +35,9 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.device.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
 
-    def __server_start_stop(self) -> None:
+    def server_start_stop(self) -> None:
         if self.device is None:
-            QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message)
+            #QMessageBox.warning(self.main_window, "Prepare Launch Monitor", self.start_message)
             self.scanner.scan()
         else:
             self.__disconnect_device()

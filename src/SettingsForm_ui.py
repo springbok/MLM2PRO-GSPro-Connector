@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'SettingsForm.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,7 @@ class Ui_SettingsForm(object):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(393, 446)
+        SettingsForm.resize(349, 415)
         self.verticalLayout_5 = QVBoxLayout(SettingsForm)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.verticalLayout_2 = QVBoxLayout()
@@ -36,7 +36,7 @@ class Ui_SettingsForm(object):
         self.verticalLayout_3.setSizeConstraint(QLayout.SetMinimumSize)
         self.ipaddress_edit = QPlainTextEdit(SettingsForm)
         self.ipaddress_edit.setObjectName(u"ipaddress_edit")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ipaddress_edit.sizePolicy().hasHeightForWidth())
@@ -153,15 +153,6 @@ class Ui_SettingsForm(object):
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.relay_server_window_name = QPlainTextEdit(self.groupBox)
-        self.relay_server_window_name.setObjectName(u"relay_server_window_name")
-        sizePolicy.setHeightForWidth(self.relay_server_window_name.sizePolicy().hasHeightForWidth())
-        self.relay_server_window_name.setSizePolicy(sizePolicy)
-        self.relay_server_window_name.setMaximumSize(QSize(16777215, 31))
-        self.relay_server_window_name.setLineWrapMode(QPlainTextEdit.WidgetWidth)
-
-        self.horizontalLayout_3.addWidget(self.relay_server_window_name)
-
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
 
@@ -229,10 +220,6 @@ class Ui_SettingsForm(object):
         self.relay_server_port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Window Title", None))
 #endif // QT_CONFIG(tooltip)
         self.relay_server_port_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Relay Server Port", None))
-#if QT_CONFIG(tooltip)
-        self.relay_server_window_name.setToolTip(QCoreApplication.translate("SettingsForm", u"Application Path(Opyional)", None))
-#endif // QT_CONFIG(tooltip)
-        self.relay_server_window_name.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Relay Server Window Name", None))
 #if QT_CONFIG(tooltip)
         self.save_button.setToolTip(QCoreApplication.translate("SettingsForm", u"New Device", None))
 #endif // QT_CONFIG(tooltip)

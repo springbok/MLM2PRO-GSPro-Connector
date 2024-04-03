@@ -11,7 +11,7 @@ from src.worker_device_launch_monitor_relay_server import WorkerDeviceLaunchMoni
 from threading import Event
 
 
-class DeviceLaunchMonitorRelayServerBase(DeviceBase):
+class DeviceLaunchMonitorRelayServer(DeviceBase):
 
     def __init__(self, main_window):
         DeviceBase.__init__(self, main_window)
@@ -58,35 +58,11 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
             self.setup_device_thread()
             self.device_worker.start()
             self.device_worker.club_selected(self.main_window.gspro_connection.current_club)
-            self.__start_app()
+            #self.__start_app()
         else:
             self.device_worker.stop()
             self.shutdown()
             self.device_worker_paused()
-
-    def __start_app(self):
-        if not self.__find_connector_app():
-            try:
-                path = f"{os.getcwd()}{self.launch_monitor_app}"
-                print(f'path: {path}')
-                logging.debug(f'Starting connector app: {path}')
-                DETACHED_PROCESS = 0x00000008
-                subprocess.Popen([path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(path), shell=self.shell_app)
-                for i in range(10):
-                    Event().wait(250/1000)
-                    if self.__find_connector_app():
-                        ScreenMirrorWindow.minimize_window(self.main_window.settings.relay_server_window_name)
-                        break
-            except Exception as e:
-                logging.debug(f'Could not start LM connector app: {self.launch_monitor_app} error: {format(e)}')
-
-    def __find_connector_app(self):
-        try:
-            ScreenMirrorWindow.find_window(self.main_window.settings.relay_server_window_name)
-            running = True
-        except Exception:
-            running = False
-        return running
 
     def device_worker_error(self, error):
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.RELAY_SERVER, f'Error: {format(error)}')

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>393</width>
-    <height>446</height>
+    <width>349</width>
+    <height>415</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -259,33 +259,7 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QPlainTextEdit" name="relay_server_window_name">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>31</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Application Path(Opyional)</string>
-              </property>
-              <property name="lineWrapMode">
-               <enum>QPlainTextEdit::WidgetWidth</enum>
-              </property>
-              <property name="placeholderText">
-               <string>Relay Server Window Name</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <layout class="QHBoxLayout" name="horizontalLayout_3"/>
           </item>
          </layout>
         </widget>
