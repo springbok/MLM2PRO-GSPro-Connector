@@ -287,6 +287,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for edit in edits:
                     if isinstance(edit, QTextEdit):
                         self.edit_fields[edit.objectName().replace('_edit', '')] = edit
+                        edit.setReadOnly(True)
 
     def __shot_history_changed(self):
         i=1
