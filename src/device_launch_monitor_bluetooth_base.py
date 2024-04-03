@@ -20,7 +20,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__not_connected_status()
 
     def setup_device_thread(self) -> None:
-        super().setup_device_thread()
+        pass
 
     def __setup_signals(self) -> None:
         self.main_window.start_server_button.clicked.connect(self.server_start_stop)
