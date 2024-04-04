@@ -142,7 +142,7 @@ class BluetoothDeviceBase(QObject):
         if self._controller is not None:
             logging.debug(f'Discovering services for {self._ble_device.name()}')
             self.status_update.emit('Discovering services...', self._ble_device.name())
-            self._controller.discoverServices()
+            QTimer().singleShot(250, lambda: self._controller.discoverServices())
 
     def __connect_to_service(self):
         self.status_update.emit('Connecting to service...', self._ble_device.name())
@@ -168,7 +168,7 @@ class BluetoothDeviceBase(QObject):
         self.do_authenticate.connect(self._authenticate)
         print(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         logging.debug(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
-        self._service.discoverDetails()
+        QTimer().singleShot(250, lambda: self._service.discoverDetails())
 
     def __service_state_changed(self, state: QLowEnergyService.ServiceState):
         self.status_update.emit('Subscribing...', self._ble_device.name())
@@ -177,12 +177,12 @@ class BluetoothDeviceBase(QObject):
             return
         if self._service is None:
             return
-        QTimer().singleShot(2000, lambda: self.__init_device())
+        QTimer().singleShot(1000, lambda: self.__init_device())
 
     def __init_device(self):
         self._subscribe_to_notifications()
         print('emit do_authenticate')
-        QTimer().singleShot(2000, lambda: self.do_authenticate.emit())
+        QTimer().singleShot(1000, lambda: self.do_authenticate.emit())
 
     def _subscribe_to_notifications(self):
         for uuid in self._notification_uuids:
