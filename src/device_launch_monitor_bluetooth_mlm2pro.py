@@ -34,7 +34,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         self.device.launch_monitor_event.connect(self.__launch_monitor_event)
 
     def __launch_monitor_event(self, event: str) -> None:
-        self.main_window.launch_monitor_event_label.setText(f"LM Event: {event}")
+        self.main_window.launch_monitor_event_label.setText(f"LM: {event}")
         self.main_window.launch_monitor_event_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
     def __token_expiry_status(self, status: TokenExpiryStates, token_expiry_date: str) -> None:
