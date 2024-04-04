@@ -27,6 +27,7 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
             self._pause.wait()
             # Make sure putter selected
             if self.selected_club() != 'PT':
+                logging.debug('Club other than putter selected pausing putt processing')
                 self.pause()
                 continue
             if not self._shutdown.is_set():

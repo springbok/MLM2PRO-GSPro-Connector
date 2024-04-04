@@ -7,10 +7,10 @@ from src.settings_base import SettingsBase
 class LaunchMonitor:
     MLM2PRO = "Rapsodo MLM2PRO"
     MLM2PRO_BT = 'Rapsodo MLM2PRO BT'
-    TRACKMAN = "Trackman"
-    MEVOPLUS = "MEVO+"
-    R10 = "R10"
     FSKIT = "Fullswing Kit"
+    MEVOPLUS = "MEVO+"
+    TRACKMAN = "Trackman"
+    RELAY_SERVER = "Relay Server"
 
 
 class Settings(SettingsBase):
@@ -38,7 +38,7 @@ class Settings(SettingsBase):
                 "zoom_images": "No",
                 "relay_server_ip_address": "127.0.0.1",
                 "relay_server_port": 9234,
-                "relay_server_window_name": ""
+                'auto_start_all_apps': 'No'
             }
         )
         # Removed this from the settings file, specifies the
@@ -72,8 +72,11 @@ class Settings(SettingsBase):
         if not hasattr(self, 'relay_server_port'):
             self.relay_server_port = 9234
             save = True
-        if not hasattr(self, 'relay_server_window_name'):
-            self.relay_server_window_name = ""
+        if not hasattr(self, 'auto_start_all_apps'):
+            value = 'No'
+            if hasattr(self, 'default_device') and self.default_device != 'None':
+                value = 'Yes'
+            self.auto_start_all_apps = value
             save = True
         if not hasattr(self, 'web_api'):
             self.web_api = {

@@ -1,5 +1,3 @@
-from PySide6.QtCore import QCoreApplication
-
 from src.device_putting_exputt import DevicePuttingExPutt
 from src.device_putting_webcam import DevicePuttingWebcam
 from src.putting_settings import PuttingSystems
@@ -39,7 +37,6 @@ class Putting:
         self.main_window.putting_server_button.setText('Stop')
         self.main_window.putting_server_status_label.setText('Running')
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
-        QCoreApplication.processEvents()
 
     def __putting_settings(self):
         self.previous_putting_system = PuttingSystems.NONE

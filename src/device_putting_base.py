@@ -19,16 +19,13 @@ class DevicePuttingBase(DeviceBase):
     def start_app(self):
         return
 
-    def setup_device_thread(self):
-        super().setup_device_thread()
-        self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
-
     def setup_signals(self):
         self.main_window.gspro_connection.club_selected.connect(self.club_selected)
         self.main_window.putting_settings_form.cancel.connect(self.resume)
         self.main_window.actionPuttingSettings.triggered.connect(self.pause)
         self.main_window.gspro_connection.disconnected_from_gspro.connect(self.pause)
         self.main_window.gspro_connection.connected_to_gspro.connect(self.resume)
+        self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def club_selected(self, club_data):
         self.device_worker.club_selected(club_data['Player']['Club'])
