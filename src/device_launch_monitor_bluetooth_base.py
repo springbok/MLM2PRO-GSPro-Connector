@@ -102,7 +102,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)
 
     def __device_error(self, error) -> None:
-        self.__disconnect_device()
+        self.device = None
         logging.debug(f"Device error: {error}")
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
         QMessageBox.warning(self.main_window, "Unexpected error", error)
