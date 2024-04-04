@@ -38,5 +38,5 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         self.main_window.launch_monitor_event_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
     def __token_expiry_status(self, status: TokenExpiryStates, token_expiry_date: str) -> None:
-        self.main_window.token_expiry_label.setText(f"3rd Party: {token_expiry_date}")
+        self.main_window.token_expiry_label.setText(f"Auth: {token_expiry_date}")
         self.main_window.token_expiry_label.setStyleSheet(f"QLabel {{ background-color : {status}; color : white; }}")

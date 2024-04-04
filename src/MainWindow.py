@@ -146,22 +146,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__setup_launch_monitor()
 
     def __setup_launch_monitor(self):
-        if self.launch_monitor is not None:
-            self.launch_monitor.shutdown()
-        if self.settings.device_id != LaunchMonitor.RELAY_SERVER and self.settings.device_id != LaunchMonitor.MLM2PRO_BT:
-            self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
-            self.device_control_widget.show()
-            self.server_control_widget.hide()
-            self.actionDevices.setEnabled(True)
-        else:
-            self.device_control_widget.hide()
-            self.server_control_widget.show()
-            if self.settings.device_id == LaunchMonitor.RELAY_SERVER:
-                self.launch_monitor = DeviceLaunchMonitorRelayServer(self)
+        if self.settings_form.prev_device_id != self.settings.device_id:
+            if self.launch_monitor is not None:
+                self.launch_monitor.shutdown()
+            if self.settings.device_id != LaunchMonitor.RELAY_SERVER and self.settings.device_id != LaunchMonitor.MLM2PRO_BT:
+                self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
+                self.device_control_widget.show()
+                self.server_control_widget.hide()
+                self.actionDevices.setEnabled(True)
             else:
-                self.launch_monitor = DeviceLaunchMonitorBluetoothMLM2PRO(self)
-            self.actionDevices.setEnabled(False)
-        self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
+                self.device_control_widget.hide()
+                self.server_control_widget.show()
+                if self.settings.device_id == LaunchMonitor.RELAY_SERVER:
+                    self.launch_monitor = DeviceLaunchMonitorRelayServer(self)
+                else:
+                    self.launch_monitor = DeviceLaunchMonitorBluetoothMLM2PRO(self)
+                self.actionDevices.setEnabled(False)
+            self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
     def __restart_connector(self):
         self.launch_monitor.resume()

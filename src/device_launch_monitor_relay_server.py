@@ -53,7 +53,7 @@ class DeviceLaunchMonitorRelayServer(DeviceBase):
 
     def __server_start_stop(self):
         if self.device_worker is None:
-            QMessageBox.warning(self.main_window, "Starting LM connector", 'Before starting the relay server ensure your launch monitor is turned on and ready for connection.')
+            #QMessageBox.warning(self.main_window, "Starting LM connector", 'Before starting the relay server ensure your launch monitor is turned on and ready for connection.')
             self.device_worker = WorkerDeviceLaunchMonitorRelayServer(self.main_window.settings, self.main_window.gspro_connection.gspro_connect)
             self.setup_device_thread()
             self.device_worker.start()
