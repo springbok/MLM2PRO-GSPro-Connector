@@ -18,6 +18,8 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.settings = settings
         self.prev_device_id = None
         self.setupUi(self)
+        self.auto_start_all_apps_combo.clear()
+        self.auto_start_all_apps_combo.addItems(['Yes', 'No'])
         self.launch_monitor_combo.clear()
         self.launch_monitor_combo.addItems(SettingsForm.launchmonitor_as_list())
         self.close_button.clicked.connect(self.__close)
@@ -52,6 +54,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.default_device = self.default_device_combo.currentText()
             self.settings.relay_server_ip_address = self.relay_server_ip_edit.toPlainText()
             self.settings.relay_server_port = int(self.relay_server_port_edit.toPlainText())
+            self.settings.auto_start_all_apps = self.auto_start_all_apps_combo.currentText()
             self.settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.\nPlease exit and restart the Connector for the changes to take effect.")
@@ -85,6 +88,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.default_device_combo.setCurrentText(device)
         self.relay_server_ip_edit.setPlainText(self.settings.relay_server_ip_address)
         self.relay_server_port_edit.setPlainText(str(self.settings.relay_server_port))
+        self.auto_start_all_apps_combo.setCurrentText(self.settings.auto_start_all_apps)
         self.prev_device_id = self.settings.device_id
 
 

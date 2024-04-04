@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1302, 642)
+        MainWindow.resize(1302, 725)
         icon = QIcon()
         icon.addFile(u":/ico/ico/connect.ico", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -292,17 +292,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.server_connection_label)
 
-        self.launch_monitor_event_label = QLabel(self.server_control_widget)
-        self.launch_monitor_event_label.setObjectName(u"launch_monitor_event_label")
-        sizePolicy3.setHeightForWidth(self.launch_monitor_event_label.sizePolicy().hasHeightForWidth())
-        self.launch_monitor_event_label.setSizePolicy(sizePolicy3)
-        self.launch_monitor_event_label.setMinimumSize(QSize(0, 0))
-        self.launch_monitor_event_label.setFont(font)
-        self.launch_monitor_event_label.setAlignment(Qt.AlignCenter)
-        self.launch_monitor_event_label.setMargin(5)
-
-        self.verticalLayout_12.addWidget(self.launch_monitor_event_label)
-
         self.launch_monitor_rssi_label = QLabel(self.server_control_widget)
         self.launch_monitor_rssi_label.setObjectName(u"launch_monitor_rssi_label")
         sizePolicy3.setHeightForWidth(self.launch_monitor_rssi_label.sizePolicy().hasHeightForWidth())
@@ -314,17 +303,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.launch_monitor_rssi_label)
 
-        self.token_expiry_label = QLabel(self.server_control_widget)
-        self.token_expiry_label.setObjectName(u"token_expiry_label")
-        sizePolicy3.setHeightForWidth(self.token_expiry_label.sizePolicy().hasHeightForWidth())
-        self.token_expiry_label.setSizePolicy(sizePolicy3)
-        self.token_expiry_label.setMinimumSize(QSize(0, 0))
-        self.token_expiry_label.setFont(font)
-        self.token_expiry_label.setAlignment(Qt.AlignCenter)
-        self.token_expiry_label.setMargin(5)
-
-        self.verticalLayout_12.addWidget(self.token_expiry_label)
-
         self.launch_monitor_battery_label = QLabel(self.server_control_widget)
         self.launch_monitor_battery_label.setObjectName(u"launch_monitor_battery_label")
         sizePolicy3.setHeightForWidth(self.launch_monitor_battery_label.sizePolicy().hasHeightForWidth())
@@ -335,6 +313,28 @@ class Ui_MainWindow(object):
         self.launch_monitor_battery_label.setMargin(5)
 
         self.verticalLayout_12.addWidget(self.launch_monitor_battery_label)
+
+        self.launch_monitor_event_label = QLabel(self.server_control_widget)
+        self.launch_monitor_event_label.setObjectName(u"launch_monitor_event_label")
+        sizePolicy3.setHeightForWidth(self.launch_monitor_event_label.sizePolicy().hasHeightForWidth())
+        self.launch_monitor_event_label.setSizePolicy(sizePolicy3)
+        self.launch_monitor_event_label.setMinimumSize(QSize(0, 0))
+        self.launch_monitor_event_label.setFont(font)
+        self.launch_monitor_event_label.setAlignment(Qt.AlignCenter)
+        self.launch_monitor_event_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.launch_monitor_event_label)
+
+        self.token_expiry_label = QLabel(self.server_control_widget)
+        self.token_expiry_label.setObjectName(u"token_expiry_label")
+        sizePolicy3.setHeightForWidth(self.token_expiry_label.sizePolicy().hasHeightForWidth())
+        self.token_expiry_label.setSizePolicy(sizePolicy3)
+        self.token_expiry_label.setMinimumSize(QSize(0, 0))
+        self.token_expiry_label.setFont(font)
+        self.token_expiry_label.setAlignment(Qt.AlignCenter)
+        self.token_expiry_label.setMargin(5)
+
+        self.verticalLayout_12.addWidget(self.token_expiry_label)
 
 
         self.horizontalLayout_12.addWidget(self.server_control_widget)
@@ -665,10 +665,10 @@ class Ui_MainWindow(object):
         self.start_server_button.setText(QCoreApplication.translate("MainWindow", u"Start", None))
         self.server_status_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.server_connection_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
-        self.launch_monitor_event_label.setText("")
         self.launch_monitor_rssi_label.setText("")
-        self.token_expiry_label.setText("")
         self.launch_monitor_battery_label.setText("")
+        self.launch_monitor_event_label.setText("")
+        self.token_expiry_label.setText("")
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Ball Speed", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Spin Axis", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Spin Rate", None))

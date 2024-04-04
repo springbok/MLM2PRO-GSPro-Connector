@@ -100,9 +100,9 @@ class MLM2PRODevice(BluetoothDeviceBase):
         """
         `data` GATT data
         """
-        if characteristic.uuid() != MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
-            print(f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
-            logging.debug(f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
+        #if characteristic.uuid() != MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
+        print(f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
+        logging.debug(f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
         byte_array = data.data()
         if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             self.__process_write_response(byte_array)

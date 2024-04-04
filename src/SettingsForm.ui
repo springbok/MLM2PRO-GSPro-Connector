@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>349</width>
-    <height>415</height>
+    <width>345</width>
+    <height>440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -262,6 +262,31 @@
            <layout class="QHBoxLayout" name="horizontalLayout_3"/>
           </item>
          </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <widget class="QLabel" name="auto_start_all_label">
+         <property name="text">
+          <string>Auto Start All Apps</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="auto_start_all_apps_combo">
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New Item</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>

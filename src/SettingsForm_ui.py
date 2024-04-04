@@ -24,7 +24,7 @@ class Ui_SettingsForm(object):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(349, 415)
+        SettingsForm.resize(345, 440)
         self.verticalLayout_5 = QVBoxLayout(SettingsForm)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.verticalLayout_2 = QVBoxLayout()
@@ -162,6 +162,23 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
+        self.horizontalLayout_11 = QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.auto_start_all_label = QLabel(SettingsForm)
+        self.auto_start_all_label.setObjectName(u"auto_start_all_label")
+
+        self.horizontalLayout_11.addWidget(self.auto_start_all_label)
+
+        self.auto_start_all_apps_combo = QComboBox(SettingsForm)
+        self.auto_start_all_apps_combo.addItem("")
+        self.auto_start_all_apps_combo.addItem("")
+        self.auto_start_all_apps_combo.setObjectName(u"auto_start_all_apps_combo")
+
+        self.horizontalLayout_11.addWidget(self.auto_start_all_apps_combo)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_11)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.save_button = QPushButton(SettingsForm)
@@ -220,6 +237,10 @@ class Ui_SettingsForm(object):
         self.relay_server_port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Window Title", None))
 #endif // QT_CONFIG(tooltip)
         self.relay_server_port_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Relay Server Port", None))
+        self.auto_start_all_label.setText(QCoreApplication.translate("SettingsForm", u"Auto Start All Apps", None))
+        self.auto_start_all_apps_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
+        self.auto_start_all_apps_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
+
 #if QT_CONFIG(tooltip)
         self.save_button.setToolTip(QCoreApplication.translate("SettingsForm", u"New Device", None))
 #endif // QT_CONFIG(tooltip)

@@ -77,13 +77,13 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.device.error.connect(self.__device_error)
         self.device.connected.connect(self.__device_connected)
         self.device.update_battery.connect(self.__update_battery)
-        #self.device.shot.connect(self.__shot_sent)
-        self.device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
+        self.device.shot.connect(self.__shot_sent)
 
     def __shot_sent(self, ball_data: BallData) -> None:
         print(f"Shot sent: {json.dumps(ball_data.to_json())}")
         if self.main_window.gspro_connection.connected:
-            self.main_window.shot_sent(ball_data)
+            self.main_window.gspro_connection.send_shot_worker.run()
+            #self.main_window.shot_sent(ball_data)
 
     def __update_battery(self, battery: int) -> None:
         self.main_window.launch_monitor_battery_label.setText(f"Battery: {battery}")
@@ -102,10 +102,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)
 
     def __device_error(self, error) -> None:
-        self.__disconnect_device()
+        self.device = None
         logging.debug(f"Device error: {error}")
         self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
-        QMessageBox.warning(self.main_window, "Unexpected error", error)
+        QMessageBox.warning(self.main_window, "Bluetooth Connector Error", error)
         self.__not_connected_status()
 
     def __update_rssi(self, rssi) -> None:

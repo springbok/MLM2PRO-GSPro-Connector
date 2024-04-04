@@ -54,6 +54,7 @@ class BluetoothDeviceBase(QObject):
         self._settings = Settings(self._app_paths)
         self._armed = False
         self._current_club = ''
+        self._initialised = False
 
         #self.hr_notification: Union[None, QLowEnergyDescriptor] = None
         #self._service: QBluetoothUuid.ServiceClassUuid = (
@@ -120,6 +121,8 @@ class BluetoothDeviceBase(QObject):
     def disconnect_device(self):
         if self._armed:
             self._disarm_device()
+            self._armed = False
+        self._initialised = False
         print(f'self._notifications: {self._notifications}')
         if len(self._notifications) > 0 and self._service is not None:
             logging.debug('Unsubscribing from notifications')
@@ -142,7 +145,7 @@ class BluetoothDeviceBase(QObject):
         if self._controller is not None:
             logging.debug(f'Discovering services for {self._ble_device.name()}')
             self.status_update.emit('Discovering services...', self._ble_device.name())
-            self._controller.discoverServices()
+            QTimer().singleShot(250, lambda: self._controller.discoverServices())
 
     def __connect_to_service(self):
         self.status_update.emit('Connecting to service...', self._ble_device.name())
@@ -168,7 +171,7 @@ class BluetoothDeviceBase(QObject):
         self.do_authenticate.connect(self._authenticate)
         print(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         logging.debug(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
-        self._service.discoverDetails()
+        QTimer().singleShot(250, lambda: self._service.discoverDetails())
 
     def __service_state_changed(self, state: QLowEnergyService.ServiceState):
         self.status_update.emit('Subscribing...', self._ble_device.name())
@@ -177,12 +180,13 @@ class BluetoothDeviceBase(QObject):
             return
         if self._service is None:
             return
-        QTimer().singleShot(2000, lambda: self.__init_device())
+        QTimer().singleShot(250, lambda: self.__init_device())
 
     def __init_device(self):
-        self._subscribe_to_notifications()
-        print('emit do_authenticate')
-        QTimer().singleShot(2000, lambda: self.do_authenticate.emit())
+        if not self._initialised:
+            self._subscribe_to_notifications()
+            print('emit do_authenticate')
+            QTimer().singleShot(250, lambda: self.do_authenticate.emit())
 
     def _subscribe_to_notifications(self):
         for uuid in self._notification_uuids:
