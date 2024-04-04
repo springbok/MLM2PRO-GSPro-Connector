@@ -375,6 +375,24 @@
                      </widget>
                     </item>
                     <item>
+                     <widget class="QLabel" name="ocr_training_file_label">
+                      <property name="font">
+                       <font>
+                        <pointsize>12</pointsize>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>TextLabel</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                      <property name="margin">
+                       <number>5</number>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
                      <widget class="QPushButton" name="pause_button">
                       <property name="text">
                        <string>Pause</string>

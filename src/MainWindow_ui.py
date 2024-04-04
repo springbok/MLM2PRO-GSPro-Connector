@@ -243,6 +243,14 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addWidget(self.connector_status)
 
+        self.ocr_training_file_label = QLabel(self.device_control_widget)
+        self.ocr_training_file_label.setObjectName(u"ocr_training_file_label")
+        self.ocr_training_file_label.setFont(font1)
+        self.ocr_training_file_label.setAlignment(Qt.AlignCenter)
+        self.ocr_training_file_label.setMargin(5)
+
+        self.verticalLayout_8.addWidget(self.ocr_training_file_label)
+
         self.pause_button = QPushButton(self.device_control_widget)
         self.pause_button.setObjectName(u"pause_button")
 
@@ -660,6 +668,7 @@ class Ui_MainWindow(object):
         self.selected_device.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.selected_mirror_app.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.connector_status.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.ocr_training_file_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.restart_button.setText(QCoreApplication.translate("MainWindow", u"Restart", None))
         self.start_server_button.setText(QCoreApplication.translate("MainWindow", u"Start", None))

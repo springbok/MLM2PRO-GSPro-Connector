@@ -5,6 +5,7 @@ from src.SelectDeviceForm import SelectDeviceForm
 from src.custom_exception import WindowNotFoundException
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
+from src.settings import LaunchMonitor
 from src.worker_screenshot_device_launch_monitor import WorkerScreenshotDeviceLaunchMonitor
 
 
@@ -22,6 +23,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.__setup_signals()
         self.__update_selected_mirror_app()
         self.device_worker_paused()
+        self.__display_training_file()
 
     def setup_device_thread(self):
         super().setup_device_thread()
@@ -78,6 +80,17 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.main_window.connector_status.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
         self.main_window.restart_button.setEnabled(restart)
         self.main_window.pause_button.setEnabled(False)
+
+    def __display_training_file(self):
+        train_file = 'train'
+        if self.main_window.settings.device_id == LaunchMonitor.MEVOPLUS:
+            train_file = 'mevo'
+        elif self.main_window.settings.device_id == LaunchMonitor.FSKIT:
+            train_file = 'fskit'
+        elif self.main_window.settings.device_id == LaunchMonitor.TRACKMAN:
+            train_file = 'trackman'
+        self.main_window.ocr_training_file_label.setText(f"OCR File: {train_file}")
+        self.main_window.ocr_training_file_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
     def device_worker_resumed(self):
         msg = 'Running'
