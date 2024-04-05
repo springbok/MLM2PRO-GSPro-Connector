@@ -10,6 +10,7 @@ class LaunchMonitor:
     FSKIT = "Fullswing Kit"
     MEVOPLUS = "MEVO+"
     TRACKMAN = "Trackman"
+    TRUGOLF_APOGEE = "TruGolf Apogee"
     RELAY_SERVER = "Relay Server"
 
 

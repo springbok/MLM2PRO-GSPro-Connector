@@ -133,6 +133,8 @@ class ScreenshotBase(ViewBox):
                 train_file = 'fskit'
             elif self.settings.device_id == LaunchMonitor.TRACKMAN:
                 train_file = 'trackman'
+            elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
+                train_file = 'apex'
         logging.debug(f"Using {train_file}_traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:

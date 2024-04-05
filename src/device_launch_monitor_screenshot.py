@@ -89,6 +89,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'fskit'
         elif self.main_window.settings.device_id == LaunchMonitor.TRACKMAN:
             train_file = 'trackman'
+        elif self.main_window.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
+            train_file = 'apex'
         self.main_window.ocr_training_file_label.setText(f"OCR File: {train_file}")
         self.main_window.ocr_training_file_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
