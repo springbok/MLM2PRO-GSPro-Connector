@@ -55,14 +55,6 @@ class BluetoothDeviceBase(QObject):
         self._armed = False
         self._current_club = ''
 
-        #self.hr_notification: Union[None, QLowEnergyDescriptor] = None
-        #self._service: QBluetoothUuid.ServiceClassUuid = (
-        #    QBluetoothUuid.ServiceClassUuid.HeartRate
-        #)
-        #self.HR_CHARACTERISTIC: QBluetoothUuid.CharacteristicType = (
-        #    QBluetoothUuid.CharacteristicType.HeartRateMeasurement
-        #)
-
     def _sensor_address(self):
         return self._controller.remoteAddress().toString()
 
@@ -118,23 +110,29 @@ class BluetoothDeviceBase(QObject):
         pass
 
     def disconnect_device(self):
-        if self._armed:
-            self._disarm_device()
-        print(f'self._notifications: {self._notifications}')
-        if len(self._notifications) > 0 and self._service is not None:
-            logging.debug('Unsubscribing from notifications')
-            print('Unsubscribing from notifications')
-            for notification in self._notifications:
-                if not notification.isValid():
-                    self._service.writeDescriptor(notification, self.DISABLE_NOTIFICATION)
         if self._ble_device is not None:
             logging.debug(f'Disconnecting from device: {self._ble_device.name()}')
-        if self._heartbeat_timer.isActive():
-            self._heartbeat_timer.stop()
+        print(f'disconnect_device {self._controller.state()}')
         if self._controller is not None:
-            print('xxxx disconnecting')
-            self.disconnecting.emit('Disconnecting...')
-            self._controller.disconnectFromDevice()
+            self._controller.errorOccurred.disconnect()
+            if self._heartbeat_timer.isActive():
+                self._heartbeat_timer.stop()
+            if self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState:
+                print('connected - disconnecting')
+                if self._armed:
+                    self._disarm_device()
+                print(f'self._notifications: {self._notifications}')
+                if len(self._notifications) > 0 and self._service is not None:
+                    logging.debug('Unsubscribing from notifications')
+                    print('Unsubscribing from notifications')
+                    for notification in self._notifications:
+                        if not notification.isValid():
+                            self._service.writeDescriptor(notification, self.DISABLE_NOTIFICATION)
+            if self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState or \
+                    self._controller.state() == QLowEnergyController.ControllerState.ConnectedState:
+                print('xxxx disconnecting')
+                self.disconnecting.emit('Disconnecting...')
+                self._controller.disconnectFromDevice()
 
 
     def __discover_services(self):
@@ -171,8 +169,8 @@ class BluetoothDeviceBase(QObject):
         QTimer().singleShot(250, lambda: self._service.discoverDetails())
 
     def __service_state_changed(self, state: QLowEnergyService.ServiceState):
-        self.status_update.emit('Subscribing...', self._ble_device.name())
-        print(f'subscribe_to_notifications {state} {QLowEnergyService.ServiceState.RemoteServiceDiscovered}')
+        print(f'__service_state_changed {state} {QLowEnergyService.ServiceState.RemoteServiceDiscovered}')
+        logging.debug(f'Service state changed: {state}')
         if state != QLowEnergyService.ServiceState.RemoteServiceDiscovered:
             return
         if self._service is None:
@@ -185,6 +183,7 @@ class BluetoothDeviceBase(QObject):
         QTimer().singleShot(1000, lambda: self.do_authenticate.emit())
 
     def _subscribe_to_notifications(self):
+        self.status_update.emit('Subscribing...', self._ble_device.name())
         for uuid in self._notification_uuids:
             msg = f"Subscribing to notifications for {uuid.toString()} on {self._sensor_address()}."
             logging.debug(msg)
