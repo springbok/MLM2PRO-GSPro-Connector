@@ -82,6 +82,7 @@ class BallData:
         self.putt_type = None
         self.good_shot = False
         self.new_shot = False
+        self.launch_monitor = None
         self.corrections = {}
         self.errors = {}
         for key in BallData.properties:
@@ -222,7 +223,7 @@ class BallData:
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
 
-    def process_shot_data(self, ocr_result, roi, previous_balldata, launch_monitor):
+    def process_shot_data(self, ocr_result, roi, previous_balldata):
         msg = None
         result = ''
         try:
@@ -240,7 +241,7 @@ class BallData:
                 cleaned_result = '0'
             # Remove any leading '.' sometimes a - is read as a '.'
             result = cleaned_result.lstrip('.')
-            if launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+            if self.launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
                 result = result.upper()
                 if result.endswith('L'):
                     result = -float(result[:-1])
@@ -267,7 +268,11 @@ class BallData:
                 result = self.__fix_out_of_bounds_metric(140, result, roi)
                 self.corrections[roi] = True
             # Round to one decimal place
-            setattr(self, roi, math.floor(result*10)/10)
+            if roi == BallMetrics.SPIN_AXIS and self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE:
+                logging.debug(f'Setting side spin for TruGolf Apogee using the spin axis ROI value: {math.floor(result*10)/10}')
+                setattr(self, BallMetrics.SIDE_SPIN, math.floor(result*10)/10)
+            else:
+                setattr(self, roi, math.floor(result*10)/10)
             logging.debug(f'Cleaned and corrected value: {result}')
         except ValueError as e:
             msg = f'{format(e)}'
@@ -289,7 +294,9 @@ class BallData:
             if result and result > 0 and not non_zero_found:
                 non_zero_found = True
             previous_result = getattr(other, roi)
-            if (roi != BallMetrics.BACK_SPIN and roi != BallMetrics.SIDE_SPIN and result != previous_result):
+            if (roi != BallMetrics.BACK_SPIN and \
+                    ((roi != BallMetrics.SIDE_SPIN and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE) or \
+                     self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE)  and result != previous_result):
                 logging.debug(f'previous_metric: {previous_result} result: {result}')
                 diff_count = diff_count + 1
         # Check if all values are 0, some users use practice instead of range and there is a screen flicker
@@ -352,8 +359,9 @@ class BallData:
     def __calc_spin(self):
         self.back_spin = round(
             self.total_spin * math.cos(math.radians(self.spin_axis)))
-        self.side_spin = round(
-            self.total_spin * math.sin(math.radians(self.spin_axis)))
+        if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE:
+            self.side_spin = round(
+                self.total_spin * math.sin(math.radians(self.spin_axis)))
 
     def from_mlm2pro_bt(self, data: bytearray) -> None:
         self.new_shot = True

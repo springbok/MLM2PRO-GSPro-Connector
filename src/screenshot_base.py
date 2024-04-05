@@ -121,6 +121,7 @@ class ScreenshotBase(ViewBox):
     def ocr_image(self):
         self.balldata = BallData()
         self.balldata.club = self.selected_club
+        self.balldata.launch_monitor = self.settings.device_id
         self.new_shot = False
         fallback_tesserocr_api = None
         if self.__class__.__name__ == 'ScreenshotExPutt':
@@ -199,7 +200,7 @@ class ScreenshotBase(ViewBox):
                 if self.__class__.__name__ == 'ScreenshotExPutt':
                     self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
                 else:
-                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
+                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata)
             # Correct metrics if invalid smash factor
             if self.balldata.putt_type is None:
                 self.balldata.check_smash_factor(self.selected_club)
