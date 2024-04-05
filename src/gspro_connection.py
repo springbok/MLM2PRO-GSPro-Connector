@@ -120,6 +120,9 @@ class GSProConnection(QObject):
             if self.__find_gspro_api_app():
                 if self.thread is None:
                     self.__setup_connection_thread()
+                else:
+                    if not self.gspro_connect.connected():
+                        self.worker.run()
                 if self.gspro_messages_thread is None:
                     self.__setup_gspro_messages_thread()
                 self.gspro_messages_worker.start()
@@ -131,7 +134,8 @@ class GSProConnection(QObject):
         if self.connected:
             self.connected = False
             self.__gspro_disconnected()
-            self.__shutdown_threads()
+            self.send_shot_worker.stop()
+            self.gspro_messages_worker.stop()
             self.gspro_connect.terminate_session()
             self.disconnected_from_gspro.emit()
 

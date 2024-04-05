@@ -47,9 +47,6 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
             self.putting_settings.load()
             self.putting_rois_reload = True
 
-    def ignore_shots_after_restart(self):
-        self.exputt_screenshot.first = True
-
     def club_selected(self, club):
         self.exputt_screenshot.selected_club = club
         super().club_selected(club)

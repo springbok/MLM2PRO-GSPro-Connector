@@ -41,5 +41,5 @@ class WorkerDeviceLaunchMonitorBluetoothBase(WorkerBase):
 
     def shutdown(self) -> None:
         super().shutdown()
-        #if self.connection:
-        #    self.connection.close()
+        # if self.connection:
+        #     self.connection.close()
