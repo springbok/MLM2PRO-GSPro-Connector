@@ -166,3 +166,5 @@ train.traineddata.old
 mlm2pro_bt_app/
 r10_bt_app/
 src/bluetooth/mlm2pro_secret.py
+.idea/MLM2PRO-GSPro-Connector.iml
+.idea/misc.xml
