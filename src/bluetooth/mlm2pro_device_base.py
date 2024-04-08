@@ -29,7 +29,7 @@ class LaunchMonitorEvents:
     MISREAD_OR_DISARMED = 5
 
 
-class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
+class MLM2PRODeviceBaseQtBluetooth(BluetoothDeviceBaseQtBluetooth):
     token_expiry = Signal(TokenExpiryStates, str)
     launch_monitor_event = Signal(str)
 
@@ -52,18 +52,18 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
 
     def __init__(self, device: QBluetoothDeviceInfo):
         super().__init__(device,
-                         MLM2PRODeviceQtBluetooth.SERVICE_UUID,
-                         MLM2PRODeviceQtBluetooth.HEARTBEAT_INTERVAL,
-                         MLM2PRODeviceQtBluetooth.MLM2PRO_HEARTBEAT_INTERVAL)
+                         MLM2PRODevice.SERVICE_UUID,
+                         MLM2PRODevice.HEARTBEAT_INTERVAL,
+                         MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL)
         self._user_token = "0"
         self._ball_type = 2
         self._altitude_metres = 0.0
         self._temperature_celsius = 15.0
         self._notification_uuids = [
-            MLM2PRODeviceQtBluetooth.EVENTS_CHARACTERISTIC_UUID,
-            MLM2PRODeviceQtBluetooth.HEARTBEAT_CHARACTERISTIC_UUID,
-            MLM2PRODeviceQtBluetooth.WRITE_RESPONSE_CHARACTERISTIC_UUID,
-            MLM2PRODeviceQtBluetooth.MEASUREMENT_CHARACTERISTIC_UUID
+            MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID,
+            MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID,
+            MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID,
+            MLM2PRODevice.MEASUREMENT_CHARACTERISTIC_UUID
         ]
         self._encryption = MLM2PROEncryption()
         self._web_api = MLM2PROWebApi(self._settings.web_api['url'],
@@ -94,25 +94,25 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
             f'----> Writing authentication data: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
         print(
             f'----> Writing authentication data: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
-        self._write_characteristic(MLM2PRODeviceQtBluetooth.AUTH_CHARACTERISTIC_UUID, b_arr)
+        self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
 
     def _data_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         """
         `data` GATT data
         """
-        if characteristic.uuid() != MLM2PRODeviceQtBluetooth.HEARTBEAT_CHARACTERISTIC_UUID:
+        if characteristic.uuid() != MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
             print(f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
             logging.debug(f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
         byte_array = data.data()
-        if characteristic.uuid() == MLM2PRODeviceQtBluetooth.WRITE_RESPONSE_CHARACTERISTIC_UUID:
+        if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             self.__process_write_response(byte_array)
-        elif characteristic.uuid() == MLM2PRODeviceQtBluetooth.HEARTBEAT_CHARACTERISTIC_UUID:
+        elif characteristic.uuid() == MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
             #print(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             #logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             self._set_next_expected_heartbeat()
-        elif characteristic.uuid() == MLM2PRODeviceQtBluetooth.EVENTS_CHARACTERISTIC_UUID:
+        elif characteristic.uuid() == MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID:
             self.__process_events(byte_array)
-        elif characteristic.uuid() == MLM2PRODeviceQtBluetooth.MEASUREMENT_CHARACTERISTIC_UUID:
+        elif characteristic.uuid() == MLM2PRODevice.MEASUREMENT_CHARACTERISTIC_UUID:
             self.__process_measurement(byte_array)
 
     def __process_measurement(self, data: bytearray) -> None:
@@ -198,14 +198,14 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
         logging.debug(f'Write response: {int_array}')
         if len(data) >= 2:
             if len(data) > 2:
-                if data[0] == MLM2PRODeviceQtBluetooth.MLM2PRO_SEND_INITIAL_PARAMS:
+                if data[0] == MLM2PRODevice.MLM2PRO_SEND_INITIAL_PARAMS:
                     logging.debug(f'Authentication requested {data[0]}: Initial parameters need to be sent to MLM2PRO')
                     print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
-                    if data[1] != MLM2PRODeviceQtBluetooth.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
+                    if data[1] != MLM2PRODevice.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
                         print(f'Auth failed: {data[1]}')
                         logging.debug(print(f'Authentication failed: {data[1]}'))
                         token_expiry = self.__token_expiry_date_state(self._settings.web_api['token_expiry'])
-                        if data[1] == MLM2PRODeviceQtBluetooth.MLM2PRO_RAPSODO_AUTH_FAILED:
+                        if data[1] == MLM2PRODevice.MLM2PRO_RAPSODO_AUTH_FAILED:
                             self.error.emit(f'Your 3rd party authorisation expired on {token_expiry}, please re-authorise in the Rapsodo app and try again once that has been done.')
                             return
                         else:
@@ -214,7 +214,7 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
                     print('Auth success, send initial params')
                     logging.debug('Authentication success, send initial params')
                     QTimer().singleShot(0, lambda: self.__send_initial_params(data))
-                elif data[0] == MLM2PRODeviceQtBluetooth.MLM2PRO_AUTH_SUCCESS:
+                elif data[0] == MLM2PRODevice.MLM2PRO_AUTH_SUCCESS:
                     logging.debug(f'Authentication successful {data[0]}')
                     print(f'Authentication successful {data[0]}')
                     self.launch_monitor_connected.emit()
@@ -229,10 +229,10 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
         if self._is_connected():
             if self._heartbeat_overdue:
                 # heartbeat not received within 20 seconds, reset subscriptions
-                print(f'Heartbeat not received for {MLM2PRODeviceQtBluetooth.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
-                logging.debug(f'Heartbeat not received for {MLM2PRODeviceQtBluetooth.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                print(f'Heartbeat not received for {MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                logging.debug(f'Heartbeat not received for {MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
                 self._set_next_expected_heartbeat()
-            self._write_characteristic(MLM2PRODeviceQtBluetooth.HEARTBEAT_CHARACTERISTIC_UUID, bytearray([0x01]))
+            self._write_characteristic(MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID, bytearray([0x01]))
 
     def __send_initial_params(self, data: bytearray) -> None:
         byte_array = data[2:]
@@ -286,7 +286,7 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
         print(
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
-        self._write_characteristic(MLM2PRODeviceQtBluetooth.CONFIGURE_CHARACTERISTIC_UUID, config_data)
+        self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID, config_data)
 
     def _disarm_device(self) -> None:
         byte_array = bytearray.fromhex("010D0000000000")
@@ -308,7 +308,7 @@ class MLM2PRODeviceQtBluetooth(BluetoothDeviceBaseQtBluetooth):
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(command_data)}')
         print(
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(command_data)}')
-        self._write_characteristic(MLM2PRODeviceQtBluetooth.COMMAND_CHARACTERISTIC_UUID, command_data)
+        self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID, command_data)
 
     def __token_expiry_date_state(self, token_expiry: float) -> str:
         # Assuming token expiry is the Unix timestamp

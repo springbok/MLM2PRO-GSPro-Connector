@@ -5,8 +5,10 @@ from PySide6.QtBluetooth import QBluetoothDeviceInfo
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
+from src.bluetooth.bluetooth_device_scanner_simpleble import BluetoothDeviceScannerSimpleBLE
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
+from src.settings import BluetoothLibrary
 
 
 class DeviceLaunchMonitorBluetoothBase(DeviceBase):
@@ -15,7 +17,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         DeviceBase.__init__(self, main_window)
         self.device = None
         self.device_names = device_names
-        self.scanner = BluetoothDeviceScanner(self.device_names)
+        if self.main_window.settings.bluetooth_library == BluetoothLibrary.SIMPLEBLE:
+            self.scanner = BluetoothDeviceScannerSimpleBLE(self.device_names)
+        else:
+            self.scanner = BluetoothDeviceScanner(self.device_names)
         self.__setup_signals()
         self.__not_connected_status()
 

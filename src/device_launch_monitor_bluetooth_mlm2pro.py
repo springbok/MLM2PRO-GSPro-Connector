@@ -1,6 +1,6 @@
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
 
-from src.bluetooth.mlm2pro_device import MLM2PRODevice, TokenExpiryStates
+from src.bluetooth.mlm2pro_device import MLM2PRODeviceQtBluetooth, TokenExpiryStates
 from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoothBase
 
 
@@ -20,7 +20,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         if self.device is not None:
             self.device.disc()
             self.device = None
-        self.device = MLM2PRODevice(device)
+        self.device = MLM2PRODeviceQtBluetooth(device)
         self._setup_device_signals()
         self.device.connect_device()
 

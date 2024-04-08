@@ -13,6 +13,10 @@ class LaunchMonitor:
     TRUGOLF_APOGEE = "TruGolf Apogee"
     RELAY_SERVER = "Relay Server"
 
+@dataclass
+class BluetoothLibrary:
+    QTBLUETOOTH = "QtBluetooth"
+    SIMPLEBLE = "SimpleBLE"
 
 class Settings(SettingsBase):
     version = "2"
@@ -69,6 +73,9 @@ class Settings(SettingsBase):
             save = True
         if not hasattr(self, 'relay_server_ip_address'):
             self.relay_server_ip_address = "127.0.0.1"
+            save = True
+        if not hasattr(self, 'bluetooth_library'):
+            self.bluetooth_library = BluetoothLibrary.SIMPLEBLE
             save = True
         if not hasattr(self, 'relay_server_port'):
             self.relay_server_port = 9234
