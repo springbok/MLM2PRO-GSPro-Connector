@@ -29,9 +29,10 @@ class BluetoothDeviceScannerSimpleBLE(QObject):
                 if len(adapters) <= 0:
                     raise Exception("No Bluetooth adapters found.")
                 self._adapter = adapters[0]
+                print(f'Found {len(adapters)} Bluetooth adapters. {self._adapter.identifier()}')
                 self._adapter.set_callback_on_scan_start(self.__scanning_started)
                 self._adapter.set_callback_on_scan_stop(self.__scanning_finished())
-                self._adapter.set_callback_on_scan_found(self.__add_device)
+                self._adapter.set_callback_on_scan_updated(self.__add_device)
                 self._adapter.scan_start()
                 self.scan_timer.setSingleShot(True)
                 self.scan_timer.setInterval(BluetoothDeviceScannerSimpleBLE.SCANNER_TIMEOUT)
@@ -50,6 +51,7 @@ class BluetoothDeviceScannerSimpleBLE(QObject):
             self.signals.device_not_found.emit()
 
     def __add_device(self, device) -> None:
+        print(f"Found {device.identifier()} [{device.address()}]")
         print(f'info: {device.identifier()} {device.identifier().startswith("MLM2-") or device.identifier().startswith("BlueZ ")}')
         if device.identifier() and any(device.identifier().startswith(name) for name in self.launch_minitor_names):
             self.device = device
