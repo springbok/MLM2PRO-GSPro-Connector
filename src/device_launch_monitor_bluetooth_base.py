@@ -2,6 +2,7 @@ import json
 import logging
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
@@ -31,10 +32,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.start_server_button.clicked.connect(self.server_start_stop)
         self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         # Scanner signals
-        self.scanner.status_update.connect(self.__status_update)
-        self.scanner.device_found.connect(self.device_found)
-        self.scanner.device_not_found.connect(self.__device_not_found)
-        self.scanner.error.connect(self.__scanner_error)
+        self.scanner.signals.status_update.connect(self.__status_update)
+        self.scanner.signals.device_found.connect(self.device_found)
+        self.scanner.signals.device_not_found.connect(self.__device_not_found)
+        self.scanner.signals.error.connect(self.__scanner_error)
 
     def __club_selected(self, club_data):
         self.device.club_selected(club_data['Player']['Club'])

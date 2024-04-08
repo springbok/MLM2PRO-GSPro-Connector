@@ -2,17 +2,15 @@ import logging
 from PySide6.QtBluetooth import QBluetoothDeviceDiscoveryAgent, QBluetoothDeviceInfo
 from PySide6.QtCore import QObject, Signal, QTimer
 
+from src.bluetooth.bluetooth_device_scanner_signals import BluetoothDeviceScannerSignals
+
 
 class BluetoothDeviceScanner(QObject):
     SCANNER_TIMEOUT = 40000
 
-    device_found = Signal(object)
-    device_not_found = Signal()
-    status_update = Signal(str)
-    error = Signal(str)
-
     def __init__(self, launch_minitor_names: list[str]):
         super().__init__()
+        self.signals = BluetoothDeviceScannerSignals()
         self.launch_minitor_names = launch_minitor_names
         self.scanner = QBluetoothDeviceDiscoveryAgent()
         #self.scanner.setLowEnergyDiscoveryTimeout(BluetoothDeviceScanner.SCANNER_TIMEOUT*1000)
@@ -28,7 +26,7 @@ class BluetoothDeviceScanner(QObject):
             logging.debug("Already searching for device.")
         else:
             logging.debug(f'Searching for the following launch monitor names: {self.launch_minitor_names}')
-            self.status_update.emit("Scanning for device...")
+            self.signals.status_update.emit("Scanning for device...")
             self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().LowEnergyMethod)
             # For some reason the setLowEnergyDiscoveryTimeout doesn't work
             self.scan_timer.setSingleShot(True)
@@ -41,8 +39,8 @@ class BluetoothDeviceScanner(QObject):
             self.scanner.stop()
         if self.device is None:
             logging.debug('Timeout, no device found')
-            self.status_update.emit('Timeout')
-            self.device_not_found.emit()
+            self.signals.status_update.emit('Timeout')
+            self.signals.device_not_found.emit()
 
     def __add_device(self, device) -> None:
         print(f'info: {device.name()} {device.name().startswith("MLM2-") or device.name().startswith("BlueZ ")}')
@@ -52,15 +50,15 @@ class BluetoothDeviceScanner(QObject):
             self.scanner.stop()
             logging.debug(f'Launch monitor found: {self.device.name()} uuid: {self.device.address().toString()}')
             print(f'Launch monitor found: {self.device.name()} uuid: {self.device.address().toString()}')
-            self.status_update.emit('Device found')
-            self.device_found.emit(self.device)
+            self.signals.status_update.emit('Device found')
+            self.signals.device_found.emit(self.device)
 
     def __handle_scan_error(self, error) -> None:
         logging.debug(f'Error while scanning for device {error}')
-        self.error.emit(error)
+        self.signals.error.emit(error)
 
     def __scanning_finished(self) -> None:
         if self.device is None:
             logging.debug('No device found')
-            self.status_update.emit('No device found')
-            self.device_not_found.emit()
+            self.signals.status_update.emit('No device found')
+            self.signals.device_not_found.emit()

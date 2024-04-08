@@ -3,7 +3,7 @@ import os
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThreadPool
 from PySide6.QtGui import QShowEvent, QFont, QColor, QPalette
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QTableWidgetItem, QTextEdit, QHBoxLayout
 from src.SettingsForm import SettingsForm
@@ -40,6 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, app):
         super().__init__()
         self.setupUi(self)
+        self.threadpool = QThreadPool.globalInstance()
         self.launch_monitor = None
         self.edit_fields = {}
         self.app = app
