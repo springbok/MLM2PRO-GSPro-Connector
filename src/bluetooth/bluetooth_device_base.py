@@ -49,8 +49,13 @@ class BluetoothDeviceBase(QObject):
     def connect_device(self) -> None:
         pass
 
-    def _connected(self) -> None:
-        pass
+    def _connected(self):
+        print('connected')
+        self.connected.emit('Connected')
+        self._set_next_expected_heartbeat()
+        self._heartbeat_timer.start()
+        self._arm_device()
+        self._armed = True
 
     def _arm_device(self) -> None:
         pass

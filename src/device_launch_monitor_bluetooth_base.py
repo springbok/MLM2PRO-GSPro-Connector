@@ -51,7 +51,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def device_found(self, device: Union[QBluetoothDeviceInfo, Peripheral]) -> None:
         name = ''
-        if device.__class__.__name__ == 'QBluetoothDeviceInfo':
+        if device.__class__ == QBluetoothDeviceInfo:
             name = device.name()
         else:
             name = device.identifier()
@@ -163,7 +163,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def __disconnect_device(self):
         if self._device is not None:
             self._device.disconnect_device()
-            self._device = None
             self.__not_connected_status()
 
     def shutdown(self):

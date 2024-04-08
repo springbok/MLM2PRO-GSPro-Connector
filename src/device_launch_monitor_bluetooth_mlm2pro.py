@@ -3,7 +3,9 @@ from typing import Union
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
 from simplepyble import Peripheral
 
-from src.bluetooth.mlm2pro_device import MLM2PRODeviceQtBluetooth, TokenExpiryStates
+from src.bluetooth.bluetooth_device_base_qtbluetooth import BluetoothDeviceBaseQtBluetooth
+from src.bluetooth.bluetooth_device_base_simpleble import BluetoothDeviceBaseSimpleBLE
+from src.bluetooth.mlm2pro_device import TokenExpiryStates, get_device_class
 from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoothBase
 
 
@@ -23,7 +25,11 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         if self._device is not None:
             self._device.disconnect()
             self._device = None
-        self._device = MLM2PRODeviceQtBluetooth(device)
+        if device.__class__ == QBluetoothDeviceInfo:
+            device_class = get_device_class(BluetoothDeviceBaseQtBluetooth)
+        else:
+            device_class = get_device_class(BluetoothDeviceBaseSimpleBLE)
+        self._device = device_class(device)
         self._setup_device_signals()
         self._device.connect_device()
 
