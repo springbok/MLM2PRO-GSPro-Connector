@@ -1,11 +1,13 @@
 import json
 import logging
+from typing import Union
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
-from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QMessageBox
+from simplepyble import Peripheral
+
 from src.ball_data import BallData
-from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
+from src.bluetooth.bluetooth_device_scanner_qtbluetooth import BluetoothDeviceScannerQtBluetooth
 from src.bluetooth.bluetooth_device_scanner_simpleble import BluetoothDeviceScannerSimpleBLE
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
@@ -16,12 +18,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __init__(self, main_window, device_names: list[str]):
         DeviceBase.__init__(self, main_window)
-        self.device = None
-        self.device_names = device_names
+        self._device = None
+        self._device_names = device_names
         if self.main_window.settings.bluetooth_library == BluetoothLibrary.SIMPLEBLE:
-            self.scanner = BluetoothDeviceScannerSimpleBLE(self.device_names)
+            self.scanner = BluetoothDeviceScannerSimpleBLE(self._device_names)
         else:
-            self.scanner = BluetoothDeviceScanner(self.device_names)
+            self.scanner = BluetoothDeviceScannerQtBluetooth(self._device_names)
         self.__setup_signals()
         self.__not_connected_status()
 
@@ -38,17 +40,22 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.scanner.signals.error.connect(self.__scanner_error)
 
     def __club_selected(self, club_data):
-        self.device.club_selected(club_data['Player']['Club'])
+        self._device.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
 
     def server_start_stop(self) -> None:
-        if self.device is None:
+        if self._device is None:
             self.scanner.scan()
         else:
             self.__disconnect_device()
 
-    def device_found(self, device: QBluetoothDeviceInfo) -> None:
-        self.__update_ui(None, 'orange', device.name(), 'red', 'Stop', False)
+    def device_found(self, device: Union[QBluetoothDeviceInfo, Peripheral]) -> None:
+        name = ''
+        if device.__class__.__name__ == 'QBluetoothDeviceInfo':
+            name = device.name()
+        else:
+            name = device.identifier()
+        self.__update_ui(None, 'orange', name, 'red', 'Stop', False)
         self.__update_rssi(device.rssi())
 
     def __scanner_error(self, error) -> None:
@@ -78,12 +85,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.launch_monitor_battery_label.setStyleSheet(f"QLabel {{ background-color : white; color : white; }}")
 
     def _setup_device_signals(self) -> None:
-        self.device.status_update.connect(self.__device_status_update)
-        self.device.error.connect(self.__device_error)
-        self.device.connected.connect(self.__device_connected)
-        self.device.update_battery.connect(self.__update_battery)
-        #self.device.shot.connect(self.__shot_sent)
-        self.device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
+        self._device.status_update.connect(self.__device_status_update)
+        self._device.error.connect(self.__device_error)
+        self._device.connected.connect(self.__device_connected)
+        self._device.update_battery.connect(self.__update_battery)
+        #self._device.shot.connect(self.__shot_sent)
+        self._device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def __shot_sent(self, ball_data: BallData) -> None:
         print(f"Shot sent: {json.dumps(ball_data.to_json())}")
@@ -107,7 +114,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)
 
     def __device_error(self, error) -> None:
-        if self.device is not None:
+        if self._device is not None:
             self.__disconnect_device()
             logging.debug(f"Device error: {error}")
             self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
@@ -154,9 +161,9 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def __disconnect_device(self):
-        if self.device is not None:
-            self.device.disconnect_device()
-            self.device = None
+        if self._device is not None:
+            self._device.disconnect_device()
+            self._device = None
             self.__not_connected_status()
 
     def shutdown(self):

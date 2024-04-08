@@ -1,4 +1,7 @@
+from typing import Union
+
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
+from simplepyble import Peripheral
 
 from src.bluetooth.mlm2pro_device import MLM2PRODeviceQtBluetooth, TokenExpiryStates
 from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoothBase
@@ -15,14 +18,14 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         DeviceLaunchMonitorBluetoothBase.__init__(self, main_window=main_window, device_names=device_names)
         self.api = 'x'
 
-    def device_found(self, device: QBluetoothDeviceInfo) -> None:
+    def device_found(self, device: Union[QBluetoothDeviceInfo, Peripheral]) -> None:
         super().device_found(device)
-        if self.device is not None:
-            self.device.disc()
-            self.device = None
-        self.device = MLM2PRODeviceQtBluetooth(device)
+        if self._device is not None:
+            self._device.disconnect()
+            self._device = None
+        self._device = MLM2PRODeviceQtBluetooth(device)
         self._setup_device_signals()
-        self.device.connect_device()
+        self._device.connect_device()
 
     @property
     def start_message(self) -> str:
@@ -30,8 +33,8 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
 
     def _setup_device_signals(self) -> None:
         super()._setup_device_signals()
-        self.device.token_expiry.connect(self.__token_expiry_status)
-        self.device.launch_monitor_event.connect(self.__launch_monitor_event)
+        self._device.token_expiry.connect(self.__token_expiry_status)
+        self._device.launch_monitor_event.connect(self.__launch_monitor_event)
 
     def __launch_monitor_event(self, event: str) -> None:
         self.main_window.launch_monitor_event_label.setText(f"LM: {event}")
