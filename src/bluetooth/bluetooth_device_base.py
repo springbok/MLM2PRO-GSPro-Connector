@@ -49,6 +49,9 @@ class BluetoothDeviceBase(QObject):
     def connect_device(self) -> None:
         pass
 
+    def shutdown(self) -> None:
+        pass
+
     def _connected(self):
         print('connected')
         self.connected.emit('Connected')

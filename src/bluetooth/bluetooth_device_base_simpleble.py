@@ -4,6 +4,7 @@ from PySide6.QtBluetooth import QLowEnergyCharacteristic, QBluetoothUuid
 from PySide6.QtCore import QByteArray, QTimer
 from simplepyble import Peripheral
 
+from src.bluetooth.bluetooth_client_simpleble import BluetoothClientSimpleBLE
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 
 
@@ -18,23 +19,24 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
                  device_heartbeat_interval)
         self._ble_device = device
         self._service_uuid = self.__uuid_to_string(service_uuid)
+        self._client: BluetoothClientSimpleBLE = BluetoothClientSimpleBLE(self._ble_device)
+        self._client.connected.connect(self.__init_device)
+        self._client.error.connect(self.__catch_error)
+        self._client.disconnected.connect(self.__reset_connection)
 
     def connect_device(self):
         if self._ble_device is None:
             self.error.emit("No device to connect to.")
-            return
-        try:
-            print(f'connect_client {self._ble_device.identifier()} {self._ble_device.address()}')
-            self._ble_device.set_callback_on_connected(QTimer().singleShot(3000, lambda: self.__init_device()))
-            self._ble_device.set_callback_on_disconnected(self.__reset_connection)
-            self._ble_device.connect()
-            print('after connect')
-        except Exception as e:
-            self.__catch_error(format(e))
+        else:
+            self.status_update.emit('Connecting...', self._ble_device.identifier())
+            msg = f'Connecting to {self._ble_device.identifier()} {self._ble_device.address()}'
+            print(msg)
+            logging.debug(msg)
+            self._client.resume()
 
     def disconnect_device(self):
         if self._ble_device is not None:
-            logging.debug(f'Disconnecting from device: {self._ble_device.name()}')
+            logging.debug(f'Disconnecting from device: {self._ble_device.identifier()}')
         if self._heartbeat_timer.isActive():
             self._heartbeat_timer.stop()
         if self._ble_device.is_connected():
@@ -50,6 +52,9 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
             print('xxxx disconnecting')
             self.disconnecting.emit('Disconnecting...')
             self._ble_device.disconnect()
+
+    def shutdown(self):
+        self._client.shutdown()
 
     def __init_device(self):
         self._subscribe_to_notifications()
@@ -81,7 +86,7 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
     def __reset_connection(self) -> None:
         self.disconnected.emit('Disconnected')
         logging.debug(f"Disconnected from device, cleaning up")
-        self._ble_device = None
+        #self._ble_device = None
 
     def __catch_error(self, error) -> None:
         msg = f'An error has occurred: {error}'

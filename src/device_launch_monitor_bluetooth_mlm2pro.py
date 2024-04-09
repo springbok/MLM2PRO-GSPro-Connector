@@ -22,9 +22,9 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
 
     def device_found(self, device: Union[QBluetoothDeviceInfo, Peripheral]) -> None:
         super().device_found(device)
-        return
         if self._device is not None:
-            self._device.disconnect()
+            print(f'xxxx Found device: {device.identifier()}')
+            #self._device.disconnect()
             self._device = None
         if device.__class__ == QBluetoothDeviceInfo:
             device_class = get_device_class(BluetoothDeviceBaseQtBluetooth)

@@ -169,7 +169,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.__not_connected_status()
 
     def shutdown(self):
+        self.__disconnect_device()
+        self._device.shutdown()
         if self._scanner.__class__ == BluetoothDeviceScannerSimpleBLE:
             self._scanner.shutdown()
-        self.__disconnect_device()
         super().shutdown()
