@@ -92,6 +92,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self._device.error.connect(self.__device_error)
         self._device.connected.connect(self.__device_connected)
         self._device.update_battery.connect(self.__update_battery)
+        self._device.disconnected.connect(self.__disconnected)
         #self._device.shot.connect(self.__shot_sent)
         self._device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
@@ -152,7 +153,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
     def start_message(self) -> str:
         return ' '
 
-    def __disconnected(self, device):
+    def __disconnected(self, value):
         print('__disconnected')
         self.__not_connected_status()
 
@@ -165,12 +166,15 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __disconnect_device(self):
         if self._device is not None:
+            print(f'{self.__class__.__name__} __disconnect_device')
             self._device.disconnect_device()
             self.__not_connected_status()
 
     def shutdown(self):
+        print(f'{self.__class__.__name__} shutdown')
         self.__disconnect_device()
-        self._device.shutdown()
+        if self._device is not None:
+            self._device.shutdown()
         if self._scanner.__class__ == BluetoothDeviceScannerSimpleBLE:
             self._scanner.shutdown()
         super().shutdown()

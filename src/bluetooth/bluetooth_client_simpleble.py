@@ -53,7 +53,7 @@ class BluetoothClientSimpleBLE(QObject):
         self.connected.emit()
 
     def __disconnected(self) -> None:
-        msg = f'Disconnected'
+        msg = f'Client Disconnected'
         print(msg)
         logging.debug(msg)
         self.disconnected.emit()
@@ -65,7 +65,7 @@ class BluetoothClientSimpleBLE(QObject):
         self._pause.set()
 
     def shutdown(self):
-        print('client shutdown')
+        print(f'{self.__class__.__name__} shutdown')
         self._shutdown.set()
         self._pause.set()
         self._thread.quit()

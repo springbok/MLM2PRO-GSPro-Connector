@@ -1,4 +1,5 @@
 import logging
+from typing import List, Union
 
 from PySide6.QtBluetooth import QLowEnergyCharacteristic, QBluetoothUuid
 from PySide6.QtCore import QByteArray, QTimer
@@ -35,31 +36,32 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
             self._client.resume()
 
     def disconnect_device(self):
-        if self._ble_device is not None:
-            logging.debug(f'Disconnecting from device: {self._ble_device.identifier()}')
         if self._heartbeat_timer.isActive():
             self._heartbeat_timer.stop()
-        if self._ble_device.is_connected():
+        if self._ble_device is not None and self._ble_device.is_connected():
             print('connected - disconnecting')
             if self._armed:
                 self._disarm_device()
-            print(f'self._notification_uuids: {self._notification_uuids}')
+            print(f'self._notifications: {self._notifications}')
             logging.debug('Unsubscribing from notifications')
             print('Unsubscribing from notifications')
-            for uuid in self._notification_uuids:
-                    self._ble_device.unsubscribe(uuid.toString())
-                    logging.info(f'Unsubscribed from notification {uuid.toString()}')
+            for uuid in self._notifications:
+                self._ble_device.unsubscribe(self._service_uuid, uuid)
+                logging.info(f'Unsubscribed from notification {uuid}')
+            self._notifications = []
             print('xxxx disconnecting')
             self.disconnecting.emit('Disconnecting...')
             self._ble_device.disconnect()
 
     def shutdown(self):
-        self._client.shutdown()
+        print(f'{self.__class__.__name__} shutdown')
+        if self._client is not None:
+            self._client.shutdown()
 
     def __init_device(self):
-        self._subscribe_to_notifications()
-        print('emit do_authenticate')
-        QTimer().singleShot(1000, lambda: self.do_authenticate.emit())
+        if self._subscribe_to_notifications():
+            print('emit do_authenticate')
+            QTimer().singleShot(1000, lambda: self.do_authenticate.emit())
 
     def _subscribe_to_notifications(self):
         services = self._ble_device.services()
@@ -67,26 +69,42 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
             print(f"    Service UUID: {service.uuid()}")
             print(f"    Service data: {service.data()}")
         self.status_update.emit('Subscribing...', self._ble_device.identifier())
-        try:
-            for uuid in self._notification_uuids:
-                msg = f"Subscribing to notifications for {uuid.toString()} on {self._ble_device.identifier()}"
-                logging.debug(msg)
-                print(msg)
-                print(f'self._service_uuid: {self._service_uuid} self.__uuid_to_string(uuid) {self.__uuid_to_string(uuid)}')
-                self._ble_device.notify(self._service_uuid,
-                                        self.__uuid_to_string(uuid),
-                                        lambda data: print(f"Notification: {data}"))
-                print(f'Subscribed to notifications for {uuid.toString()} on {self._ble_device.identifier()}')
-        except Exception as e:
-            self.__catch_error(format(e))
+        print(f'len(services): {len(services)} self._service_uuid: {self._service_uuid}')
+        if len(services) <= 0 or not any(self._service_uuid == service.uuid() for service in services):
+            msg = f"Could not find primary service {self._service_uuid} on {self._ble_device.address()}."
+            logging.debug(msg)
+            print(msg)
+            self.error.emit(msg)
+        else:
+            try:
+                self._notifications = []
+                for uuid in self._notification_uuids:
+                    msg = f"Subscribing to notifications for {uuid.toString()} on {self._ble_device.identifier()}"
+                    logging.debug(msg)
+                    print(msg)
+                    print(f'self._service_uuid: {self._service_uuid} self.__uuid_to_string(uuid) {self.__uuid_to_string(uuid)}')
+                    uuid_str = self.__uuid_to_string(uuid)
+                    self._ble_device.notify(self._service_uuid,
+                                            uuid_str,
+                                            lambda data: print(f"Notification: {data}"))
+                    print(f'Subscribed to notifications for {uuid_str} on {self._ble_device.identifier()}')
+                    self._notifications.append(uuid_str)
+            except Exception as e:
+                self.error.emit(format(e))
+                return False
+            return True
 
     def _is_connected(self) -> bool:
         return self._ble_device is not None and self._ble_device.is_connected()
 
     def __reset_connection(self) -> None:
-        self.disconnected.emit('Disconnected')
+        self._client.disconnected.disconnect()
+        print(f'{self.__class__.__name__} __reset_connection')
         logging.debug(f"Disconnected from device, cleaning up")
-        #self._ble_device = None
+        self.disconnect_device()
+        self._client.shutdown()
+        self._ble_device = None
+        self.disconnected.emit('Disconnected')
 
     def __catch_error(self, error) -> None:
         msg = f'An error has occurred: {error}'
