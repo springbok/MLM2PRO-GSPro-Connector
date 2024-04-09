@@ -1,17 +1,10 @@
-import datetime
 import logging
 
-from PySide6.QtBluetooth import QLowEnergyController, QLowEnergyService, QBluetoothDeviceInfo, QLowEnergyCharacteristic, \
-    QBluetoothUuid
-from PySide6.QtCore import QObject, QByteArray, Signal, QTimer
-from typing import Union, List
-
+from PySide6.QtBluetooth import QLowEnergyCharacteristic, QBluetoothUuid
+from PySide6.QtCore import QByteArray, QTimer
 from simplepyble import Peripheral
 
-from src.appdata import AppDataPaths
-from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
-from src.settings import Settings
 
 
 class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):

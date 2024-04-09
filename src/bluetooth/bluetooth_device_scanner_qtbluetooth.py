@@ -1,12 +1,15 @@
 import logging
 from PySide6.QtBluetooth import QBluetoothDeviceDiscoveryAgent, QBluetoothDeviceInfo
-from PySide6.QtCore import QObject, QTimer
-
-from src.bluetooth.bluetooth_device_scanner_signals import BluetoothDeviceScannerSignals
+from PySide6.QtCore import QObject, QTimer, Signal
 
 
 class BluetoothDeviceScannerQtBluetooth(QObject):
     SCANNER_TIMEOUT = 40000
+
+    device_found = Signal(object)
+    device_not_found = Signal()
+    status_update = Signal(str)
+    error = Signal(str)
 
     def __init__(self, launch_minitor_names: list[str]):
         super().__init__()

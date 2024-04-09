@@ -21,9 +21,9 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self._device = None
         self._device_names = device_names
         if self.main_window.settings.bluetooth_library == BluetoothLibrary.SIMPLEBLE:
-            self.scanner = BluetoothDeviceScannerSimpleBLE(self._device_names)
+            self._scanner = BluetoothDeviceScannerSimpleBLE(self._device_names)
         else:
-            self.scanner = BluetoothDeviceScannerQtBluetooth(self._device_names)
+            self._scanner = BluetoothDeviceScannerQtBluetooth(self._device_names)
         self.__setup_signals()
         self.__not_connected_status()
 
@@ -34,10 +34,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.start_server_button.clicked.connect(self.server_start_stop)
         self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         # Scanner signals
-        self.scanner.signals.status_update.connect(self.__status_update)
-        self.scanner.signals.device_found.connect(self.device_found)
-        self.scanner.signals.device_not_found.connect(self.__device_not_found)
-        self.scanner.signals.error.connect(self.__scanner_error)
+        self._scanner.status_update.connect(self.__status_update)
+        self._scanner.device_found.connect(self.device_found)
+        self._scanner.device_not_found.connect(self.__device_not_found)
+        self._scanner.error.connect(self.__scanner_error)
 
     def __club_selected(self, club_data):
         self._device.club_selected(club_data['Player']['Club'])
@@ -45,7 +45,10 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def server_start_stop(self) -> None:
         if self._device is None:
-            self.scanner.scan()
+            if self._scanner.__class__ == BluetoothDeviceScannerSimpleBLE:
+                self._scanner.resume()
+            else:
+                self._scanner.scan()
         else:
             self.__disconnect_device()
 
@@ -166,5 +169,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.__not_connected_status()
 
     def shutdown(self):
+        if self._scanner.__class__ == BluetoothDeviceScannerSimpleBLE:
+            self._scanner.shutdown()
         self.__disconnect_device()
         super().shutdown()
