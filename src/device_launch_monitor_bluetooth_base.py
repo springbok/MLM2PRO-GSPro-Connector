@@ -40,17 +40,20 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self._scanner.error.connect(self.__scanner_error)
 
     def __club_selected(self, club_data):
-        self._device.club_selected(club_data['Player']['Club'])
+        if self._device is not None:
+            self._device.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
 
     def server_start_stop(self) -> None:
-        if self._device is None:
+        if not self._device is None and not self._device.is_connected():
+            print(f'{self.__class__.__name__} server_start_stop, connected disconnecting')
+            self.__disconnect_device()
+        else:
+            print(f'{self.__class__.__name__} server_start_stop, not connected connecting')
             if self._scanner.__class__ == BluetoothDeviceScannerSimpleBLE:
                 self._scanner.resume()
             else:
                 self._scanner.scan()
-        else:
-            self.__disconnect_device()
 
     def device_found(self, device: Union[QBluetoothDeviceInfo, Peripheral]) -> None:
         name = ''

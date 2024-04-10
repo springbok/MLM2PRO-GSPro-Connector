@@ -36,22 +36,28 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
             self._client.resume()
 
     def disconnect_device(self):
-        if self._heartbeat_timer.isActive():
-            self._heartbeat_timer.stop()
-        if self._ble_device is not None and self._ble_device.is_connected():
-            print('connected - disconnecting')
-            if self._armed:
-                self._disarm_device()
-            print(f'self._notifications: {self._notifications}')
-            logging.debug('Unsubscribing from notifications')
-            print('Unsubscribing from notifications')
-            for uuid in self._notifications:
-                self._ble_device.unsubscribe(self._service_uuid, uuid)
-                logging.info(f'Unsubscribed from notification {uuid}')
-            self._notifications = []
-            print('xxxx disconnecting')
-            self.disconnecting.emit('Disconnecting...')
-            self._ble_device.disconnect()
+        print(f'{self.__class__.__name__} disconnect_device self._ble_device.is_connected() {self._ble_device.is_connected()}')
+        try:
+            if self._heartbeat_timer.isActive():
+                print(f'stopping heartbeat timer')
+                self._heartbeat_timer.stop()
+            if self._ble_device is not None: # and self._ble_device.is_connected():
+                print(f'{self.__class__.__name__} ble_device present disconnect_device')
+                if self._armed:
+                    self._disarm_device()
+                print(f'self._notifications: {self._notifications}')
+                logging.debug('Unsubscribing from notifications')
+                print('Unsubscribing from notifications')
+                for uuid in self._notifications:
+                    self._ble_device.unsubscribe(self._service_uuid, uuid)
+                    logging.info(f'Unsubscribed from notification {uuid}')
+                self._notifications = []
+                print('xxxx disconnecting')
+                self.disconnecting.emit('Disconnecting...')
+                self._ble_device.disconnect()
+        except Exception as e:
+            logging.debug(f'Error disconnecting from device: {e}')
+        print(f'{self.__class__.__name__} disconnect_device done')
 
     def shutdown(self):
         print(f'{self.__class__.__name__} shutdown')
@@ -94,7 +100,7 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
                 return False
             return True
 
-    def _is_connected(self) -> bool:
+    def is_connected(self) -> bool:
         return self._ble_device is not None and self._ble_device.is_connected()
 
     def __reset_connection(self) -> None:
@@ -102,8 +108,6 @@ class BluetoothDeviceBaseSimpleBLE(BluetoothDeviceBase):
         print(f'{self.__class__.__name__} __reset_connection')
         logging.debug(f"Disconnected from device, cleaning up")
         self.disconnect_device()
-        self._client.shutdown()
-        self._ble_device = None
         self.disconnected.emit('Disconnected')
 
     def __catch_error(self, error) -> None:

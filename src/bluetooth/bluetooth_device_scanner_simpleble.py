@@ -116,8 +116,8 @@ class BluetoothDeviceScannerSimpleBLE(QObject):
         self._pause.set()
 
     def shutdown(self):
+        print(f'{self.__class__.__name__} shutdown')
         self._shutdown.set()
         self._pause.set()
         self._thread.quit()
         self._thread.wait()
-        self._thread.deleteLater()

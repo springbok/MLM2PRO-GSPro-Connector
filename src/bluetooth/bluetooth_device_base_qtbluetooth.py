@@ -211,7 +211,7 @@ class BluetoothDeviceBaseQtBluetooth(QObject):
     def _authenticate(self):
         pass
 
-    def _is_connected(self) -> bool:
+    def is_connected(self) -> bool:
         return self._controller and self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState
 
     def __reset_connection(self) -> None:

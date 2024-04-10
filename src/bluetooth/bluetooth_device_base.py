@@ -81,7 +81,7 @@ class BluetoothDeviceBase(QObject):
     def _authenticate(self) -> None:
         pass
 
-    def _is_connected(self) -> bool:
+    def is_connected(self) -> bool:
         pass
 
     def _write_characteristic(self, characteristic_uuid: str, data: bytearray) -> None:
