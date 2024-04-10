@@ -67,7 +67,7 @@ class BluetoothDeviceBase(QObject):
     def _sensor_address(self) -> str:
         return self._controller.remoteAddress().toString()
 
-    def connect_device(self):
+    def connect_device(self) -> None:
         if self._ble_device is None:
             self.error.emit("No device to connect to.")
             return
@@ -91,7 +91,7 @@ class BluetoothDeviceBase(QObject):
         self._controller.disconnectFromDevice()
         self._controller.connectToDevice()
 
-    def _connected(self):
+    def _connected(self) -> None:
         print('connected')
         self.connected.emit('Connected')
         self._set_next_expected_heartbeat()
@@ -99,26 +99,26 @@ class BluetoothDeviceBase(QObject):
         self._arm_device()
         self._armed = True
 
-    def _arm_device(self):
+    def _arm_device(self) -> None:
         pass
 
-    def _disarm_device(self):
+    def _disarm_device(self) -> None:
         pass
 
-    def club_selected(self, club: str):
+    def club_selected(self, club: str) -> None:
         self._current_club = club
 
-    def __rssi_read(self, rssi: int):
+    def __rssi_read(self, rssi: int) -> None:
         self.rssi_read.emit(rssi)
 
-    def __service_found(self, service_uuid: QBluetoothUuid):
+    def __service_found(self, service_uuid: QBluetoothUuid) -> None:
         logging.debug(f'Found service: {service_uuid.toString()}')
         print(f'Found service: {service_uuid.toString()}')
         
-    def _heartbeat(self):
+    def _heartbeat(self) -> None:
         pass
 
-    def disconnect_device(self):
+    def disconnect_device(self) -> None:
         if self._ble_device is not None:
             logging.debug(f'Disconnecting from device: {self._ble_device.name()}')
         if self._controller is not None:
@@ -144,14 +144,14 @@ class BluetoothDeviceBase(QObject):
                 self._controller.disconnectFromDevice()
 
 
-    def __discover_services(self):
+    def __discover_services(self) -> None:
         print(f'discover services state: {self._controller.state()}')
         if self._controller is not None:
             logging.debug(f'Discovering services for {self._ble_device.name()}')
             self.status_update.emit('Discovering services...', self._ble_device.name())
             QTimer().singleShot(250, lambda: self._controller.discoverServices())
 
-    def __connect_to_service(self):
+    def __connect_to_service(self) -> None:
         self.status_update.emit('Connecting to service...', self._ble_device.name())
         print(f'__connect_to_service {self._controller.services()}')
         primary_service: list[QBluetoothUuid] = [
@@ -177,7 +177,7 @@ class BluetoothDeviceBase(QObject):
         logging.debug(f'Discovering service details {self._service.serviceUuid().toString()} on {self._sensor_address()}')
         QTimer().singleShot(250, lambda: self._service.discoverDetails())
 
-    def __service_state_changed(self, state: QLowEnergyService.ServiceState):
+    def __service_state_changed(self, state: QLowEnergyService.ServiceState) -> None:
         print(f'__service_state_changed {state} {QLowEnergyService.ServiceState.RemoteServiceDiscovered}')
         logging.debug(f'Service state changed: {state}')
         if state != QLowEnergyService.ServiceState.RemoteServiceDiscovered:
@@ -186,12 +186,12 @@ class BluetoothDeviceBase(QObject):
             return
         QTimer().singleShot(1000, lambda: self.__init_device())
 
-    def __init_device(self):
+    def __init_device(self) -> None:
         self._subscribe_to_notifications()
         print('emit do_authenticate')
         QTimer().singleShot(1000, lambda: self.do_authenticate.emit())
 
-    def _subscribe_to_notifications(self):
+    def _subscribe_to_notifications(self) -> None:
         self.status_update.emit('Subscribing...', self._ble_device.name())
         for uuid in self._notification_uuids:
             msg = f"Subscribing to notifications for {uuid.toString()} on {self._sensor_address()}."
@@ -217,7 +217,7 @@ class BluetoothDeviceBase(QObject):
             self._service.writeDescriptor(descriptor, self.ENABLE_NOTIFICATION)
             print(f'Subscribed to notifications for {uuid.toString()} on {self._sensor_address()}')
 
-    def _authenticate(self):
+    def _authenticate(self) -> None:
         pass
 
     def _is_connected(self) -> bool:
@@ -269,7 +269,7 @@ class BluetoothDeviceBase(QObject):
         self.error.emit(msg)
         self.__reset_connection()
 
-    def _data_handler(self, char: QLowEnergyCharacteristic, data: QByteArray):
+    def _data_handler(self, char: QLowEnergyCharacteristic, data: QByteArray) -> None:
         pass
 
     def _write_characteristic(self, characteristic_uuid: QBluetoothUuid, data: bytearray) -> None:
@@ -283,11 +283,11 @@ class BluetoothDeviceBase(QObject):
         else:
             self.error.emit(f'Characteristic: {characteristic_uuid.toString()} not found or not writable')
 
-    def _set_next_expected_heartbeat(self):
+    def _set_next_expected_heartbeat(self) -> None:
         now = datetime.datetime.utcnow()
         self._next_heartbeat = now + datetime.timedelta(seconds=self._device_heartbeat_interval)
         #logging.debug(f'Next heartbeat expected at {self._next_heartbeat} now: {now}')
 
     @property
-    def _heartbeat_overdue(self):
+    def _heartbeat_overdue(self) -> bool:
         return datetime.datetime.utcnow() > self._next_heartbeat
