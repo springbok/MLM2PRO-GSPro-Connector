@@ -3,7 +3,7 @@ import logging
 
 from PySide6.QtBluetooth import QLowEnergyController, QLowEnergyService, QBluetoothDeviceInfo, QLowEnergyCharacteristic, \
     QBluetoothUuid
-from PySide6.QtCore import QObject, QByteArray, Signal, QTimer
+from PySide6.QtCore import QObject, QByteArray, Signal, QTimer, QThread
 from typing import Union, List
 
 from src.appdata import AppDataPaths
@@ -45,17 +45,24 @@ class BluetoothDeviceBase(QObject):
         self._notifications = []
         self.ENABLE_NOTIFICATION: QByteArray = QByteArray.fromHex(b"0100")
         self.DISABLE_NOTIFICATION: QByteArray = QByteArray.fromHex(b"0000")
-        self._heartbeat_timer = QTimer()
+        self._heartbeat_timer: QTimer = QTimer()
         self._heartbeat_timer.setInterval(heartbeat_interval)
         self._heartbeat_timer.timeout.connect(self._heartbeat)
         self._device_heartbeat_interval = device_heartbeat_interval
         self._set_next_expected_heartbeat()
-        self._app_paths = AppDataPaths('mlm2pro-gspro-connect')
-        self._settings = Settings(self._app_paths)
-        self._armed = False
-        self._current_club = ''
+        self._app_paths: AppDataPaths = AppDataPaths('mlm2pro-gspro-connect')
+        self._settings: Settings = Settings(self._app_paths)
+        self._armed: bool = False
+        self._current_club: str = ''
+        self._thread: QThread = QThread()
+        self.moveToThread(self._thread)
+        self._thread.start()
 
-    def _sensor_address(self):
+    def shutdown(self):
+        self._thread.quit()
+        self._thread.wait()
+
+    def _sensor_address(self) -> str:
         return self._controller.remoteAddress().toString()
 
     def connect_device(self):
