@@ -21,6 +21,7 @@ class TokenExpiryStates:
     TOKEN_EXPIRED = 'red'
     TOKEN_EXPIRY_OK = 'green'
 
+
 @dataclass
 class LaunchMonitorEvents:
     SHOT = 0

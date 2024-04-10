@@ -76,7 +76,6 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self._device.error.connect(self.__device_error)
         self._device.connected.connect(self.__device_connected)
         self._device.update_battery.connect(self.__update_battery)
-        #self._device.shot.connect(self.__shot_sent)
         self._device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def __shot_sent(self, ball_data: BallData) -> None:
@@ -129,23 +128,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.main_window.server_status_label.setText(message)
         self.main_window.server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
 
-    def __gspro_message(self, message) -> None:
-        self.device_worker.send_msg(message)
-
     @property
     def start_message(self) -> str:
         return ' '
 
-    def __disconnected(self, device):
-        print('__disconnected')
-        self.__not_connected_status()
-
     def __client_status_update(self, status) -> None:
         self.__update_ui(status, 'orange', None, 'red', 'Stop', False)
-
-    def __connected(self):
-        self.main_window.server_connection_label.setText(f'Connected {self.main_window.settings.BLUETOOTH_ip_address}:{self.main_window.settings.BLUETOOTH_port}')
-        self.main_window.server_connection_label.setStyleSheet(f"QLabel {{ background-color : green; color : white; }}")
 
     def __disconnect_device(self):
         if self._device is not None:

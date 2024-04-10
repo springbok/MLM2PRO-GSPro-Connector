@@ -73,7 +73,7 @@ class BluetoothDeviceBase(QObject):
             return
         print(f'connect_client {self._ble_device.name()}')
         if self._controller is not None:
-            logging.debug(f"Currently connected to {self._ble_device.name()} at {self._ble_device.remoteAddress().toString()}.")
+            logging.debug(f"Currently connected to {self._ble_device.name()} at {self._sensor_address()}.")
             self.connected.emit('Connected')
             return
         print(f'Connecting to {self._ble_device.name()}')
@@ -208,7 +208,7 @@ class BluetoothDeviceBase(QObject):
                 QBluetoothUuid.DescriptorType.ClientCharacteristicConfiguration
             )
             if not descriptor.isValid():
-                msg = f"Characteristic descriptor is invalid for {uuid.toString()} on {self._ble_device.remoteAddress().toString()}."
+                msg = f"Characteristic descriptor is invalid for {uuid.toString()} on {self._sensor_address()}."
                 logging.debug(msg)
                 self.error.emit(msg)
                 return

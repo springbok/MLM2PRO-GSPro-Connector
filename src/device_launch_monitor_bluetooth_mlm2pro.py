@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
 
 from src.bluetooth.mlm2pro_device import MLM2PRODevice, TokenExpiryStates
@@ -13,7 +15,7 @@ class DeviceLaunchMonitorBluetoothMLM2PRO(DeviceLaunchMonitorBluetoothBase):
         device_names = [DeviceLaunchMonitorBluetoothMLM2PRO.MLM2PRO_NAME_PREFIX,
                         DeviceLaunchMonitorBluetoothMLM2PRO.BLUEZ_NAME_PREFIX]
         DeviceLaunchMonitorBluetoothBase.__init__(self, main_window=main_window, device_names=device_names)
-        self._device: MLM2PRODevice = None
+        self._device: Optional[MLM2PRODevice] = None
 
     def device_found(self, device: QBluetoothDeviceInfo) -> None:
         super().device_found(device)
