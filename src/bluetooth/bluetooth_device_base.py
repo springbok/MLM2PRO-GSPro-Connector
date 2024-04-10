@@ -124,6 +124,7 @@ class BluetoothDeviceBase(QObject):
         if self._controller is not None:
             print(f'disconnect_device {self._controller.state()}')
             self._controller.errorOccurred.disconnect()
+            self._controller.disconnected.disconnect()
             if self._heartbeat_timer.isActive():
                 self._heartbeat_timer.stop()
             if self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState:
@@ -142,6 +143,9 @@ class BluetoothDeviceBase(QObject):
                 print('xxxx disconnecting')
                 self.disconnecting.emit('Disconnecting...')
                 self._controller.disconnectFromDevice()
+        self.__remove_service()
+        self.__remove_client()
+        self._ble_device = None
 
 
     def __discover_services(self) -> None:
@@ -226,9 +230,10 @@ class BluetoothDeviceBase(QObject):
     def __reset_connection(self) -> None:
         self.disconnected.emit('Disconnected')
         logging.debug(f"Disconnected from device, cleaning up")
-        self.__remove_service()
-        self.__remove_client()
-        self._ble_device = None
+        self.error.emit('Unexpected disconnection')
+        #self.__remove_service()
+        #self.__remove_client()
+        #self._ble_device = None
 
     def __remove_service(self) -> None:
         if self._service is None:
