@@ -37,6 +37,7 @@ class BluetoothDeviceScanner(QObject):
             self.scan_timer.start()
 
     def stop_scanning(self) -> None:
+        self.scan_timer.stop()
         if self.scanner.isActive():
             self.scanner.stop()
         if self.device is None:
@@ -50,6 +51,7 @@ class BluetoothDeviceScanner(QObject):
                 device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names):
             self.device = device
             self.scanner.stop()
+            self.scan_timer.stop()
             logging.debug(f'Launch monitor found: {self.device.name()} uuid: {self.device.address().toString()}')
             print(f'Launch monitor found: {self.device.name()} uuid: {self.device.address().toString()}')
             self.status_update.emit('Device found')
@@ -60,6 +62,7 @@ class BluetoothDeviceScanner(QObject):
         self.error.emit(error)
 
     def __scanning_finished(self) -> None:
+        self.scan_timer.stop()
         if self.device is None:
             logging.debug('No device found')
             self.status_update.emit('No device found')

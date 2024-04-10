@@ -13,14 +13,16 @@ from src.log_message import LogMessageTypes, LogMessageSystems
 
 class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
+    RSSI_SCAN_INTERVAL = 5000
+
     def __init__(self, main_window, device_names: list[str]):
         DeviceBase.__init__(self, main_window)
         self._device = None
         self._device_names: list[str] = device_names
-        self._scanner:BluetoothDeviceScanner  = BluetoothDeviceScanner(self._device_names)
+        self._scanner: BluetoothDeviceScanner  = BluetoothDeviceScanner(self._device_names)
         self._rssi_scanner: BluetoothDeviceRssiScanner = BluetoothDeviceRssiScanner(self._device_names)
         self._rssi_timer: QTimer = QTimer()
-        self._rssi_timer.setInterval(5000)
+        self._rssi_timer.setInterval(DeviceLaunchMonitorBluetoothBase.RSSI_SCAN_INTERVAL)
         self._rssi_timer.timeout.connect(self._rssi_scanner.scan)
         self.__setup_signals()
         self.__not_connected_status()

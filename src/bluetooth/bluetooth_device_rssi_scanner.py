@@ -18,19 +18,18 @@ class BluetoothDeviceRssiScanner(QObject):
         self.scan_timer = QTimer()
 
     def scan(self) -> None:
-        print(f'scan timeout {self.scanner.lowEnergyDiscoveryTimeout()}')
         if self.scanner.isActive():
             logging.debug("Already searching for device.")
         else:
-            logging.debug(f'Searching for the following launch monitor names: {self.launch_minitor_names}')
             self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().LowEnergyMethod)
             # For some reason the setLowEnergyDiscoveryTimeout doesn't work
             self.scan_timer.setSingleShot(True)
-            self.scan_timer.setInterval(BluetoothDeviceScanner.SCANNER_TIMEOUT)
+            self.scan_timer.setInterval(BluetoothDeviceRssiScanner.SCANNER_TIMEOUT)
             self.scan_timer.timeout.connect(self.stop_scanning)
             self.scan_timer.start()
 
     def stop_scanning(self) -> None:
+        self.scan_timer.stop()
         if self.scanner.isActive():
             self.scanner.stop()
 
@@ -38,6 +37,8 @@ class BluetoothDeviceRssiScanner(QObject):
         if device.coreConfigurations() & QBluetoothDeviceInfo.CoreConfiguration.LowEnergyCoreConfiguration and \
                 device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names):
             self.rssi.emit(device.rssi())
+            self.stop_scanning()
 
     def __scanning_finished(self) -> None:
+        self.scan_timer.stop()
         self.finished.emit()
