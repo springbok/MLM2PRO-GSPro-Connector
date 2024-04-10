@@ -2,8 +2,10 @@ import json
 import logging
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
+from src.bluetooth.bluetooth_device_rssi_scanner import BluetoothDeviceRssiScanner
 from src.bluetooth.bluetooth_device_scanner import BluetoothDeviceScanner
 from src.device_base import DeviceBase
 from src.log_message import LogMessageTypes, LogMessageSystems
@@ -15,7 +17,11 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         DeviceBase.__init__(self, main_window)
         self._device = None
         self._device_names: list[str] = device_names
-        self.scanner = BluetoothDeviceScanner(self._device_names)
+        self._scanner:BluetoothDeviceScanner  = BluetoothDeviceScanner(self._device_names)
+        self._rssi_scanner: BluetoothDeviceRssiScanner = BluetoothDeviceRssiScanner(self._device_names)
+        self._rssi_timer: QTimer = QTimer()
+        self._rssi_timer.setInterval(5000)
+        self._rssi_timer.timeout.connect(self._rssi_scanner.scan)
         self.__setup_signals()
         self.__not_connected_status()
 
@@ -26,10 +32,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.main_window.start_server_button.clicked.connect(self.server_start_stop)
         self.main_window.gspro_connection.club_selected.connect(self.__club_selected)
         # Scanner signals
-        self.scanner.status_update.connect(self.__status_update)
-        self.scanner.device_found.connect(self.device_found)
-        self.scanner.device_not_found.connect(self.__device_not_found)
-        self.scanner.error.connect(self.__scanner_error)
+        self._scanner.status_update.connect(self.__status_update)
+        self._scanner.device_found.connect(self.device_found)
+        self._scanner.device_not_found.connect(self.__device_not_found)
+        self._scanner.error.connect(self.__scanner_error)
+
+        self._rssi_scanner.rssi.connect(self.__update_rssi)
 
     def __club_selected(self, club_data):
         self._device.club_selected(club_data['Player']['Club'])
@@ -37,7 +45,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def server_start_stop(self) -> None:
         if self._device is None:
-            self.scanner.scan()
+            self._scanner.scan()
         else:
             self.__disconnect_device()
 
@@ -95,6 +103,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __device_connected(self, status) -> None:
         self.__update_ui(status, 'green', None, 'green', 'Stop', True)
+        self._rssi_timer.start()
 
     def __device_status_update(self, status_message, device_name) -> None:
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)
@@ -141,6 +150,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self._device.disconnect_device()
             self._device.shutdown()
             self._device = None
+            self._rssi_timer.stop()
             self.__not_connected_status()
 
     def shutdown(self):

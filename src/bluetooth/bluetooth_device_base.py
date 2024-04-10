@@ -254,7 +254,7 @@ class BluetoothDeviceBase(QObject):
         try:
             print('Deleting bluetooth client')
             logging.debug('Deleting bluetooth client')
-            self._controller.disconnected.disconnect()
+            #self._controller.disconnected.disconnect()
             self._controller.deleteLater()
         except Exception as e:
             print(f"Couldn't remove client: {e}")
