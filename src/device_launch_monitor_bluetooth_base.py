@@ -149,6 +149,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __disconnect_device(self):
         if self._device is not None:
+            print(f'{self.__class__.__name__} Disconnecting device')
             self._device.disconnect_device()
             self._device.shutdown()
             self._device = None

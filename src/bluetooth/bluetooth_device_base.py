@@ -58,9 +58,11 @@ class BluetoothDeviceBase(QObject):
         self.moveToThread(self._thread)
         self._thread.start()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
+        print(f'{self.__class__.__name__} shutdown')
         self._thread.quit()
         self._thread.wait()
+        self._thread.deleteLater()
 
     def _sensor_address(self) -> str:
         return self._controller.remoteAddress().toString()
@@ -119,8 +121,8 @@ class BluetoothDeviceBase(QObject):
     def disconnect_device(self):
         if self._ble_device is not None:
             logging.debug(f'Disconnecting from device: {self._ble_device.name()}')
-        print(f'disconnect_device {self._controller.state()}')
         if self._controller is not None:
+            print(f'disconnect_device {self._controller.state()}')
             self._controller.errorOccurred.disconnect()
             if self._heartbeat_timer.isActive():
                 self._heartbeat_timer.stop()

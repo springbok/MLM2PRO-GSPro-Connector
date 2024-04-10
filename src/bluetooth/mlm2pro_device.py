@@ -3,6 +3,7 @@ import json
 import logging
 from dataclasses import dataclass
 
+import pytz
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
 from PySide6.QtCore import QUuid, QByteArray, QTimer, Signal
 
