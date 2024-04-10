@@ -312,11 +312,11 @@ class MLM2PRODevice(BluetoothDeviceBase):
 
     def __token_expiry_date_state(self, token_expiry: float) -> str:
         # Assuming token expiry is the Unix timestamp
-        expire_date = datetime.datetime.fromtimestamp(token_expiry)
+        expire_date = pytz.utc.localize(datetime.datetime.fromtimestamp(token_expiry))
         # Convert to local datetime
         local_expire_date = expire_date.astimezone()
         # Get current datetime
-        now = datetime.datetime.now().astimezone()
+        now = pytz.utc.localize(datetime.datetime.now()).astimezone()
         # Check if expire_date is in the future and less than 3 hours from now
         token_state = TokenExpiryStates.TOKEN_EXPIRY_OK
         if now < local_expire_date < now + datetime.timedelta(hours=3):

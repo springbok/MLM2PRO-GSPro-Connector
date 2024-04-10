@@ -5,6 +5,6 @@ numpy
 pillow
 tesserocr
 opencv-python
-bleak
+pytz
 pycryptodome
 requests
