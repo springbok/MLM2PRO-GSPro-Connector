@@ -36,7 +36,8 @@ class BluetoothDeviceRssiScanner(QObject):
     def __add_device(self, device) -> None:
         if device.coreConfigurations() & QBluetoothDeviceInfo.CoreConfiguration.LowEnergyCoreConfiguration and \
                 device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names):
-            self.rssi.emit(device.rssi())
+            if device.rssi() > 0:
+                self.rssi.emit(device.rssi())
             self.stop_scanning()
 
     def __scanning_finished(self) -> None:
