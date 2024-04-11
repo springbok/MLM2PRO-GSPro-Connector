@@ -3,7 +3,6 @@ import json
 import logging
 from dataclasses import dataclass
 
-import pytz
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
 from PySide6.QtCore import QUuid, QByteArray, QTimer, Signal
 
@@ -313,12 +312,14 @@ class MLM2PRODevice(BluetoothDeviceBase):
         self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID, command_data)
 
     def __token_expiry_date_state(self, token_expiry: float) -> str:
+        if token_expiry <= 0:
+            return 'Uknown'
         # Assuming token expiry is the Unix timestamp
-        expire_date = pytz.utc.localize(datetime.datetime.fromtimestamp(token_expiry))
+        expire_date = datetime.datetime.fromtimestamp(token_expiry)
         # Convert to local datetime
         local_expire_date = expire_date.astimezone()
         # Get current datetime
-        now = pytz.utc.localize(datetime.datetime.now()).astimezone()
+        now = datetime.datetime.now().astimezone()
         # Check if expire_date is in the future and less than 3 hours from now
         token_state = TokenExpiryStates.TOKEN_EXPIRY_OK
         if now < local_expire_date < now + datetime.timedelta(hours=3):
