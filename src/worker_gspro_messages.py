@@ -5,16 +5,17 @@ import traceback
 from threading import Event
 from PySide6.QtCore import Signal
 from src.gspro_connect import GSProConnect
+from src.worker_base import WorkerBase
 from src.worker_screenshot_device_base import WorkerScreenshotBase
 
 
-class WorkerGSProMessages(WorkerScreenshotBase):
+class WorkerGSProMessages(WorkerBase):
     player_info = 201
     club_selected = Signal(object)
     gspro_message = Signal(object)
 
     def __init__(self, gspro_connection: GSProConnect):
-        super(WorkerScreenshotBase, self).__init__()
+        super().__init__()
         self.gspro_connection = gspro_connection
         self.name = 'WorkerGSProMessages'
 

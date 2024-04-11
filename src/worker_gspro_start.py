@@ -4,15 +4,15 @@ from PySide6.QtCore import Signal
 from src.auto_click import clickButton
 from src.ctype_screenshot import ScreenMirrorWindow
 from src.settings import Settings
-from src.worker_screenshot_device_base import WorkerScreenshotBase
+from src.worker_base import WorkerBase
 
 
-class WorkerGSProStart(WorkerScreenshotBase):
+class WorkerGSProStart(WorkerBase):
     gspro_started = Signal()
 
 
     def __init__(self, settings: Settings):
-        super(WorkerScreenshotBase, self).__init__()
+        super().__init__()
         self.settings = settings
         self.name = 'WorkerGSProStart'
 

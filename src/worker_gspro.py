@@ -2,14 +2,14 @@ import traceback
 from PySide6.QtCore import Signal
 
 from src.gspro_connect import GSProConnect
-from src.worker_screenshot_device_base import WorkerScreenshotBase
+from src.worker_base import WorkerBase
 
 
-class WorkerGspro(WorkerScreenshotBase):
+class WorkerGspro(WorkerBase):
     sent = Signal(object or None)
 
     def __init__(self, gspro_connection: GSProConnect):
-        super(WorkerScreenshotBase, self).__init__()
+        super().__init__()
         self.gspro_connection = gspro_connection
 
     def run(self, balldata=None):

@@ -229,7 +229,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
                 self.launch_monitor_connected.emit()
 
     def _heartbeat(self) -> None:
-        if self._is_connected():
+        if self._is_connected() and self._armed:
             if self._heartbeat_overdue:
                 # heartbeat not received within 20 seconds, reset subscriptions
                 print(f'Heartbeat not received for {MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')

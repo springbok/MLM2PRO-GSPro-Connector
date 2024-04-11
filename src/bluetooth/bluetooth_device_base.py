@@ -62,7 +62,7 @@ class BluetoothDeviceBase(QObject):
         print(f'{self.__class__.__name__} shutdown')
         self._thread.quit()
         self._thread.wait()
-        self._thread.deleteLater()
+        #self._thread.deleteLater()
 
     def _sensor_address(self) -> str:
         return self._controller.remoteAddress().toString()
@@ -90,12 +90,11 @@ class BluetoothDeviceBase(QObject):
         #self._controller.rssiRead.connect(self.__rssi_read)
         self._controller.disconnectFromDevice()
         self._controller.connectToDevice()
+        self._heartbeat_timer.start()
 
     def _connected(self) -> None:
-        print('connected')
         self.connected.emit('Connected')
         self._set_next_expected_heartbeat()
-        self._heartbeat_timer.start()
         self._arm_device()
         self._armed = True
 
