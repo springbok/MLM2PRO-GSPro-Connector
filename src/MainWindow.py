@@ -11,6 +11,7 @@ from src.MainWindow_ui import Ui_MainWindow
 from src.appdata import AppDataPaths
 from src.ball_data import BallData, BallMetrics
 from src.device_launch_monitor_bluetooth_mlm2pro import DeviceLaunchMonitorBluetoothMLM2PRO
+from src.device_launch_monitor_bluetooth_r10 import DeviceLaunchMonitorBluetoothR10
 from src.device_launch_monitor_relay_server import DeviceLaunchMonitorRelayServer
 from src.devices import Devices
 from src.log_message import LogMessage, LogMessageSystems, LogMessageTypes
@@ -30,7 +31,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.03.04'
+    version = 'V1.04.00'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -127,6 +128,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.gspro_connection.gspro_start(self.settings, True)
             if self.settings.device_id != LaunchMonitor.RELAY_SERVER and \
                     self.settings.device_id != LaunchMonitor.MLM2PRO_BT and \
+                    self.settings.device_id != LaunchMonitor.R10_BT and \
                     hasattr(self.settings, 'default_device') and self.settings.default_device != 'None':
                 self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Default Device specified, attempting to auto start all software')
                 devices = Devices(self.app_paths)
@@ -134,7 +136,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if not device is None:
                     self.launch_monitor.select_device.select_device(device)
                     self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Selecting Device:{device.name}')
-            elif self.settings.device_id == LaunchMonitor.MLM2PRO_BT:
+            elif self.settings.device_id == LaunchMonitor.MLM2PRO_BT or \
+                    self.settings.device_id != LaunchMonitor.R10_BT:
                 self.launch_monitor.server_start_stop()
             elif self.settings.device_id == LaunchMonitor.RELAY_SERVER:
                 self.launch_monitor.resume()
@@ -149,7 +152,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.settings_form.prev_device_id != self.settings.device_id:
             if self.launch_monitor is not None:
                 self.launch_monitor.shutdown()
-            if self.settings.device_id != LaunchMonitor.RELAY_SERVER and self.settings.device_id != LaunchMonitor.MLM2PRO_BT:
+            if self.settings.device_id != LaunchMonitor.RELAY_SERVER and \
+                    self.settings.device_id != LaunchMonitor.MLM2PRO_BT and \
+                    self.settings.device_id != LaunchMonitor.R10_BT:
                 self.launch_monitor = DeviceLaunchMonitorScreenshot(self)
                 self.device_control_widget.show()
                 self.server_control_widget.hide()
@@ -159,8 +164,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.server_control_widget.show()
                 if self.settings.device_id == LaunchMonitor.RELAY_SERVER:
                     self.launch_monitor = DeviceLaunchMonitorRelayServer(self)
-                else:
+                elif self.settings.device_id == LaunchMonitor.MLM2PRO_BT:
                     self.launch_monitor = DeviceLaunchMonitorBluetoothMLM2PRO(self)
+                else:
+                    self.launch_monitor = DeviceLaunchMonitorBluetoothR10(self)
                 self.actionDevices.setEnabled(False)
             self.launch_monitor_groupbox.setTitle(f"{self.settings.device_id} Launch Monitor")
 
