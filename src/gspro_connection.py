@@ -129,6 +129,7 @@ class GSProConnection(QObject):
                 if self.send_shot_thread is None:
                     self.__setup_send_shot_thread()
                 self.send_shot_worker.start()
+                self.__shutdown_gspro_start_thread()
 
     def disconnect_from_gspro(self):
         if self.connected:
@@ -206,6 +207,7 @@ class GSProConnection(QObject):
                         DETACHED_PROCESS = 0x00000008
                         subprocess.Popen([settings.gspro_path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(settings.gspro_path), shell=False)
                     if auto_start:
+                        logging.debug(f'{self.__class__.__name__} Starting WorkerGSProStart')
                         self.gspro_start_thread = QThread()
                         self.gspro_start_worker = WorkerGSProStart(settings)
                         self.gspro_start_worker.moveToThread(self.gspro_start_thread)
@@ -233,14 +235,19 @@ class GSProConnection(QObject):
             self.send_shot_thread.wait()
             self.send_shot_thread = None
             self.send_shot_worker = None
-        if self.gspro_start_thread is not None:
-            self.gspro_start_worker.shutdown()
-            self.gspro_start_thread.quit()
-            self.gspro_start_thread.wait()
-            self.gspro_start_thread = None
-            self.gspro_start_worker = None
         if self.thread is not None:
             self.thread.quit()
             self.thread.wait()
             self.thread = None
             self.worker = None
+
+    def __shutdown_gspro_start_thread(self):
+        logging.debug(f'{self.__class__.__name__} Shutting down threads, gspro_start_thread')
+        if self.gspro_start_thread is not None:
+            self.gspro_start_worker.shutdown()
+            if self.gspro_start_thread.isRunning():
+                logging.debug(f'{self.__class__.__name__} Quitting gspro_start_thread')
+                self.gspro_start_thread.quit()
+                self.gspro_start_thread.wait()
+            self.gspro_start_thread = None
+            self.gspro_start_worker = None

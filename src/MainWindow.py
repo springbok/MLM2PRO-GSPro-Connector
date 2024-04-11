@@ -177,8 +177,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.close()
 
     def closeEvent(self, event: QShowEvent) -> None:
+        logging.debug(f'{MainWindow.app_name} Closing gspro connection')
         self.gspro_connection.shutdown()
+        logging.debug(f'{MainWindow.app_name} Closing putting')
         self.putting.shutdown()
+        logging.debug(f'{MainWindow.app_name} Closing launch monitor connection')
         self.launch_monitor.shutdown()
 
     def __settings(self):
