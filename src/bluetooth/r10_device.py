@@ -35,7 +35,7 @@ class R10Device(BluetoothDeviceBase):
     launch_monitor_event = Signal(str)
 
     HEARTBEAT_INTERVAL = 2000
-    MLM2PRO_HEARTBEAT_INTERVAL = 20000
+    R10_HEARTBEAT_INTERVAL = 20000
 
     MLM2PRO_SEND_INITIAL_PARAMS = 2
     MLM2PRO_AUTH_SUCCESS = 0
@@ -58,19 +58,20 @@ class R10Device(BluetoothDeviceBase):
     STATUS_CHARACTERISTIC_UUID = QBluetoothUuid(QUuid('{6A4E3403-667B-11E3-949A-0800200C9A66}'))
 
     def __init__(self, device: QBluetoothDeviceInfo):
+        i=1
+'''
         super().__init__(device,
-                         MLM2PRODevice.SERVICE_UUID,
-                         MLM2PRODevice.HEARTBEAT_INTERVAL,
-                         MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL)
+                         R10Device.MEASUREMENT_SERVICE_UUID,
+                         R10Device.HEARTBEAT_INTERVAL,
+                         R10Device.R10_HEARTBEAT_INTERVAL)
         self._user_token = "0"
         self._ball_type = 2
         self._altitude_metres = 0.0
         self._temperature_celsius = 15.0
         self._notification_uuids = [
-            MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID,
-            MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID,
-            MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID,
-            MLM2PRODevice.MEASUREMENT_CHARACTERISTIC_UUID
+            R10Device.CONTROL_POINT_CHARACTERISTIC_UUID,
+            R10Device.STATUS_CHARACTERISTIC_UUID,
+            R10Device.MEASUREMENT_SERVICE_UUID
         ]
         self._encryption = MLM2PROEncryption()
         self._web_api = MLM2PROWebApi(self._settings.web_api['url'],
@@ -101,25 +102,25 @@ class R10Device(BluetoothDeviceBase):
             f'----> Writing authentication data: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
         print(
             f'----> Writing authentication data: {BluetoothUtils.byte_array_to_hex_string(b_arr)}')
-        self._write_characteristic(MLM2PRODevice.AUTH_CHARACTERISTIC_UUID, b_arr)
+        self._write_characteristic(R10Device.AUTH_CHARACTERISTIC_UUID, b_arr)
 
     def _data_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         """
         `data` GATT data
         """
-        if characteristic.uuid() != MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
+        if characteristic.uuid() != R10Device.HEARTBEAT_CHARACTERISTIC_UUID:
             print(f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
             logging.debug(f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}')
         byte_array = data.data()
-        if characteristic.uuid() == MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID:
+        if characteristic.uuid() == R10Device.WRITE_RESPONSE_CHARACTERISTIC_UUID:
             self.__process_write_response(byte_array)
-        elif characteristic.uuid() == MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID:
+        elif characteristic.uuid() == R10Device.HEARTBEAT_CHARACTERISTIC_UUID:
             #print(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             #logging.debug(f'Heartbeat received from MLM2PRO {characteristic.uuid().toString()}')
             self._set_next_expected_heartbeat()
-        elif characteristic.uuid() == MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID:
+        elif characteristic.uuid() == R10Device.EVENTS_CHARACTERISTIC_UUID:
             self.__process_events(byte_array)
-        elif characteristic.uuid() == MLM2PRODevice.MEASUREMENT_CHARACTERISTIC_UUID:
+        elif characteristic.uuid() == R10Device.MEASUREMENT_CHARACTERISTIC_UUID:
             self.__process_measurement(byte_array)
 
     def __process_measurement(self, data: bytearray) -> None:
@@ -207,14 +208,14 @@ class R10Device(BluetoothDeviceBase):
         logging.debug(f'Write response: {int_array}')
         if len(data) >= 2:
             if len(data) > 2:
-                if data[0] == MLM2PRODevice.MLM2PRO_SEND_INITIAL_PARAMS:
+                if data[0] == R10Device.MLM2PRO_SEND_INITIAL_PARAMS:
                     logging.debug(f'Authentication requested {data[0]}: Initial parameters need to be sent to MLM2PRO')
                     print(f'Auth requested: Initial parameters need to be sent to MLM2PRO {data[0]}')
-                    if data[1] != MLM2PRODevice.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
+                    if data[1] != R10Device.MLM2PRO_AUTH_SUCCESS or len(data) < 4:
                         print(f'Auth failed: {data[1]}')
                         logging.debug(print(f'Authentication failed: {data[1]}'))
                         token_expiry = self.__token_expiry_date_state(self._settings.web_api['token_expiry'])
-                        if data[1] == MLM2PRODevice.MLM2PRO_RAPSODO_AUTH_FAILED:
+                        if data[1] == R10Device.MLM2PRO_RAPSODO_AUTH_FAILED:
                             self.error.emit(f'Your 3rd party authorisation expired on {token_expiry}, please re-authorise in the Rapsodo app and try again once that has been done.')
                             return
                         else:
@@ -223,7 +224,7 @@ class R10Device(BluetoothDeviceBase):
                     print('Auth success, send initial params')
                     logging.debug('Authentication success, send initial params')
                     QTimer().singleShot(0, lambda: self.__send_initial_params(data))
-                elif data[0] == MLM2PRODevice.MLM2PRO_AUTH_SUCCESS:
+                elif data[0] == R10Device.MLM2PRO_AUTH_SUCCESS:
                     logging.debug(f'Authentication successful {data[0]}')
                     print(f'Authentication successful {data[0]}')
                     self.launch_monitor_connected.emit()
@@ -238,10 +239,10 @@ class R10Device(BluetoothDeviceBase):
         if self._is_connected() and self._armed:
             if self._heartbeat_overdue:
                 # heartbeat not received within 20 seconds, reset subscriptions
-                print(f'Heartbeat not received for {MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
-                logging.debug(f'Heartbeat not received for {MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                print(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                logging.debug(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
                 self._set_next_expected_heartbeat()
-            self._write_characteristic(MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID, bytearray([0x01]))
+            self._write_characteristic(R10Device.HEARTBEAT_CHARACTERISTIC_UUID, bytearray([0x01]))
 
     def __send_initial_params(self, data: bytearray) -> None:
         byte_array = data[2:]
@@ -295,7 +296,7 @@ class R10Device(BluetoothDeviceBase):
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
         print(
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(config_data)}')
-        self._write_characteristic(MLM2PRODevice.CONFIGURE_CHARACTERISTIC_UUID, config_data)
+        self._write_characteristic(R10Device.CONFIGURE_CHARACTERISTIC_UUID, config_data)
 
     def _disarm_device(self) -> None:
         byte_array = bytearray.fromhex("010D0000000000")
@@ -317,7 +318,7 @@ class R10Device(BluetoothDeviceBase):
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(command_data)}')
         print(
             f'----> Writing config data: {BluetoothUtils.byte_array_to_hex_string(command_data)}')
-        self._write_characteristic(MLM2PRODevice.COMMAND_CHARACTERISTIC_UUID, command_data)
+        self._write_characteristic(R10Device.COMMAND_CHARACTERISTIC_UUID, command_data)
 
     def __token_expiry_date_state(self, token_expiry: float) -> str:
         if token_expiry <= 0:
@@ -337,3 +338,4 @@ class R10Device(BluetoothDeviceBase):
         expire_date_str = local_expire_date.strftime("%Y-%m-%d %H:%M:%S")
         self.token_expiry.emit(token_state, expire_date_str)
         return expire_date_str
+'''

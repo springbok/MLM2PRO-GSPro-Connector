@@ -28,16 +28,3 @@ class DeviceLaunchMonitorBluetoothR10(DeviceLaunchMonitorBluetoothBase):
     @property
     def start_message(self) -> str:
         return 'Before starting Bluetooth connection ensure your launch monitor is turned on and a STEADY RED light is showing.'
-
-    def _setup_device_signals(self) -> None:
-        super()._setup_device_signals()
-        self._device.token_expiry.connect(self.__token_expiry_status)
-        self._device.launch_monitor_event.connect(self.__launch_monitor_event)
-
-    def __launch_monitor_event(self, event: str) -> None:
-        self.main_window.launch_monitor_event_label.setText(f"LM: {event}")
-        self.main_window.launch_monitor_event_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
-
-    def __token_expiry_status(self, status: TokenExpiryStates, token_expiry_date: str) -> None:
-        self.main_window.token_expiry_label.setText(f"Auth: {token_expiry_date}")
-        self.main_window.token_expiry_label.setStyleSheet(f"QLabel {{ background-color : {status}; color : white; }}")
