@@ -12,7 +12,7 @@ class BluetoothDeviceService(QObject):
     DISABLE_NOTIFICATION: QByteArray = QByteArray.fromHex(b"0000")
 
     error = Signal(tuple)
-    subscribed = Signal()
+    notifications_subscribed = Signal()
     status_update = Signal(str, str)
 
     def __init__(self,
@@ -35,7 +35,7 @@ class BluetoothDeviceService(QObject):
             s for s in discovered_services if self._service_uuid.toString().upper() in s.toString().upper()
         ]
         if not service:
-            msg = f"Could not find service{self._service_uuid.toString()} on device {self._ble_device.name()}."
+            msg = f"Could not find service{self._service_uuid.toString()} on device {self._ble_device.name()}"
             logging.debug(msg)
             self.error.emit(msg)
             return
@@ -88,6 +88,7 @@ class BluetoothDeviceService(QObject):
             # Subscribe to notifications for the characteristic
             self._service.writeDescriptor(descriptor, BluetoothDeviceService.ENABLE_NOTIFICATION)
             print(f'Subscribed to notifications for {uuid.toString()} on {self._ble_device.name()}')
+        self.notifications_subscribed.emit()
 
     def unsubscribe_from_notifications(self) -> None:
         if len(self._notifications) > 0 and self._service is not None:

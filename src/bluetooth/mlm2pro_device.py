@@ -55,7 +55,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
     def __init__(self, device: QBluetoothDeviceInfo):
         self._services = []
         self._primary_service: BluetoothDeviceService = BluetoothDeviceService(
-            self._ble_device,
+            device,
             MLM2PRODevice.SERVICE_UUID,
             [
                 MLM2PRODevice.EVENTS_CHARACTERISTIC_UUID,
@@ -66,7 +66,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
             self.data_handler
         )
         self._services.append(self._primary_service)
-        self._primary_service.subscribed.connect(self.__init_device())
+        self._primary_service.notifications_subscribed.connect(self.__init_device)
         super().__init__(device,
                          self._services,
                          MLM2PRODevice.HEARTBEAT_INTERVAL,

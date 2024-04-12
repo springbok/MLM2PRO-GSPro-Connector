@@ -2,8 +2,8 @@ import datetime
 import logging
 
 from PySide6.QtBluetooth import QLowEnergyController, QBluetoothDeviceInfo, QBluetoothUuid
-from PySide6.QtCore import QObject, QByteArray, Signal, QTimer, QThread
-from typing import Union, List, Callable, Optional
+from PySide6.QtCore import QObject, Signal, QTimer, QThread
+from typing import Union
 
 from src.appdata import AppDataPaths
 from src.ball_data import BallData
@@ -27,7 +27,6 @@ class BluetoothDeviceBase(QObject):
     connected = Signal(str)
     status_update = Signal(str, str)
     rssi_read = Signal(int)
-    do_authenticate = Signal()
     update_battery = Signal(int)
     shot = Signal(BallData)
     launch_monitor_connected = Signal()
@@ -40,7 +39,6 @@ class BluetoothDeviceBase(QObject):
         self._ble_device = device
         self._controller: Union[None, QLowEnergyController] = None
         self._services: list[BluetoothDeviceService] = services
-        self._notifications = []
         self._heartbeat_timer: QTimer = QTimer()
         self._heartbeat_timer.setInterval(heartbeat_interval)
         self._heartbeat_timer.timeout.connect(self._heartbeat)
@@ -126,7 +124,6 @@ class BluetoothDeviceBase(QObject):
                 print('connected - disconnecting')
                 if self._armed:
                     self._disarm_device()
-                print(f'self._notifications: {self._notifications}')
                 for service in self._services:
                     service.unsubscribe_from_notifications()
             if self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState or \
