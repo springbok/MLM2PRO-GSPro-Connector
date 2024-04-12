@@ -135,7 +135,7 @@ class BluetoothDeviceBase(QObject):
                     logging.debug('Unsubscribing from notifications')
                     print('Unsubscribing from notifications')
                     for notification in self._notifications:
-                        if not notification.isValid():
+                        if notification.isValid():
                             self._service.writeDescriptor(notification, self.DISABLE_NOTIFICATION)
             if self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState or \
                     self._controller.state() == QLowEnergyController.ControllerState.ConnectedState:
