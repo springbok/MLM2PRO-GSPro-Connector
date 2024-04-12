@@ -18,12 +18,14 @@ class BluetoothDeviceService(QObject):
     def __init__(self,
                  ble_device: QBluetoothDeviceInfo,
                  service_uuid: QBluetoothUuid,
-                 characteristic_uuids: list[QBluetoothUuid],
-                 handler: Callable) -> None:
+                 characteristic_uuids: Optional[list[QBluetoothUuid]],
+                 notification_handler: Optional[Callable],
+                 read_handler: Optional[Callable]) -> None:
         super().__init__()
         self._service_uuid: QBluetoothUuid = service_uuid
         self._characteristic_uuids: list[QBluetoothUuid] = characteristic_uuids
-        self._handler = handler
+        self._notification_handler: Optional[Callable] = notification_handler
+        self._read_handler: Optional[Callable] = read_handler
         self._service: Optional[QLowEnergyService] = None
         self._notifications = []
         self._ble_device: QBluetoothDeviceInfo = ble_device
@@ -48,7 +50,7 @@ class BluetoothDeviceService(QObject):
             return
         logging.debug(f'Connected to service {self._service.serviceUuid().toString()}')
         self._service.stateChanged.connect(self.__service_state_changed)
-        self._service.characteristicChanged.connect(self._handler)
+        self._service.characteristicChanged.connect(self._notification_handler)
         print(f'Discovering service details {self._service.serviceUuid().toString()}')
         logging.debug(f'Discovering service details {self._service.serviceUuid().toString()}')
         QTimer().singleShot(250, lambda: self._service.discoverDetails())
@@ -61,7 +63,10 @@ class BluetoothDeviceService(QObject):
         if self._service is None:
             return
         logging.debug(f'Characteristics for service {self._service_uuid.toString()} has been discovered: {state}')
-        self.subscribe_to_notifications()
+        if self._notification_handler is not None and self._characteristic_uuids is not None:
+            self.subscribe_to_notifications()
+        if self._read_handler is not None:
+            self._service.characteristicRead.connect(self._read_handler)
 
     def subscribe_to_notifications(self) -> None:
         self.status_update.emit('Subscribing...', self._ble_device.name())
@@ -109,3 +114,14 @@ class BluetoothDeviceService(QObject):
             self._service.writeCharacteristic(characteristic, QByteArray(data))
         else:
             self.error.emit(f'Characteristic: {characteristic_uuid.toString()} not found or not writable')
+
+    def read_characteristic(self, characteristic_uuid: QBluetoothUuid) -> None:
+        if self._service is None:
+            self.error.emit('Service not initialized')
+            return
+        characteristic = self._service.characteristic(characteristic_uuid)
+        if characteristic.isValid() and QLowEnergyCharacteristic.PropertyType.Read & characteristic.properties():
+            # Read the characteristic
+            self._service.readCharacteristic(characteristic)
+        else:
+            self.error.emit(f'Characteristic: {characteristic_uuid.toString()} not found or not readable')

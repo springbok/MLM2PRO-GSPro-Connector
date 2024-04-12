@@ -2,36 +2,21 @@ import datetime
 import json
 import logging
 from dataclasses import dataclass
+from typing import Optional
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
 from PySide6.QtCore import QUuid, QByteArray, QTimer, Signal
 
 from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
+from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
 from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.mlm2pro_encryption import MLM2PROEncryption
 from src.bluetooth.mlm2pro_secret import MLM2PROSecret
 from src.bluetooth.mlm2pro_web_api import MLM2PROWebApi
 
 
-@dataclass
-class TokenExpiryStates:
-    TOKEN_EXPIRY_3HOURS = 'orange'
-    TOKEN_EXPIRED = 'red'
-    TOKEN_EXPIRY_OK = 'green'
-
-
-@dataclass
-class LaunchMonitorEvents:
-    SHOT = 0
-    PROCESSING_SHOT = 1
-    READY = 2
-    BATTERY = 3
-    MISREAD_OR_DISARMED = 5
-
-
 class R10Device(BluetoothDeviceBase):
-    token_expiry = Signal(TokenExpiryStates, str)
     launch_monitor_event = Signal(str)
 
     HEARTBEAT_INTERVAL = 2000
@@ -58,7 +43,46 @@ class R10Device(BluetoothDeviceBase):
     STATUS_CHARACTERISTIC_UUID = QBluetoothUuid(QUuid('{6A4E3403-667B-11E3-949A-0800200C9A66}'))
 
     def __init__(self, device: QBluetoothDeviceInfo):
-        i=1
+        self._services: Optional[list[BluetoothDeviceService]] = None
+        self._device_info_service: BluetoothDeviceService = BluetoothDeviceService(
+            device,
+            R10Device.DEVICE_INFO_SERVICE_UUID,
+            None, None,
+            self._device_info_service_read_handler
+        )
+        self._services.append(self._device_info_service)
+        super().__init__(device,
+                         self._services,
+                         R10Device.HEARTBEAT_INTERVAL,
+                         R10Device.R10_HEARTBEAT_INTERVAL)
+        self._user_token = "0"
+        self._ball_type = 2
+        self._altitude_metres = 0.0
+        self._temperature_celsius = 15.0
+        self._encryption = MLM2PROEncryption()
+        self._web_api = MLM2PROWebApi(self._settings.web_api['url'],
+                                      MLM2PROSecret.decrypt(self._settings.web_api['secret']))
+
+    def _device_info_service_read_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
+        msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
+        print(msg)
+        logging.debug(msg)
+        if characteristic.uuid() == R10Device.SERIAL_NUMBER_CHARACTERISTIC_UUID:
+            self._serial_number = data.constData().decode('utf-8')
+            msg = f'Serial number: {self._serial_number}'
+        elif characteristic.uuid() == R10Device.FIRMWARE_CHARACTERISTIC_UUID:
+            self._firmware_version = data.constData().decode('utf-8')
+            msg = f'Firmware version: {self._firmware_version}'
+        elif characteristic.uuid() == R10Device.MODEL_CHARACTERISTIC_UUID:
+            self._model = data.constData().decode('utf-8')
+            msg = f'Model: {self._model}'
+        else:
+            msg = f'Unknown characteristic: {characteristic.uuid().toString()}'
+        print(msg)
+        logging.debug(msg)
+
+
+
 '''
         super().__init__(device,
                          R10Device.MEASUREMENT_SERVICE_UUID,
