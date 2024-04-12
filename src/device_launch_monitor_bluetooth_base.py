@@ -115,7 +115,7 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
             self.__disconnect_device()
             logging.debug(f"Device error: {error}")
             self.main_window.log_message(LogMessageTypes.LOGS, LogMessageSystems.BLUETOOTH, error)
-            QMessageBox.warning(self.main_window, "Unexpected error", error)
+            QMessageBox.warning(self.main_window, "Bluetooth Connection Error", error)
         self.__not_connected_status()
 
     def __update_rssi(self, rssi) -> None:

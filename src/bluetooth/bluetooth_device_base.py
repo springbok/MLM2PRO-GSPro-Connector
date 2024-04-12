@@ -191,7 +191,7 @@ class BluetoothDeviceBase(QObject):
         elif error == QLowEnergyController.Error.AuthorizationError:
             msg = f'The device is not authorized to connect to the device, error: {error}'
         else:
-            msg = f'An unknown error has occurred: {error}'
+            msg = f'An error has occurred: {error}'
         if self._controller is not None:
             msg = f'{self._controller.errorString()} {msg}'
         logging.debug(msg)
