@@ -38,7 +38,7 @@ class BluetoothDeviceRssiScanner(QObject):
         if device.coreConfigurations() & QBluetoothDeviceInfo.CoreConfiguration.LowEnergyCoreConfiguration and \
                 device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names):
             if device.rssi() < 0 and device.rssi() != self.previous_rssi:
-                logging.debug(f"RSSI updated for {device.name()} RSSI: {device.rssi()}")
+                #logging.debug(f"RSSI updated for {device.name()} RSSI: {device.rssi()}")
                 self.previous_rssi = device.rssi()
                 self.rssi.emit(device.rssi())
             self.stop_scanning()
