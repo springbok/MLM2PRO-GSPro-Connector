@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'PuttingForm.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,9 +24,9 @@ class Ui_PuttingForm(object):
         if not PuttingForm.objectName():
             PuttingForm.setObjectName(u"PuttingForm")
         PuttingForm.setWindowModality(Qt.ApplicationModal)
-        PuttingForm.resize(448, 455)
-        self.verticalLayout_4 = QVBoxLayout(PuttingForm)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        PuttingForm.resize(450, 474)
+        self.horizontalLayout = QHBoxLayout(PuttingForm)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.verticalLayout_10 = QVBoxLayout()
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.verticalLayout_10.setSizeConstraint(QLayout.SetNoConstraint)
@@ -81,7 +81,7 @@ class Ui_PuttingForm(object):
 
         self.exputt_camera_window_title_edit = QPlainTextEdit(self.groupBox)
         self.exputt_camera_window_title_edit.setObjectName(u"exputt_camera_window_title_edit")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.exputt_camera_window_title_edit.sizePolicy().hasHeightForWidth())
@@ -141,6 +141,27 @@ class Ui_PuttingForm(object):
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.webcam_window_width_label = QLabel(self.groupBox_2)
+        self.webcam_window_width_label.setObjectName(u"webcam_window_width_label")
+
+        self.horizontalLayout_12.addWidget(self.webcam_window_width_label)
+
+        self.webcam_putting_width_edit = QPlainTextEdit(self.groupBox_2)
+        self.webcam_putting_width_edit.setObjectName(u"webcam_putting_width_edit")
+        sizePolicy.setHeightForWidth(self.webcam_putting_width_edit.sizePolicy().hasHeightForWidth())
+        self.webcam_putting_width_edit.setSizePolicy(sizePolicy)
+        self.webcam_putting_width_edit.setMaximumSize(QSize(16777215, 31))
+        self.webcam_putting_width_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.webcam_putting_width_edit.setTabChangesFocus(True)
+        self.webcam_putting_width_edit.setLineWrapMode(QPlainTextEdit.WidgetWidth)
+
+        self.horizontalLayout_12.addWidget(self.webcam_putting_width_edit)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_12)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
@@ -210,7 +231,7 @@ class Ui_PuttingForm(object):
 
         self.verticalLayout_10.addLayout(self.verticalLayout_8)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_10.addItem(self.verticalSpacer)
 
@@ -218,7 +239,7 @@ class Ui_PuttingForm(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.find_video_sources_button = QPushButton(PuttingForm)
         self.find_video_sources_button.setObjectName(u"find_video_sources_button")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.find_video_sources_button.sizePolicy().hasHeightForWidth())
@@ -227,7 +248,7 @@ class Ui_PuttingForm(object):
 
         self.horizontalLayout_2.addWidget(self.find_video_sources_button)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
@@ -250,7 +271,7 @@ class Ui_PuttingForm(object):
         self.verticalLayout_10.addLayout(self.horizontalLayout_2)
 
 
-        self.verticalLayout_4.addLayout(self.verticalLayout_10)
+        self.horizontalLayout.addLayout(self.verticalLayout_10)
 
 
         self.retranslateUi(PuttingForm)
@@ -284,6 +305,11 @@ class Ui_PuttingForm(object):
         self.webcam_ball_color_combo.setItemText(0, QCoreApplication.translate("PuttingForm", u"None", None))
         self.webcam_ball_color_combo.setItemText(1, QCoreApplication.translate("PuttingForm", u"New Item", None))
 
+        self.webcam_window_width_label.setText(QCoreApplication.translate("PuttingForm", u"Camera Window Width                         ", None))
+#if QT_CONFIG(tooltip)
+        self.webcam_putting_width_edit.setToolTip(QCoreApplication.translate("PuttingForm", u"Window Title", None))
+#endif // QT_CONFIG(tooltip)
+        self.webcam_putting_width_edit.setPlaceholderText(QCoreApplication.translate("PuttingForm", u"Camera Window Width", None))
         self.label_5.setText(QCoreApplication.translate("PuttingForm", u"Auto Start Ball Tracking App", None))
         self.webcam_auto_start_combo.setItemText(0, QCoreApplication.translate("PuttingForm", u"None", None))
         self.webcam_auto_start_combo.setItemText(1, QCoreApplication.translate("PuttingForm", u"New Item", None))

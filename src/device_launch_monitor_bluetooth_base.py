@@ -120,9 +120,9 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __update_rssi(self, rssi) -> None:
         self.main_window.launch_monitor_rssi_label.setText(f"RSSI: {rssi}")
-        if rssi < -50 and rssi > -70:
+        if rssi > -60:
             color = 'green'
-        elif rssi < -70 and rssi > -80:
+        elif rssi <= -60 and rssi >= -80:
             color = 'orange'
         else:
             color = 'red'
