@@ -47,10 +47,19 @@ class R10Device(BluetoothDeviceBase):
         self._device_info_service: BluetoothDeviceService = BluetoothDeviceService(
             device,
             R10Device.DEVICE_INFO_SERVICE_UUID,
-            None, None,
+            None,
+            None,
             self._device_info_service_read_handler
         )
         self._device_info_service.services_discovered.connect(self.__read_device_info)
+        self._services.append(self._device_info_service)
+        self._battery_service: BluetoothDeviceService = BluetoothDeviceService(
+            device,
+            R10Device.BATTERY_SERVICE_UUID,
+            [R10Device.BATTERY_CHARACTERISTIC_UUID],
+            self._battery_info_handler,
+            None
+        )
         self._services.append(self._device_info_service)
         super().__init__(device,
                          self._services,
@@ -84,6 +93,14 @@ class R10Device(BluetoothDeviceBase):
         self._device_info_service.read_characteristic(R10Device.FIRMWARE_CHARACTERISTIC_UUID)
         self._device_info_service.read_characteristic(R10Device.MODEL_CHARACTERISTIC_UUID)
 
+    def _battery_info_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
+        msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
+        print(msg)
+        logging.debug(msg)
+        self.update_battery.emit(int(data.data()[0]))
+        msg = f'Battery level: {int(data.data()[0])}'
+        print(msg)
+        logging.debug(msg)
 
 '''
         super().__init__(device,
