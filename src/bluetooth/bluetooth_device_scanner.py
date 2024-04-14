@@ -46,7 +46,8 @@ class BluetoothDeviceScanner(QObject):
             self.device_not_found.emit()
 
     def __add_device(self, device) -> None:
-        print(f'info: {device.name()} {device.name().startswith("MLM2-") or device.name().startswith("BlueZ ")}')
+        print(f'info: {device.name()} self.launch_minitor_names: {self.launch_minitor_names}')
+        print(f'found: {device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names)}')
         if device.coreConfigurations() & QBluetoothDeviceInfo.CoreConfiguration.LowEnergyCoreConfiguration and \
                 device.name() and any(device.name().startswith(name) for name in self.launch_minitor_names):
             self.device = device

@@ -43,25 +43,19 @@ class R10Device(BluetoothDeviceBase):
     STATUS_CHARACTERISTIC_UUID = QBluetoothUuid(QUuid('{6A4E3403-667B-11E3-949A-0800200C9A66}'))
 
     def __init__(self, device: QBluetoothDeviceInfo):
-        self._services: Optional[list[BluetoothDeviceService]] = None
+        self._services: Optional[list[BluetoothDeviceService]] = []
         self._device_info_service: BluetoothDeviceService = BluetoothDeviceService(
             device,
             R10Device.DEVICE_INFO_SERVICE_UUID,
             None, None,
             self._device_info_service_read_handler
         )
+        self._device_info_service.services_discovered.connect(self.__read_device_info)
         self._services.append(self._device_info_service)
         super().__init__(device,
                          self._services,
                          R10Device.HEARTBEAT_INTERVAL,
                          R10Device.R10_HEARTBEAT_INTERVAL)
-        self._user_token = "0"
-        self._ball_type = 2
-        self._altitude_metres = 0.0
-        self._temperature_celsius = 15.0
-        self._encryption = MLM2PROEncryption()
-        self._web_api = MLM2PROWebApi(self._settings.web_api['url'],
-                                      MLM2PROSecret.decrypt(self._settings.web_api['secret']))
 
     def _device_info_service_read_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
@@ -82,6 +76,13 @@ class R10Device(BluetoothDeviceBase):
         print(msg)
         logging.debug(msg)
 
+    def __read_device_info(self) -> None:
+        msg = f'Reading device info for {self._ble_device.name()} at {self._sensor_address()}'
+        print(msg)
+        logging.debug(msg)
+        self._device_info_service.read_characteristic(R10Device.SERIAL_NUMBER_CHARACTERISTIC_UUID)
+        self._device_info_service.read_characteristic(R10Device.FIRMWARE_CHARACTERISTIC_UUID)
+        self._device_info_service.read_characteristic(R10Device.MODEL_CHARACTERISTIC_UUID)
 
 
 '''
