@@ -24,7 +24,7 @@ class Ui_PuttingForm(object):
         if not PuttingForm.objectName():
             PuttingForm.setObjectName(u"PuttingForm")
         PuttingForm.setWindowModality(Qt.ApplicationModal)
-        PuttingForm.resize(454, 464)
+        PuttingForm.resize(450, 474)
         self.horizontalLayout = QHBoxLayout(PuttingForm)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.verticalLayout_10 = QVBoxLayout()
@@ -305,7 +305,7 @@ class Ui_PuttingForm(object):
         self.webcam_ball_color_combo.setItemText(0, QCoreApplication.translate("PuttingForm", u"None", None))
         self.webcam_ball_color_combo.setItemText(1, QCoreApplication.translate("PuttingForm", u"New Item", None))
 
-        self.webcam_window_width_label.setText(QCoreApplication.translate("PuttingForm", u"Camera Window Width                          ", None))
+        self.webcam_window_width_label.setText(QCoreApplication.translate("PuttingForm", u"Camera Window Width                         ", None))
 #if QT_CONFIG(tooltip)
         self.webcam_putting_width_edit.setToolTip(QCoreApplication.translate("PuttingForm", u"Window Title", None))
 #endif // QT_CONFIG(tooltip)

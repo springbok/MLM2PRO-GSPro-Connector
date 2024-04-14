@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>464</height>
+    <width>450</width>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -195,7 +195,7 @@
               <item>
                <widget class="QLabel" name="webcam_window_width_label">
                 <property name="text">
-                 <string>Camera Window Width                          </string>
+                 <string>Camera Window Width                         </string>
                 </property>
                </widget>
               </item>

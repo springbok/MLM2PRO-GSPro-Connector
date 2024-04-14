@@ -23,7 +23,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
     def start_app(self):
         if self.main_window.putting_settings.webcam['auto_start'] == "Yes" and not self.__find_ball_tracking_app():
             try:
-                params = f'-c {self.main_window.putting_settings.webcam["ball_color"]} -w {self.main_window.putting_settings.webcam["camera"]} {self.main_window.putting_settings.webcam["params"]}'
+                params = f'-c {self.main_window.putting_settings.webcam["ball_color"]} -w {self.main_window.putting_settings.webcam["camera"]} -r {self.main_window.putting_settings.webcam["width"]} {self.main_window.putting_settings.webcam["params"]}'
                 logging.debug(f'Starting webcam app: {DevicePuttingWebcam.webcam_app} params: {params}')
                 os.spawnl(os.P_DETACH, DevicePuttingWebcam.webcam_app, f'{DevicePuttingWebcam.webcam_app} {params}')
             except Exception as e:

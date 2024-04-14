@@ -25,6 +25,7 @@ class PuttingSettings(SettingsBase):
                     "ip_address": "127.0.0.1",
                     "port": 8888,
                     "auto_start": "Yes",
+                    "width": 640,
                     "params": ""
                 },
                 "exputt": {
@@ -40,6 +41,15 @@ class PuttingSettings(SettingsBase):
                 }
             }
         )
+
+    def load(self):
+        super().load()
+        save = False
+        if 'width' not in self.webcam:
+            self.webcam['width'] = 640
+            save = True
+        if save:
+            super().save()
 
     def width(self):
         return self.exputt['window_rect']['right'] - self.exputt['window_rect']['left']
