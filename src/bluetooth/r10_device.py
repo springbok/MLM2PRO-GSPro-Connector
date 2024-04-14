@@ -61,6 +61,14 @@ class R10Device(BluetoothDeviceBase):
             None
         )
         self._services.append(self._battery_service)
+        self._interface_service: BluetoothDeviceService = BluetoothDeviceService(
+            device,
+            R10Device.DEVICE_INTERFACE_SERVICE,
+            [R10Device.DEVICE_INTERFACE_NOTIFIER],
+            self._interface_handler,
+            None
+        )
+        self._services.append(self._battery_service)
         super().__init__(device,
                          self._services,
                          R10Device.HEARTBEAT_INTERVAL,
@@ -101,6 +109,21 @@ class R10Device(BluetoothDeviceBase):
         msg = f'Battery level: {int(data.data()[0])}'
         print(msg)
         logging.debug(msg)
+
+    def _interface_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
+        print('_interface_handler')
+        msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
+        print(msg)
+        logging.debug(msg)
+
+    def _heartbeat(self) -> None:
+        if self._is_connected() and self._armed:
+            if self._heartbeat_overdue:
+                # heartbeat not received within 20 seconds, reset subscriptions
+                print(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                logging.debug(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                self._set_next_expected_heartbeat()
+            self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, bytearray([0x01]))
 
 '''
         super().__init__(device,
