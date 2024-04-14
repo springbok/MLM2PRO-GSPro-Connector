@@ -67,14 +67,15 @@ class R10Device(BluetoothDeviceBase):
         msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
         print(msg)
         logging.debug(msg)
+        decoded_data = data.data().decode('utf-8')
         if characteristic.uuid() == R10Device.SERIAL_NUMBER_CHARACTERISTIC_UUID:
-            self._serial_number = data.constData().decode('utf-8')
+            self._serial_number = decoded_data
             msg = f'Serial number: {self._serial_number}'
         elif characteristic.uuid() == R10Device.FIRMWARE_CHARACTERISTIC_UUID:
-            self._firmware_version = data.constData().decode('utf-8')
+            self._firmware_version = decoded_data
             msg = f'Firmware version: {self._firmware_version}'
         elif characteristic.uuid() == R10Device.MODEL_CHARACTERISTIC_UUID:
-            self._model = data.constData().decode('utf-8')
+            self._model = decoded_data
             msg = f'Model: {self._model}'
         else:
             msg = f'Unknown characteristic: {characteristic.uuid().toString()}'
