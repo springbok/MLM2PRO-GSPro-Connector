@@ -8,7 +8,7 @@ from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoot
 
 class DeviceLaunchMonitorBluetoothR10(DeviceLaunchMonitorBluetoothBase):
 
-    R10_NAME_PREFIX = " R10"
+    R10_NAME_PREFIX = "Approach R10"
 
     def __init__(self, main_window):
         device_names = [DeviceLaunchMonitorBluetoothR10.R10_NAME_PREFIX]
@@ -27,4 +27,4 @@ class DeviceLaunchMonitorBluetoothR10(DeviceLaunchMonitorBluetoothBase):
 
     @property
     def start_message(self) -> str:
-        return 'Before starting Bluetooth connection ensure your launch monitor is turned on and a STEADY RED light is showing.'
+        return 'Before starting Bluetooth connection ensure your launch monitor is turned on and paired.'

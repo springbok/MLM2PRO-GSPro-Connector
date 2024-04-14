@@ -14,6 +14,7 @@ class BluetoothDeviceService(QObject):
     error = Signal(tuple)
     notifications_subscribed = Signal()
     status_update = Signal(str, str)
+    services_discovered = Signal()
 
     def __init__(self,
                  ble_device: QBluetoothDeviceInfo,
@@ -67,6 +68,7 @@ class BluetoothDeviceService(QObject):
             self.subscribe_to_notifications()
         if self._read_handler is not None:
             self._service.characteristicRead.connect(self._read_handler)
+        self.services_discovered.emit()
 
     def subscribe_to_notifications(self) -> None:
         self.status_update.emit('Subscribing...', self._ble_device.name())
