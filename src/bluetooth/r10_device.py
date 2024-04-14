@@ -60,7 +60,7 @@ class R10Device(BluetoothDeviceBase):
             self._battery_info_handler,
             None
         )
-        self._services.append(self._device_info_service)
+        self._services.append(self._battery_service)
         super().__init__(device,
                          self._services,
                          R10Device.HEARTBEAT_INTERVAL,
