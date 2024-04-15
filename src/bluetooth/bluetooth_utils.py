@@ -1,3 +1,4 @@
+import binascii
 import math
 import struct
 from typing import List
@@ -62,3 +63,13 @@ class BluetoothUtils:
             short_bytes = struct.pack('<H' if is_little_endian else '>H', int_value)
             short_byte_array.extend(short_bytes)
         return short_byte_array
+
+    @staticmethod
+    def checksum(self, data: bytearray) -> int:
+        return binascii.crc32(data) & 0xFFFF
+
+    def to_hex_string(self, data: bytearray) -> str:
+        return binascii.hexlify(data).decode()
+
+    def from_hex_string(self, hex_string: str) -> bytearray:
+        return binascii.unhexlify(hex_string)

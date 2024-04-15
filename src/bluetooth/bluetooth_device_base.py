@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from PySide6.QtBluetooth import QLowEnergyController, QBluetoothDeviceInfo, QBluetoothUuid
+from PySide6.QtBluetooth import QLowEnergyController, QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyService
 from PySide6.QtCore import QObject, Signal, QTimer, QThread
 from typing import Union
 
@@ -147,9 +147,12 @@ class BluetoothDeviceBase(QObject):
         self.status_update.emit('Connecting to services...', self._ble_device.name())
         print(f'__connect_to_service {self._controller.services()}')
         for service in self._services:
-            service.connect_to_service(self._controller.services(), self._controller)
-            service.status_update.connect(self.status_update.emit)
-            service.error.connect(self.__catch_error)
+            self._connect_to_service(service)
+
+    def _connect_to_service(self, service: BluetoothDeviceService) -> None:
+        service.connect_to_service(self._controller.services(), self._controller)
+        service.status_update.connect(self.status_update.emit)
+        service.error.connect(self.__catch_error)
 
     def _is_connected(self) -> bool:
         return self._controller and self._controller.state() == QLowEnergyController.ControllerState.DiscoveredState
