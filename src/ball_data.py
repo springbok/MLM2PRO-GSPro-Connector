@@ -354,7 +354,7 @@ class BallData:
                     setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                     self.corrections[BallMetrics.CLUB_SPEED] = True
                     logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
-                self.__calc_spin()
+        self.__calc_spin()
 
     def __calc_spin(self):
         self.back_spin = round(
