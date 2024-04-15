@@ -109,7 +109,12 @@ class R10Device(BluetoothDeviceBase):
         print(msg)
         logging.debug(msg)
         if service == R10Device.DEVICE_INTERFACE_SERVICE:
-            self._interface_service_subscribed = True
+            message = bytearray.fromhex('00') + bytearray.fromhex("000000000000000000010000")
+            msg = f'----> Sending handshake message: {BluetoothUtils.byte_array_to_hex_string(message)}'
+            print(msg)
+            logging.debug(msg)
+            self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, message)
+            #self._interface_service_subscribed = True
 
     def _battery_info_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
@@ -132,7 +137,7 @@ class R10Device(BluetoothDeviceBase):
                     self._set_next_expected_heartbeat()
                     print(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
                     logging.debug(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
-            print('heartbeat')
+            byte_array =
             self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, bytearray([0x01]))
 
 '''
