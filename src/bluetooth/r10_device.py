@@ -51,7 +51,7 @@ class R10Device(BluetoothDeviceBase):
             None,
             self._device_info_service_read_handler
         )
-        self._device_info_service.services_discovered.connect(self.__read_device_info)
+        self._device_info_service.services_discovered.connect(self._services_discovered)
         self._services.append(self._device_info_service)
         self._battery_service: BluetoothDeviceService = BluetoothDeviceService(
             device,
@@ -68,11 +68,13 @@ class R10Device(BluetoothDeviceBase):
             self._interface_handler,
             None
         )
-        self._services.append(self._battery_service)
+        self._interface_service.notifications_subscribed.connect(self._notifications_subscribed)
+        self._services.append(self._interface_service)
         super().__init__(device,
                          self._services,
                          R10Device.HEARTBEAT_INTERVAL,
                          R10Device.R10_HEARTBEAT_INTERVAL)
+        self._interface_service_subscribed = False
 
     def _device_info_service_read_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
@@ -93,13 +95,21 @@ class R10Device(BluetoothDeviceBase):
         print(msg)
         logging.debug(msg)
 
-    def __read_device_info(self) -> None:
-        msg = f'Reading device info for {self._ble_device.name()} at {self._sensor_address()}'
+    def _services_discovered(self, service: QBluetoothUuid) -> None:
+        if service == R10Device.DEVICE_INFO_SERVICE_UUID:
+            msg = f'Reading device info for {self._ble_device.name()} at {self._sensor_address()}'
+            print(msg)
+            logging.debug(msg)
+            self._device_info_service.read_characteristic(R10Device.SERIAL_NUMBER_CHARACTERISTIC_UUID)
+            self._device_info_service.read_characteristic(R10Device.FIRMWARE_CHARACTERISTIC_UUID)
+            self._device_info_service.read_characteristic(R10Device.MODEL_CHARACTERISTIC_UUID)
+
+    def _notifications_subscribed(self, service: QBluetoothUuid) -> None:
+        msg = f'Subscribed to notifications for service: {service.toString()} for {self._ble_device.name()} at {self._sensor_address()}'
         print(msg)
         logging.debug(msg)
-        self._device_info_service.read_characteristic(R10Device.SERIAL_NUMBER_CHARACTERISTIC_UUID)
-        self._device_info_service.read_characteristic(R10Device.FIRMWARE_CHARACTERISTIC_UUID)
-        self._device_info_service.read_characteristic(R10Device.MODEL_CHARACTERISTIC_UUID)
+        if service == R10Device.DEVICE_INTERFACE_SERVICE:
+            self._interface_service_subscribed = True
 
     def _battery_info_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
@@ -111,18 +121,18 @@ class R10Device(BluetoothDeviceBase):
         logging.debug(msg)
 
     def _interface_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
-        print('_interface_handler')
-        msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
+        msg = f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
         print(msg)
         logging.debug(msg)
 
     def _heartbeat(self) -> None:
-        if self._is_connected() and self._armed:
-            if self._heartbeat_overdue:
-                # heartbeat not received within 20 seconds, reset subscriptions
-                print(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
-                logging.debug(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
-                self._set_next_expected_heartbeat()
+        if self._is_connected() and self._interface_service_subscribed:
+            if self._is_connected() and self._armed:
+                if self._heartbeat_overdue:
+                    self._set_next_expected_heartbeat()
+                    print(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+                    logging.debug(f'Heartbeat not received for {R10Device.R10_HEARTBEAT_INTERVAL} seconds, resubscribing...')
+            print('heartbeat')
             self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, bytearray([0x01]))
 
 '''

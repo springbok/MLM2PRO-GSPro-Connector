@@ -63,7 +63,8 @@ class MLM2PRODevice(BluetoothDeviceBase):
                 MLM2PRODevice.WRITE_RESPONSE_CHARACTERISTIC_UUID,
                 MLM2PRODevice.MEASUREMENT_CHARACTERISTIC_UUID
             ],
-            self.data_handler
+            self.data_handler,
+            None
         )
         self._services.append(self._primary_service)
         self._primary_service.notifications_subscribed.connect(self.__init_device)
@@ -80,7 +81,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
                                       MLM2PROSecret.decrypt(self._settings.web_api['secret']))
 
 
-    def __init_device(self) -> None:
+    def __init_device(self, service: QBluetoothUuid) -> None:
         print('emit do_authenticate')
         QTimer().singleShot(1000, lambda: self.__authenticate())
 

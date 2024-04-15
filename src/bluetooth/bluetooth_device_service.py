@@ -12,9 +12,9 @@ class BluetoothDeviceService(QObject):
     DISABLE_NOTIFICATION: QByteArray = QByteArray.fromHex(b"0000")
 
     error = Signal(tuple)
-    notifications_subscribed = Signal()
+    notifications_subscribed = Signal(QBluetoothUuid)
     status_update = Signal(str, str)
-    services_discovered = Signal()
+    services_discovered = Signal(QBluetoothUuid)
 
     def __init__(self,
                  ble_device: QBluetoothDeviceInfo,
@@ -57,7 +57,7 @@ class BluetoothDeviceService(QObject):
         QTimer().singleShot(250, lambda: self._service.discoverDetails())
 
     def __service_state_changed(self, state: QLowEnergyService.ServiceState) -> None:
-        print(f'__service_state_changed {state} {QLowEnergyService.ServiceState.RemoteServiceDiscovered}')
+        print(f'__service_state_changed for service {self._service_uuid.toString()} state: {state} {QLowEnergyService.ServiceState.RemoteServiceDiscovered}')
         logging.debug(f'Service state changed: {state}')
         if state != QLowEnergyService.ServiceState.RemoteServiceDiscovered:
             return
@@ -68,12 +68,12 @@ class BluetoothDeviceService(QObject):
             self.subscribe_to_notifications()
         if self._read_handler is not None:
             self._service.characteristicRead.connect(self._read_handler)
-        self.services_discovered.emit()
+        self.services_discovered.emit(self._service_uuid)
 
     def subscribe_to_notifications(self) -> None:
         self.status_update.emit('Subscribing...', self._ble_device.name())
         for uuid in self._characteristic_uuids:
-            msg = f"Subscribing to notifications for {uuid.toString()} on {self._ble_device.name()}."
+            msg = f"Subscribing to notifications for service: {self._service_uuid.toString()} characteristic: {uuid.toString()} on {self._ble_device.name()}."
             logging.debug(msg)
             print(msg)
             characteristic = self._service.characteristic(uuid)
@@ -95,7 +95,7 @@ class BluetoothDeviceService(QObject):
             # Subscribe to notifications for the characteristic
             self._service.writeDescriptor(descriptor, BluetoothDeviceService.ENABLE_NOTIFICATION)
             print(f'Subscribed to notifications for {uuid.toString()} on {self._ble_device.name()}')
-        self.notifications_subscribed.emit()
+        self.notifications_subscribed.emit(self._service_uuid)
 
     def unsubscribe_from_notifications(self) -> None:
         if len(self._notifications) > 0 and self._service is not None:
