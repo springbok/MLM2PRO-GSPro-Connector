@@ -1,3 +1,4 @@
+import binascii
 import datetime
 import json
 import logging
@@ -109,6 +110,7 @@ class R10Device(BluetoothDeviceBase):
         print(msg)
         logging.debug(msg)
         if service == R10Device.DEVICE_INTERFACE_SERVICE:
+            # Do handshake
             message = bytearray.fromhex('00') + bytearray.fromhex("000000000000000000010000")
             msg = f'----> Sending handshake message: {BluetoothUtils.byte_array_to_hex_string(message)}'
             print(msg)
@@ -129,6 +131,18 @@ class R10Device(BluetoothDeviceBase):
         msg = f'<---- Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
         print(msg)
         logging.debug(msg)
+        if characteristic.uuid() == R10Device.DEVICE_INTERFACE_NOTIFIER:
+            # Continue handshake
+            header = data.data()[0]
+            msg = data.data()[1:]
+            msg_hex = BluetoothUtils.byte_array_to_hex_string(msg)
+            print(f'header: {BluetoothUtils.byte_array_to_hex_string(header)} msg: {msg_hex}')
+            if msg_hex.startswith("010000000000000000010000"):
+                int_array = BluetoothUtils.bytearray_to_int_array(data.data())
+                print(f'Write response: {int_array} 12: {int_array[12]}')
+                #message = bytearray.fromhex(data.data()[12]) + bytearray.fromhex("00")
+                #header = msg[12]
+                #self.send_bytes("00")
 
     def _heartbeat(self) -> None:
         if self._is_connected() and self._interface_service_subscribed:
