@@ -4,6 +4,7 @@ from typing import Optional
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
 from PySide6.QtCore import QUuid, QByteArray, Signal
+from cobs import cobs
 
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
@@ -70,6 +71,7 @@ class R10Device(BluetoothDeviceBase):
                          R10Device.R10_HEARTBEAT_INTERVAL)
         self._interface_service_subscribed = False
         self._handshake_complete = False
+        self._counter = 1
 
     def _device_info_service_read_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         msg = f'Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
@@ -105,11 +107,11 @@ class R10Device(BluetoothDeviceBase):
         logging.debug(msg)
         if service == R10Device.DEVICE_INTERFACE_SERVICE:
             # Do handshake
-            message = bytearray.fromhex('00') + bytearray.fromhex("000000000000000000010000")
-            msg = f'----> Sending handshake message: {BluetoothUtils.byte_array_to_hex_string(message)}'
+            message = bytearray.fromhex("000000000000000000010000")
+            msg = f'----> Starting handshake: {BluetoothUtils.byte_array_to_hex_string(message)}'
             print(msg)
             logging.debug(msg)
-            self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, message)
+            self.__send_bytes(message)
             #self._interface_service_subscribed = True
 
     def _battery_info_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
@@ -140,21 +142,20 @@ class R10Device(BluetoothDeviceBase):
                     logging.debug(msg)
                     int_array = BluetoothUtils.bytearray_to_int_array(data.data())
                     print(f'Write response: {int_array} 12: {int_array[12]}')
-                    message = bytearray([data.data()[12]]) + bytearray.fromhex("00")
-                    msg = f'----> Sending handshake continue message: {BluetoothUtils.byte_array_to_hex_string(message)}'
+                    message = bytearray.fromhex("00")
+                    msg = f'----> Continue handshake: {BluetoothUtils.byte_array_to_hex_string(message)}'
                     print(msg)
                     logging.debug(msg)
-                    self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, message)
+                    self.__send_bytes(message, bytearray([data.data()[12]]))
                     self._handshake_complete = True
                     self.__setup_measurement_service()
+                    self.__wake_device()
 
     def __setup_measurement_service(self) -> None:
         self._measurement_service: BluetoothDeviceService = BluetoothDeviceService(
             self._ble_device,
             R10Device.MEASUREMENT_SERVICE_UUID,
-            [R10Device.MEASUREMENT_CHARACTERISTIC_UUID,
-             R10Device.CONTROL_POINT_CHARACTERISTIC_UUID,
-             R10Device.STATUS_CHARACTERISTIC_UUID],
+            [R10Device.MEASUREMENT_CHARACTERISTIC_UUID],
             self._measurement_handler,
             None
         )
@@ -180,35 +181,48 @@ class R10Device(BluetoothDeviceBase):
         print(f'Processing message: {hex_msg}')
         return
 
-        ack_body = [0x00]
+    def __send_protobuf_request(self, data: bytearray):
+        length = len(data)
+        message = bytearray.fromhex("B313") + \
+                  self._counter.to_bytes(2, 'big') + \
+                  bytearray([0x00, 0x00]) + \
+                  length.to_bytes(2, 'big') + \
+                  length.to_bytes(2, 'big') + \
+                  data
+        self._counter += 1
+        self.__write_message(message)
 
-        if hex_msg.startswith("A013"):
-            # device info
-            print(f'Device info: {hex_msg}')
-        elif hex_msg.startswith("BA13"):
-            # config
-            print(f'Config: {hex_msg}')
-        elif hex_msg.startswith("B413"):  # all protobuf responses
-            counter = struct.unpack('H', msg[2:4])
-            ack_body.extend(msg[2:4])
-            ack_body.extend(BluetoothUtils.from_hex_string("00000000000000"))
+    def __write_message(self, data: bytearray) -> None:
+        msg = f'----> (raw) Writing message: {BluetoothUtils.byte_array_to_hex_string(data)}'
+        print(msg)
+        logging.debug(msg)
+        # Length of message + 2 bytes for length field + 2 bytes for crc field
+        length = 2 + len(bytes) + 2
+        length_bytes = struct.pack('H', length)
+        checksum = BluetoothUtils.checksum(bytes)
+        checksum_bytes = struct.pack('H', checksum)
+        full_frame = length_bytes + bytes + checksum_bytes
+        msg = f'----> (framed) Writing message: {BluetoothUtils.byte_array_to_hex_string(full_frame)}'
+        print(msg)
+        logging.debug(msg)
+        encoded = bytearray([0x00]) + bytearray(cobs.encode(full_frame)) + bytearray([0x00])
+        msg = f'----> (encoded) Writing message: {BluetoothUtils.byte_array_to_hex_string(encoded)}'
+        print(msg)
+        logging.debug(msg)
+        self.__send_bytes(encoded)
 
-            if counter == self.mProtoRequestCounter:
-                self.mLastProtoReceived = WrapperProto.Parser.ParseFrom(msg[16:])
-                self.MessageRecieved(self, MessageEventArgs(self.mLastProtoReceived))
-                self.mProtoResponseResetEvent.set()
-        elif hex_msg.startswith("B313"):  # all protobuf requests
-            ack_body.extend(msg[2:4])
-            ack_body.extend(self.from_hex_string("00000000000000"))
+    def __send_bytes(self, data: bytearray, header: bytearray = bytearray([0x00])) -> None:
+        message = header + data
+        msg = f'----> (ble write) Writing message: {BluetoothUtils.byte_array_to_hex_string(message)}'
+        print(msg)
+        logging.debug(msg)
+        self._interface_service.write_characteristic(R10Device.DEVICE_INTERFACE_WRITER, message)
 
-            async def handle_request():
-                request = WrapperProto.Parser.ParseFrom(msg[16:])
-                self.MessageRecieved(self, MessageEventArgs(request))
-                self.handle_protobuf_request(request)
-
-            asyncio.create_task(handle_request())
-
-        self.acknowledge_message(msg, ack_body)
+    def __wake_device(self) -> None:
+        msg = 'Wake device'
+        print(msg)
+        logging.debug(msg)
+        self.__send_bytes(bytearray([]))
 
     def _heartbeat(self) -> None:
         if self._is_connected() and self._interface_service_subscribed:

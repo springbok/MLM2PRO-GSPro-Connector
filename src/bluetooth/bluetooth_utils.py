@@ -32,7 +32,7 @@ class BluetoothUtils:
         return BluetoothUtils.int_to_byte_array(value, True, True)
 
     @staticmethod
-    def long_to_uint_to_byte_array(j, little_endian) -> bytearray:
+    def long_to_uint_to_byte_array(j, little_endian) -> bytes:
         format_string = '<Q' if little_endian else '>Q'
         return struct.pack(format_string, j)
 
@@ -65,11 +65,11 @@ class BluetoothUtils:
         return short_byte_array
 
     @staticmethod
-    def checksum(self, data: bytearray) -> int:
+    def checksum(data: bytearray) -> int:
         return binascii.crc32(data) & 0xFFFF
 
-    def to_hex_string(self, data: bytearray) -> str:
+    def to_hex_string(data: bytearray) -> str:
         return binascii.hexlify(data).decode()
 
-    def from_hex_string(self, hex_string: str) -> bytearray:
+    def from_hex_string(hex_string: str) -> bytes:
         return binascii.unhexlify(hex_string)
