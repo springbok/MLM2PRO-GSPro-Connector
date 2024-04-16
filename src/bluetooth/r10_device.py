@@ -129,9 +129,6 @@ class R10Device(BluetoothDeviceBase):
             header = data.data()[0]
             message_data = data.data()[1:]
             msg_hex = BluetoothUtils.byte_array_to_hex_string(message_data)
-            msg = f'Message: {msg_hex} Header: {header}'
-            print(msg)
-            logging.debug(msg)
             if header == 0 or self._handshake_complete is False:
                 if msg_hex.startswith("010000000000000000010000"):
                     msg = f'<---- (interface)(ble read) Received handshake message: {msg_hex} header: {header}'
@@ -192,9 +189,32 @@ class R10Device(BluetoothDeviceBase):
             self.error.emit(msg)
         else:
             print('crc ok')
-            msg = data[2:-2]
-            hex_msg = BluetoothUtils.to_hex_string(msg)
+            message_data = data[2:-2]
+            ack_body = bytearray([0x00])
+            hex_msg = BluetoothUtils.to_hex_string(message_data)
             print(f'Processing message: {hex_msg}')
+            if hex_msg.upper().startswith("A013"):
+                # device info
+                print(f'A013 - device info')
+            elif hex_msg.upper().startswith("BA13"):
+                # config
+                print(f'BA13 - config')
+            elif hex_msg.upper().startswith("B413"):
+                print(f'B413 - protobuf')
+                # all protobuf responses
+                counter = int.from_bytes(message_data[2:4], byteorder='little')
+                ack_body.extend(message_data[2:4])
+                ack_body.extend(bytearray.fromhex("00000000000000"))
+            elif hex_msg.startswith("B313"):
+                print(f'B313 - protobuf')
+                # all protobuf requests
+                ack_body.extend(message_data[2:4])
+                ack_body.extend(bytearray.fromhex("00000000000000"))
+            self.__acknowledge_message(message_data, ack_body)
+
+    def __acknowledge_message(self, data: bytearray, response: bytearray) -> None:
+        result = bytearray.fromhex("8813") + data[:2] + response
+        self.__write_message(result)
 
     def __send_protobuf_request(self, data: bytearray):
         length = len(data)
@@ -212,11 +232,17 @@ class R10Device(BluetoothDeviceBase):
         print(msg)
         logging.debug(msg)
         # Length of message + 2 bytes for length field + 2 bytes for crc field
-        length = 2 + len(bytes) + 2
-        length_bytes = struct.pack('H', length)
-        checksum = BluetoothUtils.checksum(bytes)
-        checksum_bytes = struct.pack('H', checksum)
-        full_frame = length_bytes + bytes + checksum_bytes
+        length = 2 + len(data) + 2
+        bytes_with_length = struct.pack('<H', length) + data
+        checksum = BluetoothUtils.checksum(bytearray(bytes_with_length))
+        full_frame = bytearray(bytes_with_length) + bytearray(struct.pack('<H', checksum))
+
+        #length_bytes = int.to_bytes(length, byteorder='little')
+        #checksum = BluetoothUtils.checksum(data)
+        #print(f'checksum: {checksum} length: {length} length_bytes:{length_bytes.hex()}')
+        #checksum_bytes = int.to_bytes(checksum, byteorder='little')
+        #print(f'checksum: {checksum} length: {length} length_bytes:{length_bytes.hex()} checksum_bytes:{checksum_bytes.hex()}')
+        #full_frame = length_bytes + bytes + checksum_bytes
         msg = f'----> (framed) Writing message: {BluetoothUtils.byte_array_to_hex_string(full_frame)}'
         print(msg)
         logging.debug(msg)
