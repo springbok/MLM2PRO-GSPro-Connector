@@ -124,9 +124,6 @@ class R10Device(BluetoothDeviceBase):
         logging.debug(msg)
 
     def _interface_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
-        msg = f'<---- (interface_handler)(ble read) Received data for characteristic {characteristic.uuid().toString()} from {self._ble_device.name()} at {self._sensor_address()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
-        print(msg)
-        logging.debug(msg)
         if characteristic.uuid() == R10Device.DEVICE_INTERFACE_NOTIFIER:
             # Continue handshake
             header = data.data()[0]
@@ -137,11 +134,10 @@ class R10Device(BluetoothDeviceBase):
             logging.debug(msg)
             if header == 0 or self._handshake_complete is False:
                 if msg_hex.startswith("010000000000000000010000"):
-                    msg = f'<---- Received handshake message: {msg_hex} header: {header}'
+                    msg = f'<---- (interface)(ble read) Received handshake message: {msg_hex} header: {header}'
                     print(msg)
                     logging.debug(msg)
                     int_array = BluetoothUtils.bytearray_to_int_array(message_data)
-                    print(f'Write response: {int_array} 12: {int_array[12]}')
                     message = bytearray.fromhex("00")
                     msg = f'----> Continue handshake: {BluetoothUtils.byte_array_to_hex_string(message)}'
                     print(msg)
@@ -160,9 +156,13 @@ class R10Device(BluetoothDeviceBase):
                     message_data = message_data[1:]
                 self._current_message.extend(message_data)
                 if read_complete and len(self._current_message) > 0:
-                    print(f"  -> {self._current_message.hex().ljust(44)} (encoded)")
+                    msg = f'<---- (interface)(ble read)(encoded) Received data for characteristic {characteristic.uuid().toString()}: {BluetoothUtils.byte_array_to_hex_string(self._current_message)}'
+                    print(msg)
+                    logging.debug(msg)
                     decoded = bytearray(cobs.decode(self._current_message))
-                    print(f"-> {decoded.hex().ljust(46)} (decoded)")
+                    msg = f'<---- (interface)(ble read)(decoded): {BluetoothUtils.byte_array_to_hex_string(decoded)}'
+                    print(msg)
+                    logging.debug(msg)
                     self.__process_message(decoded)
 
     def __setup_measurement_service(self) -> None:
