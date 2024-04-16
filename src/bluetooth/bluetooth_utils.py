@@ -3,6 +3,8 @@ import math
 import struct
 from typing import List
 
+from crcmod import crcmod
+
 
 class BluetoothUtils:
 
@@ -66,7 +68,8 @@ class BluetoothUtils:
 
     @staticmethod
     def checksum(data: bytearray) -> int:
-        return binascii.crc32(data) & 0xFFFF
+        crc16_func = crcmod.mkCrcFun(0x18005, rev=True, initCrc=0x0000, xorOut=0x0000)
+        return crc16_func(data)
 
     def to_hex_string(data: bytearray) -> str:
         return binascii.hexlify(data).decode()
