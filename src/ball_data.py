@@ -13,6 +13,7 @@ class PuttType:
     WEBCAM = 'webcam'
     EXPUTT = 'exputt'
 
+
 @dataclass
 class BallColor:
     WHITE = "white"
@@ -159,7 +160,7 @@ class BallData:
         result = ''
         try:
             # Strip non ascii chars
-            ocr_result = re.sub(r'[^\x00-\x7f]',r'', ocr_result)
+            ocr_result = re.sub(r'[^\x00-\x7f]', r'', ocr_result)
             logging.debug(f'remove non ASCII {roi}: {ocr_result}')
             cleaned_result = re.findall(r"[LR]?(?:\d*\.*\d)", ocr_result)
             logging.debug(f'cleaned_result {roi}: {cleaned_result}')
@@ -294,8 +295,8 @@ class BallData:
             if result and result > 0 and not non_zero_found:
                 non_zero_found = True
             previous_result = getattr(other, roi)
-            if (roi != BallMetrics.BACK_SPIN and \
-                    ((roi != BallMetrics.SIDE_SPIN and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE) or \
+            if (roi != BallMetrics.BACK_SPIN and
+                    ((roi != BallMetrics.SIDE_SPIN and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE) or
                      self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE)  and result != previous_result):
                 logging.debug(f'previous_metric: {previous_result} result: {result}')
                 diff_count = diff_count + 1
@@ -380,15 +381,15 @@ class BallData:
             self.good_shot = True
 
     def from_r10_bt(self, ball_data, club_data):
-        METERS_PER_S_TO_MILES_PER_HOUR = 2.2369
+        meters_per_s_to_miles_per_hour = 2.2369
         self.hla = round(ball_data.launch_direction, 2)
         self.vla = round(ball_data.launch_angle, 2)
-        self.speed = round(ball_data.ball_speed * METERS_PER_S_TO_MILES_PER_HOUR, 2)
+        self.speed = round(ball_data.ball_speed * meters_per_s_to_miles_per_hour, 2)
         self.spin_axis = round(ball_data.spin_axis * -1, 2)
         self.total_spin = round(ball_data.total_spin, 2)
 
         if club_data is not None:
-            self.club_speed = round(club_data.club_head_speed * METERS_PER_S_TO_MILES_PER_HOUR, 2)
+            self.club_speed = round(club_data.club_head_speed * meters_per_s_to_miles_per_hour, 2)
             self.path = round(club_data.club_angle_path, 2)
             self.face_to_target = round(club_data.club_angle_face, 2)
 
