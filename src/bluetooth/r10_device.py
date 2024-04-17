@@ -11,7 +11,8 @@ from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
 from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequest, StatusRequest, TiltRequest, \
-    StartTiltCalibrationRequest, EventSharing, SubscribeRequest, AlertMessage, AlertNotification
+    StartTiltCalibrationRequest, EventSharing, SubscribeRequest, AlertMessage, AlertNotification, ShotConfigRequest, \
+    WakeUpResponse, StatusResponse, State
 
 
 class R10Device(BluetoothDeviceBase):
@@ -149,10 +150,6 @@ class R10Device(BluetoothDeviceBase):
                     self._handshake_complete = True
                     self.__setup_measurement_service()
                     self.__wake_device()
-                    self.__status_request()
-                    self.__get_device_tilt()
-                    self.__subscribe_to_alerts()
-                    self.__start_tilt_calibration()
             else:
                 read_complete = False
                 if message_data[-1] == 0x00:
@@ -226,28 +223,57 @@ class R10Device(BluetoothDeviceBase):
             self.__acknowledge_message(message_data, ack_body)
 
     def __handle_protbuf_request(self, request: Message) -> None:
-        print(f'__handle_protbuf_request: {request}')
+        print(f'x-x-x-x-x-x-x __handle_protbuf_request: {request}')
 
     def __handle_protobuf_response(self, request: Message):
-        msg = f'__handle_protobuf_response: {request}'
+        msg = f'yyyyyyy __handle_protobuf_response: {request}'
         print(msg)
         logging.debug(msg)
-        if request.service.HasField('status_response'):
-            state = str(request.service.status_response.state).strip().replace('state: ', '')
-            msg = f'Status response: {state}'
-            print(msg)
-            logging.debug(msg)
-            self.launch_monitor_event.emit(state)
-            if state == 'STANDBY':
-                msg = 'Device is in standby mode, wake it up'
+        if request.HasField('service'):
+            if request.service.HasField('status_response'):
+                response = State()
+                response.ParseFromString(request.service.status_response.state.SerializeToString())
+                print(f'x-x-x-x-x-x-x status_response: {response} state: {response.state}')
+                str_state = ''
+                if response.state == response.INTERFERENCE_TEST:
+                    str_state = 'INTERFERENCE TEST'
+                elif response.state == response.WAITING:
+                    str_state = 'WAITING'
+                elif response.state == response.STANDBY:
+                    str_state = 'STANDBY'
+                    msg = 'Device is in standby mode, wake it up'
+                    print(msg)
+                    logging.debug(msg)
+                    self.__wake_device()
+                elif response.state == response.RECORDING:
+                    str_state = 'RECORDING'
+                elif response.state == response.PROCESSING:
+                    str_state = 'PROCESSING'
+                elif response.state == response.ERROR:
+                    str_state = 'ERROR'
+                else:
+                    str_state = 'UNKNOWN'
+                msg = f'Status response: {str_state}'
                 print(msg)
                 logging.debug(msg)
-                self.__wake_device()
-        elif request.service.HasField('tilt_response'):
-            tilt = request.service.tilt_response.tilt
-            msg = f'Tilt response: {tilt}'
-            print(msg)
-            logging.debug(msg)
+                self.launch_monitor_event.emit(str_state)
+            elif request.service.HasField('tilt_response'):
+                tilt = request.service.tilt_response.tilt
+                msg = f'Tilt response: {tilt}'
+                print(msg)
+                logging.debug(msg)
+            elif request.service.HasField('wake_up_response'):
+                response = WakeUpResponse()
+                response.ParseFromString(request.SerializeToString())
+                if response.status == response.SUCCESS:
+                    print(f'x-x-x-x-x-x-x wake_up_response SUCCESS: {response}')
+                    self.__status_request()
+                else:
+                    self.error.emit(f'Could not wake the device')
+                #self.__get_device_tilt()
+                #self.__subscribe_to_alerts()
+                #self.__start_tilt_calibration()
+                #self.__send_shot_config()
 
     def __acknowledge_message(self, data: bytearray, response: bytearray) -> None:
         print(f'acknowledge message: {BluetoothUtils.byte_array_to_hex_string(data)} response: {BluetoothUtils.byte_array_to_hex_string(response)}')
@@ -295,6 +321,26 @@ class R10Device(BluetoothDeviceBase):
         subscribe_request.alerts.extend([alert_message])
         event_sharing.subscribe_request.CopyFrom(subscribe_request)
         wrapper_proto.event.CopyFrom(event_sharing)
+        self.__send_protobuf_request(wrapper_proto)
+
+    def __send_shot_config(self) -> None:
+        print(f'Send Shot Config request')
+        logging.debug(f'Send Shot Config request')
+        temperature = 60
+        humidity = 0.5
+        altitude = 0
+        airDensity = 1.225
+        teeRange = 2.1334958
+        wrapper_proto = WrapperProto()
+        launch_monitor_service = LaunchMonitorService()
+        shot_config_request = ShotConfigRequest()
+        shot_config_request.temperature = temperature
+        shot_config_request.humidity = humidity
+        shot_config_request.altitude = altitude
+        shot_config_request.air_density = airDensity
+        shot_config_request.tee_range = teeRange
+        launch_monitor_service.shot_config_request.CopyFrom(shot_config_request)
+        wrapper_proto.service.CopyFrom(launch_monitor_service)
         self.__send_protobuf_request(wrapper_proto)
 
     def __send_protobuf_request(self, proto: Message) -> None:
