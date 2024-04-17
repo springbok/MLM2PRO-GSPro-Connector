@@ -380,10 +380,10 @@ class BallData:
             self.good_shot = True
 
     def from_r10_bt(self, ball_data, club_data):
-        self.hla = ball_data.launch_direction
-        self.vla = ball_data.launch_angle
-        self.speed = ball_data.ball_speed * 2.2369
-        self.spin_axis = ball_data.spin_axis * -1
-        self.total_spin = ball_data.total_spin
+        self.hla = round(ball_data.launch_direction, 2)
+        self.vla = round(ball_data.launch_angle, 2)
+        self.speed = round(ball_data.ball_speed * 2.2369, 2)
+        self.spin_axis = round(ball_data.spin_axis * -1, 2)
+        self.total_spin = round(ball_data.total_spin, 2)
         self.__calc_spin()
         self.good_shot = True
