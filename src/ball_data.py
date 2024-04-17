@@ -378,3 +378,12 @@ class BallData:
             #Unknown2 = int.from_bytes(bytes[14:16], byteorder='little') # // total distance? both seem lower than AG, but not crazy off...
             self.__calc_spin()
             self.good_shot = True
+
+    def from_r10_bt(self, ball_data, club_data):
+        self.hla = ball_data.launch_direction
+        self.vla = ball_data.launch_angle
+        self.speed = ball_data.ball_speed * 2.2369
+        self.spin_axis = ball_data.spin_axis * -1
+        self.total_spin = ball_data.total_spin
+        self.__calc_spin()
+        self.good_shot = True

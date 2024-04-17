@@ -7,12 +7,13 @@ from PySide6.QtCore import QUuid, QByteArray, Signal
 from cobs import cobs
 from google.protobuf.message import Message
 
+from src.ball_data import BallData
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
 from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequest, StatusRequest, TiltRequest, \
     StartTiltCalibrationRequest, EventSharing, SubscribeRequest, AlertMessage, AlertNotification, ShotConfigRequest, \
-    WakeUpResponse, StatusResponse, State, TiltResponse, Tilt, SubscribeResponse, AlertDetails
+    WakeUpResponse, StatusResponse, State, TiltResponse, Tilt, SubscribeResponse, AlertDetails, Metrics
 
 
 class R10Device(BluetoothDeviceBase):
@@ -77,6 +78,7 @@ class R10Device(BluetoothDeviceBase):
         self._counter = 0
         self._current_message = bytearray()
         self._header = bytearray([0x00])
+        self.process_shots = []
 
     def _device_info_service_read_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         error = False
@@ -234,12 +236,28 @@ class R10Device(BluetoothDeviceBase):
                 if response.HasField('tilt_calibration'):
                     print('Tile calibration done, get tilt')
                     self.__get_device_tilt()
-                elif response.HasField('state'):
+                elif response.HasField('state') and not response.HasField('metrics'):
                     state = State()
                     state.ParseFromString(response.state.SerializeToString())
                     self.__process_state_change(state)
                     if state.state == state.ERROR and response.HasField('error'):
                         logging.debug(f'Error: {response.error}')
+                elif response.HasField('metrics'):
+                    print('>>>>>>>>>>>>>>>  Metrics received')
+                    metrics = Metrics()
+                    metrics.ParseFromString(response.metrics.SerializeToString())
+                    print(f'>>>>>>>>>>>>>>>  Metrics: {metrics}')
+                    if len(self.process_shots) > 0 and metrics.shot_id == self.process_shots[-1]:
+                        logging.debug(f"<><><><>Received duplicate shot data {metrics.shot_id}.  Ignoring")
+                    else:
+                        self.process_shots.append(metrics.shot_id)
+                        logging.debug(f">>>>>>> Received shot data: {metrics}")
+                        print(f">>>>>>> Received shot data: {metrics}")
+                        ball_data = BallData()
+                        ball_data.from_r10_bt(metrics.ball_metrics, metrics.club_metrics)
+                        print(f'>>>>>>>>>>>>>>>  Ball data: {ball_data}')
+                        self.shot.emit(ball_data)
+
 
     def __handle_protobuf_response(self, request: Message):
         msg = f'yyyyyyy __handle_protobuf_response: {request}'
@@ -395,13 +413,6 @@ class R10Device(BluetoothDeviceBase):
         bytes_with_length = struct.pack('<H', length) + data
         checksum = BluetoothUtils.checksum(bytearray(bytes_with_length))
         full_frame = bytearray(bytes_with_length) + bytearray(struct.pack('<H', checksum))
-
-        #length_bytes = int.to_bytes(length, byteorder='little')
-        #checksum = BluetoothUtils.checksum(data)
-        #print(f'checksum: {checksum} length: {length} length_bytes:{length_bytes.hex()}')
-        #checksum_bytes = int.to_bytes(checksum, byteorder='little')
-        #print(f'checksum: {checksum} length: {length} length_bytes:{length_bytes.hex()} checksum_bytes:{checksum_bytes.hex()}')
-        #full_frame = length_bytes + bytes + checksum_bytes
         msg = f'----> (framed) Writing message: {BluetoothUtils.byte_array_to_hex_string(full_frame)}'
         print(msg)
         logging.debug(msg)
