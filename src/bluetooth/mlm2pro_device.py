@@ -33,7 +33,6 @@ class LaunchMonitorEvents:
 
 class MLM2PRODevice(BluetoothDeviceBase):
     token_expiry = Signal(TokenExpiryStates, str)
-    launch_monitor_event = Signal(str)
 
     HEARTBEAT_INTERVAL = 2000
     MLM2PRO_HEARTBEAT_INTERVAL = 20000

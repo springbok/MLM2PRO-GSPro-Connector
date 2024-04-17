@@ -14,7 +14,6 @@ from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequ
 
 
 class R10Device(BluetoothDeviceBase):
-    launch_monitor_event = Signal(str)
 
     HEARTBEAT_INTERVAL = 2000
     R10_HEARTBEAT_INTERVAL = 20000
@@ -226,7 +225,15 @@ class R10Device(BluetoothDeviceBase):
         print(f'__handle_protbuf_request: {request}')
 
     def __handle_protobuf_response(self, request: Message):
-        msg = f''
+        msg = f'__handle_protobuf_response: {request}'
+        print(msg)
+        logging.debug(msg)
+        if request.service.HasField('status_response'):
+            state = str(request.service.status_response.state).strip().replace('state: ', '')
+            msg = f'Status response: {state}'
+            print(msg)
+            logging.debug(msg)
+            self.launch_monitor_event.emit(state)
 
     def __acknowledge_message(self, data: bytearray, response: bytearray) -> None:
         print(f'acknowledge message: {BluetoothUtils.byte_array_to_hex_string(data)} response: {BluetoothUtils.byte_array_to_hex_string(response)}')

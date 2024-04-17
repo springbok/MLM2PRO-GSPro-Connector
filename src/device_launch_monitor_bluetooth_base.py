@@ -87,6 +87,11 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self._device.connected.connect(self.__device_connected)
         self._device.update_battery.connect(self.__update_battery)
         self._device.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
+        self._device.launch_monitor_event.connect(self.__launch_monitor_event)
+
+    def __launch_monitor_event(self, event: str) -> None:
+        self.main_window.launch_monitor_event_label.setText(f"LM: {event}")
+        self.main_window.launch_monitor_event_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
     def __shot_sent(self, ball_data: BallData) -> None:
         print(f"Shot sent: {json.dumps(ball_data.to_json())}")

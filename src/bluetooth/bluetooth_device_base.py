@@ -30,6 +30,7 @@ class BluetoothDeviceBase(QObject):
     update_battery = Signal(int)
     shot = Signal(BallData)
     launch_monitor_connected = Signal()
+    launch_monitor_event = Signal(str)
 
     def __init__(self, device: QBluetoothDeviceInfo,
                  services: list[BluetoothDeviceService],
