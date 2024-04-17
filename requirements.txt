@@ -9,3 +9,4 @@ pycryptodome
 requests
 pywin32
 cobs
+protobuf
