@@ -12,7 +12,7 @@ from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
 from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequest, StatusRequest, TiltRequest, \
     StartTiltCalibrationRequest, EventSharing, SubscribeRequest, AlertMessage, AlertNotification, ShotConfigRequest, \
-    WakeUpResponse, StatusResponse, State
+    WakeUpResponse, StatusResponse, State, TiltResponse, Tilt, SubscribeResponse
 
 
 class R10Device(BluetoothDeviceBase):
@@ -205,7 +205,7 @@ class R10Device(BluetoothDeviceBase):
             elif hex_msg.upper().startswith("BA13"):
                 # config
                 print(f'BA13 - config')
-            elif hex_msg.upper().startswith("B413") or hex_msg.startswith("B313"):
+            elif hex_msg.upper().startswith("B413") or hex_msg.upper().startswith("B313"):
                 ack_body.extend(message_data[2:4])
                 ack_body.extend(bytearray.fromhex("00000000000000"))
                 proto = WrapperProto()
@@ -237,6 +237,7 @@ class R10Device(BluetoothDeviceBase):
                 str_state = ''
                 if response.state == response.INTERFERENCE_TEST:
                     str_state = 'INTERFERENCE TEST'
+                    self.__get_device_tilt()
                 elif response.state == response.WAITING:
                     str_state = 'WAITING'
                 elif response.state == response.STANDBY:
@@ -251,6 +252,7 @@ class R10Device(BluetoothDeviceBase):
                     str_state = 'PROCESSING'
                 elif response.state == response.ERROR:
                     str_state = 'ERROR'
+                    self.error.emit(f'Error occurred when checking device status')
                 else:
                     str_state = 'UNKNOWN'
                 msg = f'Status response: {str_state}'
@@ -258,10 +260,13 @@ class R10Device(BluetoothDeviceBase):
                 logging.debug(msg)
                 self.launch_monitor_event.emit(str_state)
             elif request.service.HasField('tilt_response'):
-                tilt = request.service.tilt_response.tilt
-                msg = f'Tilt response: {tilt}'
+                response = Tilt()
+                response.ParseFromString(request.service.tilt_response.tilt.SerializeToString())
+                print(f'x-x-x-x-x-x-x tilt_response: {response} roll: {response.roll} pitch: {response.pitch}')
+                msg = f'Tilt roll: {response.roll} pitch: {response.pitch}'
                 print(msg)
                 logging.debug(msg)
+                self.__subscribe_to_alerts()
             elif request.service.HasField('wake_up_response'):
                 response = WakeUpResponse()
                 response.ParseFromString(request.SerializeToString())
@@ -270,10 +275,17 @@ class R10Device(BluetoothDeviceBase):
                     self.__status_request()
                 else:
                     self.error.emit(f'Could not wake the device')
-                #self.__get_device_tilt()
-                #self.__subscribe_to_alerts()
-                #self.__start_tilt_calibration()
-                #self.__send_shot_config()
+        elif request.HasField('event'):
+            if request.event.HasField('subscribe_respose'):
+                response = SubscribeResponse()
+                response.ParseFromString(request.event.subscribe_respose.SerializeToString())
+                print(f'x-x-x-x-x-x-x status_response: {response} alert_status: {response.alert_status}')
+                if response.alert_status[0].subscribe_status == 0:
+                    msg = 'Subscribed to alerts'
+                    print(msg)
+                    logging.debug(msg)
+                    self.__start_tilt_calibration()
+                    self.__send_shot_config()
 
     def __acknowledge_message(self, data: bytearray, response: bytearray) -> None:
         print(f'acknowledge message: {BluetoothUtils.byte_array_to_hex_string(data)} response: {BluetoothUtils.byte_array_to_hex_string(response)}')
@@ -281,6 +293,7 @@ class R10Device(BluetoothDeviceBase):
         self.__write_message(result)
 
     def __status_request(self) -> None:
+        self.status_update.emit('Requesting status...', self._ble_device.name())
         print(f'Status request')
         logging.debug(f'Status request')
         wrapper_proto = WrapperProto()
@@ -291,6 +304,7 @@ class R10Device(BluetoothDeviceBase):
         self.__send_protobuf_request(wrapper_proto)
 
     def __get_device_tilt(self) -> None:
+        self.status_update.emit('Tilt request...', self._ble_device.name())
         print(f'Device Tilt request')
         logging.debug(f'Device Tilt request')
         wrapper_proto = WrapperProto()
@@ -301,6 +315,7 @@ class R10Device(BluetoothDeviceBase):
         self.__send_protobuf_request(wrapper_proto)
 
     def __start_tilt_calibration(self) -> None:
+        self.status_update.emit('Calibrating...', self._ble_device.name())
         print(f'Tilt Calibration request')
         logging.debug(f'Tilt Calibration request')
         wrapper_proto = WrapperProto()
@@ -311,6 +326,7 @@ class R10Device(BluetoothDeviceBase):
         self.__send_protobuf_request(wrapper_proto)
 
     def __subscribe_to_alerts(self) -> None:
+        self.status_update.emit('Subscribe to alerts...', self._ble_device.name())
         print(f'Subscribe to Alerts request')
         logging.debug(f'Subscribe to Alerts request')
         wrapper_proto = WrapperProto()
@@ -324,6 +340,7 @@ class R10Device(BluetoothDeviceBase):
         self.__send_protobuf_request(wrapper_proto)
 
     def __send_shot_config(self) -> None:
+        self.status_update.emit('Send shot config...', self._ble_device.name())
         print(f'Send Shot Config request')
         logging.debug(f'Send Shot Config request')
         temperature = 60
