@@ -10,7 +10,8 @@ from google.protobuf.message import Message
 from src.bluetooth.bluetooth_device_base import BluetoothDeviceBase
 from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
 from src.bluetooth.bluetooth_utils import BluetoothUtils
-from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequest, StatusRequest
+from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequest, StatusRequest, TiltRequest, \
+    StartTiltCalibrationRequest, EventSharing, SubscribeRequest, AlertMessage, AlertNotification
 
 
 class R10Device(BluetoothDeviceBase):
@@ -149,6 +150,9 @@ class R10Device(BluetoothDeviceBase):
                     self.__setup_measurement_service()
                     self.__wake_device()
                     self.__status_request()
+                    self.__get_device_tilt()
+                    self.__subscribe_to_alerts()
+                    self.__start_tilt_calibration()
             else:
                 read_complete = False
                 if message_data[-1] == 0x00:
@@ -234,6 +238,16 @@ class R10Device(BluetoothDeviceBase):
             print(msg)
             logging.debug(msg)
             self.launch_monitor_event.emit(state)
+            if state == 'STANDBY':
+                msg = 'Device is in standby mode, wake it up'
+                print(msg)
+                logging.debug(msg)
+                self.__wake_device()
+        elif request.service.HasField('tilt_response'):
+            tilt = request.service.tilt_response.tilt
+            msg = f'Tilt response: {tilt}'
+            print(msg)
+            logging.debug(msg)
 
     def __acknowledge_message(self, data: bytearray, response: bytearray) -> None:
         print(f'acknowledge message: {BluetoothUtils.byte_array_to_hex_string(data)} response: {BluetoothUtils.byte_array_to_hex_string(response)}')
@@ -248,6 +262,39 @@ class R10Device(BluetoothDeviceBase):
         status_request = StatusRequest()
         launch_monitor_service.status_request.CopyFrom(status_request)
         wrapper_proto.service.CopyFrom(launch_monitor_service)
+        self.__send_protobuf_request(wrapper_proto)
+
+    def __get_device_tilt(self) -> None:
+        print(f'Device Tilt request')
+        logging.debug(f'Device Tilt request')
+        wrapper_proto = WrapperProto()
+        launch_monitor_service = LaunchMonitorService()
+        tilt_request = TiltRequest()
+        launch_monitor_service.tilt_request.CopyFrom(tilt_request)
+        wrapper_proto.service.CopyFrom(launch_monitor_service)
+        self.__send_protobuf_request(wrapper_proto)
+
+    def __start_tilt_calibration(self) -> None:
+        print(f'Tilt Calibration request')
+        logging.debug(f'Tilt Calibration request')
+        wrapper_proto = WrapperProto()
+        launch_monitor_service = LaunchMonitorService()
+        start_tilt_calibration_request = StartTiltCalibrationRequest()
+        launch_monitor_service.start_tilt_cal_request.CopyFrom(start_tilt_calibration_request)
+        wrapper_proto.service.CopyFrom(launch_monitor_service)
+        self.__send_protobuf_request(wrapper_proto)
+
+    def __subscribe_to_alerts(self) -> None:
+        print(f'Subscribe to Alerts request')
+        logging.debug(f'Subscribe to Alerts request')
+        wrapper_proto = WrapperProto()
+        event_sharing = EventSharing()
+        subscribe_request = SubscribeRequest()
+        alert_message = AlertMessage()
+        alert_message.type = AlertNotification.LAUNCH_MONITOR
+        subscribe_request.alerts.extend([alert_message])
+        event_sharing.subscribe_request.CopyFrom(subscribe_request)
+        wrapper_proto.event.CopyFrom(event_sharing)
         self.__send_protobuf_request(wrapper_proto)
 
     def __send_protobuf_request(self, proto: Message) -> None:
