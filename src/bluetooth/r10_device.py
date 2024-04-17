@@ -209,12 +209,13 @@ class R10Device(BluetoothDeviceBase):
                 ack_body.extend(message_data[2:4])
                 ack_body.extend(bytearray.fromhex("00000000000000"))
                 proto = WrapperProto()
-                proto.ParseFromString(message_data[16:])
-                print(f'protobuf response: {proto}')
+                proto.ParseFromString(bytes(message_data[16:]))
+                print(f'(__process_message) proto: {proto}')
                 if hex_msg.upper().startswith("B413"):
                     print(f'B413 - protobuf')
                     # all protobuf responses
                     counter = int.from_bytes(message_data[2:4], byteorder='little')
+                    self.__handle_protobuf_response(proto)
                 else:
                     print(f'B313 - protobuf')
                     # all protobuf requests
@@ -223,6 +224,9 @@ class R10Device(BluetoothDeviceBase):
 
     def __handle_protbuf_request(self, request: Message) -> None:
         print(f'__handle_protbuf_request: {request}')
+
+    def __handle_protobuf_response(self, request: Message):
+        msg = f''
 
     def __acknowledge_message(self, data: bytearray, response: bytearray) -> None:
         print(f'acknowledge message: {BluetoothUtils.byte_array_to_hex_string(data)} response: {BluetoothUtils.byte_array_to_hex_string(response)}')
