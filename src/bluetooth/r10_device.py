@@ -255,7 +255,7 @@ class R10Device(BluetoothDeviceBase):
                         print(f">>>>>>> Received shot data: {metrics}")
                         ball_data = BallData()
                         ball_data.from_r10_bt(metrics.ball_metrics, metrics.club_metrics)
-                        print(f'>>>>>>>>>>>>>>>  Ball data: {ball_data}')
+                        print(f'>>>>>>>>>>>>>>>  Ball data: {ball_data.to_json()}')
                         self.shot.emit(ball_data)
 
 
