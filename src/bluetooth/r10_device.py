@@ -132,6 +132,8 @@ class R10Device(BluetoothDeviceBase):
 
     def _interface_handler(self, characteristic: QLowEnergyCharacteristic, data: QByteArray) -> None:
         msg = f'<---- (_interface_handler) Received data for characteristic {characteristic.uuid().toString()}: {BluetoothUtils.byte_array_to_hex_string(data.data())}'
+        print(msg)
+        logging.debug(msg)
         if characteristic.uuid() == R10Device.DEVICE_INTERFACE_NOTIFIER:
             # Continue handshake
             header = data.data()[0]
@@ -169,6 +171,7 @@ class R10Device(BluetoothDeviceBase):
                     msg = f'<---- (interface)(ble read)(decoded): {BluetoothUtils.byte_array_to_hex_string(decoded)}'
                     print(msg)
                     logging.debug(msg)
+                    self._current_message = bytearray()
                     self.__process_message(decoded)
 
     def __setup_measurement_service(self) -> None:
@@ -251,11 +254,15 @@ class R10Device(BluetoothDeviceBase):
                         logging.debug(f"<><><><>Received duplicate shot data {metrics.shot_id}.  Ignoring")
                     else:
                         self.process_shots.append(metrics.shot_id)
-                        logging.debug(f">>>>>>> Received shot data: {metrics}")
-                        print(f">>>>>>> Received shot data: {metrics}")
+                        msg = f">>>>>>> Received shot data: {metrics}"
+                        logging.debug(msg)
+                        print(msg)
                         ball_data = BallData()
+                        ball_data.club = self._current_club
                         ball_data.from_r10_bt(metrics.ball_metrics, metrics.club_metrics)
-                        print(f'>>>>>>>>>>>>>>>  Ball data: {ball_data.to_json()}')
+                        msg = f'>>>>>>>  Ball data: {ball_data.to_json()}'
+                        print(msg)
+                        logging.debug(msg)
                         self.shot.emit(ball_data)
 
 
