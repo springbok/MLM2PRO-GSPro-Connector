@@ -157,9 +157,11 @@ class R10Device(BluetoothDeviceBase):
             else:
                 read_complete = False
                 if message_data[-1] == 0x00:
+                    print(f'----> (interface)(ble read) Received last byte {message_data[-1]}')
                     read_complete = True
                     message_data = message_data[:-1]
                 if len(message_data) > 0 and message_data[0] == 0x00:
+                    print(f'----> (interface)(ble read) first byte 0x00')
                     self._current_message.clear()
                     message_data = message_data[1:]
                 self._current_message.extend(message_data)
@@ -171,7 +173,7 @@ class R10Device(BluetoothDeviceBase):
                     msg = f'<---- (interface)(ble read)(decoded): {BluetoothUtils.byte_array_to_hex_string(decoded)}'
                     print(msg)
                     logging.debug(msg)
-                    self._current_message = bytearray()
+                    self._current_message.clear()
                     self.__process_message(decoded)
 
     def __setup_measurement_service(self) -> None:
@@ -198,7 +200,7 @@ class R10Device(BluetoothDeviceBase):
             msg = f'Checksum error: {BluetoothUtils.byte_array_to_hex_string(data)}'
             print(msg)
             logging.debug(msg)
-            self.error.emit(msg)
+            #self.error.emit(msg)
         else:
             message_data = data[2:-2]
             ack_body = bytearray([0x00])

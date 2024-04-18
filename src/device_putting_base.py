@@ -48,8 +48,8 @@ class DevicePuttingBase(DeviceBase):
         self.main_window.putting_server_button.setText(msg)
         self.main_window.putting_server_status_label.setText(status)
         self.main_window.putting_server_status_label.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
-        if self.device_worker is not None:
-            self.device_worker.ignore_shots_after_restart()
+        #f self.device_worker is not None:
+        #    self.device_worker.ignore_shots_after_restart()
 
     def device_worker_resumed(self):
         self.main_window.putting_server_button.setText('Stop')
