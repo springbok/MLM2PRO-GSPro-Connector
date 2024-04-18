@@ -92,6 +92,7 @@ class Settings(SettingsBase):
             save = True
         if not hasattr(self, 'r10_bluetooth'):
             self.r10_bluetooth = {
+                "device_name": "Approach R10",
                 "altitude": 0,
                 "humidity": 0.5,
                 "temperature": 60,

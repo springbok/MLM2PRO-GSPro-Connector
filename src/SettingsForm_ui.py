@@ -24,7 +24,7 @@ class Ui_SettingsForm(object):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(339, 718)
+        SettingsForm.resize(342, 755)
         self.verticalLayout_5 = QVBoxLayout(SettingsForm)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.verticalLayout_2 = QVBoxLayout()
@@ -144,6 +144,15 @@ class Ui_SettingsForm(object):
         self.r10_settings_groupbox.setObjectName(u"r10_settings_groupbox")
         self.verticalLayout_6 = QVBoxLayout(self.r10_settings_groupbox)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.r10_settings_device_name_edit = QPlainTextEdit(self.r10_settings_groupbox)
+        self.r10_settings_device_name_edit.setObjectName(u"r10_settings_device_name_edit")
+        sizePolicy.setHeightForWidth(self.r10_settings_device_name_edit.sizePolicy().hasHeightForWidth())
+        self.r10_settings_device_name_edit.setSizePolicy(sizePolicy)
+        self.r10_settings_device_name_edit.setMinimumSize(QSize(0, 31))
+        self.r10_settings_device_name_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_6.addWidget(self.r10_settings_device_name_edit)
+
         self.r10_settings_humidity_edit = QPlainTextEdit(self.r10_settings_groupbox)
         self.r10_settings_humidity_edit.setObjectName(u"r10_settings_humidity_edit")
         sizePolicy.setHeightForWidth(self.r10_settings_humidity_edit.sizePolicy().hasHeightForWidth())
@@ -308,6 +317,10 @@ class Ui_SettingsForm(object):
         self.launch_monitor_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
 
         self.r10_settings_groupbox.setTitle(QCoreApplication.translate("SettingsForm", u"R10 BT Settings", None))
+#if QT_CONFIG(tooltip)
+        self.r10_settings_device_name_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Device Name", None))
+#endif // QT_CONFIG(tooltip)
+        self.r10_settings_device_name_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Device Name", None))
 #if QT_CONFIG(tooltip)
         self.r10_settings_humidity_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Humidity (percent (0 - 1)", None))
 #endif // QT_CONFIG(tooltip)

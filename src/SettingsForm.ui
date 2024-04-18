@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>339</width>
-    <height>718</height>
+    <width>342</width>
+    <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -230,6 +230,31 @@
           <string>R10 BT Settings</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QPlainTextEdit" name="r10_settings_device_name_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>31</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Device Name</string>
+            </property>
+            <property name="tabChangesFocus">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>Device Name</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPlainTextEdit" name="r10_settings_humidity_edit">
             <property name="sizePolicy">

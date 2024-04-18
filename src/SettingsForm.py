@@ -60,6 +60,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.r10_bluetooth['temperature'] = int(self.r10_settings_temperature_edit.toPlainText())
             self.settings.r10_bluetooth['air_density'] = float(self.r10_settings_airdensity_edit.toPlainText())
             self.settings.r10_bluetooth['tee_distance'] = int(self.r10_settings_tee_distance_edit.toPlainText())
+            self.settings.r10_bluetooth['device_name'] = self.r10_settings_device_name_edit.toPlainText()
 
             self.settings.save()
             self.saved.emit()
@@ -101,6 +102,7 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.r10_settings_temperature_edit.setPlainText(str(self.settings.r10_bluetooth['temperature']))
         self.r10_settings_airdensity_edit.setPlainText(str(self.settings.r10_bluetooth['air_density']))
         self.r10_settings_tee_distance_edit.setPlainText(str(self.settings.r10_bluetooth['tee_distance']))
+        self.r10_settings_device_name_edit.setPlainText(self.settings.r10_bluetooth['device_name'])
 
     def __file_dialog(self):
         filename, ok = QFileDialog.getOpenFileName(

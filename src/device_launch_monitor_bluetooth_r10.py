@@ -8,10 +8,8 @@ from src.device_launch_monitor_bluetooth_base import DeviceLaunchMonitorBluetoot
 
 class DeviceLaunchMonitorBluetoothR10(DeviceLaunchMonitorBluetoothBase):
 
-    R10_NAME_PREFIX = "Approach R10"
-
     def __init__(self, main_window):
-        device_names = [DeviceLaunchMonitorBluetoothR10.R10_NAME_PREFIX]
+        device_names = [main_window.settings.r10_bluetooth['device_name']]
         DeviceLaunchMonitorBluetoothBase.__init__(self, main_window=main_window, device_names=device_names)
         self._device: Optional[R10Device] = None
 
