@@ -382,11 +382,11 @@ class R10Device(BluetoothDeviceBase):
         wrapper_proto = WrapperProto()
         launch_monitor_service = LaunchMonitorService()
         shot_config_request = ShotConfigRequest()
-        shot_config_request.temperature = temperature
-        shot_config_request.humidity = humidity
-        shot_config_request.altitude = altitude
-        shot_config_request.air_density = airDensity
-        shot_config_request.tee_range = teeRange
+        shot_config_request.temperature = self._settings.r10_bluetooth['temperature']
+        shot_config_request.humidity = self._settings.r10_bluetooth['humidity']
+        shot_config_request.altitude = self._settings.r10_bluetooth['altitude']
+        shot_config_request.air_density = self._settings.r10_bluetooth['air_density']
+        shot_config_request.tee_range = self._settings.r10_bluetooth['tee_distance']
         launch_monitor_service.shot_config_request.CopyFrom(shot_config_request)
         wrapper_proto.service.CopyFrom(launch_monitor_service)
         self.__send_protobuf_request(wrapper_proto)
