@@ -230,9 +230,9 @@ class R10Device(BluetoothDeviceBase):
             self.__acknowledge_message(message_data, ack_body)
 
     def __handle_protbuf_request(self, request: Message) -> None:
-        msg = f'x-x-x-x-x-x-x __handle_protbuf_request: {request}'
+        msg = f'__handle_protbuf_request: {request}'
         print(msg)
-        logging.debug(msg)
+        #logging.debug(msg)
         if request.HasField('event'):
             if request.event.HasField('notification'):
                 response = AlertDetails()
@@ -256,7 +256,7 @@ class R10Device(BluetoothDeviceBase):
                         logging.debug(f"<><><><>Received duplicate shot data {metrics.shot_id}.  Ignoring")
                     else:
                         self.process_shots.append(metrics.shot_id)
-                        msg = f">>>>>>> Received shot data: {metrics}"
+                        msg = f">>>>>>> Received shot data from device: {metrics}"
                         logging.debug(msg)
                         print(msg)
                         ball_data = BallData()
@@ -269,9 +269,9 @@ class R10Device(BluetoothDeviceBase):
 
 
     def __handle_protobuf_response(self, request: Message):
-        msg = f'yyyyyyy __handle_protobuf_response: {request}'
-        print(msg)
-        logging.debug(msg)
+        #msg = f'__handle_protobuf_response: {request}'
+        #print(msg)
+        #logging.debug(msg)
         if request.HasField('service'):
             if request.service.HasField('status_response'):
                 response = State()
@@ -280,7 +280,6 @@ class R10Device(BluetoothDeviceBase):
             elif request.service.HasField('tilt_response'):
                 response = Tilt()
                 response.ParseFromString(request.service.tilt_response.tilt.SerializeToString())
-                print(f'x-x-x-x-x-x-x tilt_response: {response} roll: {response.roll} pitch: {response.pitch}')
                 msg = f'Tilt roll: {response.roll} pitch: {response.pitch}'
                 print(msg)
                 logging.debug(msg)
@@ -288,7 +287,9 @@ class R10Device(BluetoothDeviceBase):
                 response = WakeUpResponse()
                 response.ParseFromString(request.SerializeToString())
                 if response.status == response.SUCCESS:
-                    print(f'x-x-x-x-x-x-x wake_up_response SUCCESS: {response}')
+                    msg = f'Wakeup response SUCCESS: {response}'
+                    print(msg)
+                    logging.debug(msg)
                     self.__status_request()
                     self.__subscribe_to_alerts()
                 else:
@@ -297,7 +298,9 @@ class R10Device(BluetoothDeviceBase):
             if request.event.HasField('subscribe_respose'):
                 response = SubscribeResponse()
                 response.ParseFromString(request.event.subscribe_respose.SerializeToString())
-                print(f'x-x-x-x-x-x-x status_response: {response} alert_status: {response.alert_status}')
+                msg = f'Status response: {response} alert_status: {response.alert_status}'
+                print(msg)
+                logging.debug(msg)
                 if response.alert_status[0].subscribe_status == 0:
                     msg = 'Subscribed to alerts'
                     print(msg)
