@@ -90,6 +90,15 @@ class Settings(SettingsBase):
                 "device_id": 0
             }
             save = True
+        if not hasattr(self, 'r10_bluetooth'):
+            self.r10_bluetooth = {
+                "altitude": 0,
+                "humidity": 0.5,
+                "temperature": 60,
+                "air_density": 1.225,
+                "tee_distance": 7
+            }
+            save = True
         if save:
             super().save()
 

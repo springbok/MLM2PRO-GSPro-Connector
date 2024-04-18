@@ -10,3 +10,4 @@ requests
 pywin32
 cobs
 protobuf
+crcmod

@@ -17,63 +17,70 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHBoxLayout,
     QLabel, QLayout, QPlainTextEdit, QPushButton,
-    QSizePolicy, QVBoxLayout, QWidget)
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_SettingsForm(object):
     def setupUi(self, SettingsForm):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(345, 440)
+        SettingsForm.resize(339, 718)
         self.verticalLayout_5 = QVBoxLayout(SettingsForm)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setSizeConstraint(QLayout.SetMinimumSize)
-        self.ipaddress_edit = QPlainTextEdit(SettingsForm)
-        self.ipaddress_edit.setObjectName(u"ipaddress_edit")
+        self.r10_settings_groupbox_2 = QGroupBox(SettingsForm)
+        self.r10_settings_groupbox_2.setObjectName(u"r10_settings_groupbox_2")
+        self.verticalLayout_7 = QVBoxLayout(self.r10_settings_groupbox_2)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.port_edit = QPlainTextEdit(self.r10_settings_groupbox_2)
+        self.port_edit.setObjectName(u"port_edit")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.ipaddress_edit.sizePolicy().hasHeightForWidth())
-        self.ipaddress_edit.setSizePolicy(sizePolicy)
-        self.ipaddress_edit.setMinimumSize(QSize(0, 31))
-        self.ipaddress_edit.setTabChangesFocus(True)
-
-        self.verticalLayout_3.addWidget(self.ipaddress_edit)
-
-        self.port_edit = QPlainTextEdit(SettingsForm)
-        self.port_edit.setObjectName(u"port_edit")
         sizePolicy.setHeightForWidth(self.port_edit.sizePolicy().hasHeightForWidth())
         self.port_edit.setSizePolicy(sizePolicy)
         self.port_edit.setMinimumSize(QSize(0, 31))
         self.port_edit.setTabChangesFocus(True)
 
-        self.verticalLayout_3.addWidget(self.port_edit)
+        self.horizontalLayout_5.addWidget(self.port_edit)
 
-        self.gspro_window_name = QPlainTextEdit(SettingsForm)
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout_5)
+
+        self.ipaddress_edit = QPlainTextEdit(self.r10_settings_groupbox_2)
+        self.ipaddress_edit.setObjectName(u"ipaddress_edit")
+        sizePolicy.setHeightForWidth(self.ipaddress_edit.sizePolicy().hasHeightForWidth())
+        self.ipaddress_edit.setSizePolicy(sizePolicy)
+        self.ipaddress_edit.setMinimumSize(QSize(0, 31))
+        self.ipaddress_edit.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.ipaddress_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_7.addWidget(self.ipaddress_edit)
+
+        self.gspro_window_name = QPlainTextEdit(self.r10_settings_groupbox_2)
         self.gspro_window_name.setObjectName(u"gspro_window_name")
         sizePolicy.setHeightForWidth(self.gspro_window_name.sizePolicy().hasHeightForWidth())
         self.gspro_window_name.setSizePolicy(sizePolicy)
         self.gspro_window_name.setMinimumSize(QSize(0, 31))
 
-        self.verticalLayout_3.addWidget(self.gspro_window_name)
+        self.verticalLayout_7.addWidget(self.gspro_window_name)
 
-        self.gspro_api_window_name = QPlainTextEdit(SettingsForm)
+        self.gspro_api_window_name = QPlainTextEdit(self.r10_settings_groupbox_2)
         self.gspro_api_window_name.setObjectName(u"gspro_api_window_name")
         sizePolicy.setHeightForWidth(self.gspro_api_window_name.sizePolicy().hasHeightForWidth())
         self.gspro_api_window_name.setSizePolicy(sizePolicy)
         self.gspro_api_window_name.setMinimumSize(QSize(0, 31))
 
-        self.verticalLayout_3.addWidget(self.gspro_api_window_name)
+        self.verticalLayout_7.addWidget(self.gspro_api_window_name)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.gspro_path_edit = QPlainTextEdit(SettingsForm)
+        self.gspro_path_edit = QPlainTextEdit(self.r10_settings_groupbox_2)
         self.gspro_path_edit.setObjectName(u"gspro_path_edit")
         sizePolicy.setHeightForWidth(self.gspro_path_edit.sizePolicy().hasHeightForWidth())
         self.gspro_path_edit.setSizePolicy(sizePolicy)
@@ -82,14 +89,20 @@ class Ui_SettingsForm(object):
 
         self.horizontalLayout_2.addWidget(self.gspro_path_edit)
 
-        self.file_browse_button = QPushButton(SettingsForm)
+        self.file_browse_button = QPushButton(self.r10_settings_groupbox_2)
         self.file_browse_button.setObjectName(u"file_browse_button")
 
         self.horizontalLayout_2.addWidget(self.file_browse_button)
 
 
-        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
+        self.verticalLayout_7.addLayout(self.horizontalLayout_2)
 
+
+        self.verticalLayout.addWidget(self.r10_settings_groupbox_2)
+
+        self.verticalLayout_3 = QVBoxLayout()
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setSizeConstraint(QLayout.SetMinimumSize)
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.label_7 = QLabel(SettingsForm)
@@ -107,8 +120,6 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_9)
 
-        self.verticalLayout_3.setStretch(0, 1)
-        self.verticalLayout_3.setStretch(1, 1)
 
         self.verticalLayout.addLayout(self.verticalLayout_3)
 
@@ -128,6 +139,63 @@ class Ui_SettingsForm(object):
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_10)
+
+        self.r10_settings_groupbox = QGroupBox(SettingsForm)
+        self.r10_settings_groupbox.setObjectName(u"r10_settings_groupbox")
+        self.verticalLayout_6 = QVBoxLayout(self.r10_settings_groupbox)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.r10_settings_humidity_edit = QPlainTextEdit(self.r10_settings_groupbox)
+        self.r10_settings_humidity_edit.setObjectName(u"r10_settings_humidity_edit")
+        sizePolicy.setHeightForWidth(self.r10_settings_humidity_edit.sizePolicy().hasHeightForWidth())
+        self.r10_settings_humidity_edit.setSizePolicy(sizePolicy)
+        self.r10_settings_humidity_edit.setMinimumSize(QSize(0, 31))
+        self.r10_settings_humidity_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_6.addWidget(self.r10_settings_humidity_edit)
+
+        self.r10_settings_temperature_edit = QPlainTextEdit(self.r10_settings_groupbox)
+        self.r10_settings_temperature_edit.setObjectName(u"r10_settings_temperature_edit")
+        sizePolicy.setHeightForWidth(self.r10_settings_temperature_edit.sizePolicy().hasHeightForWidth())
+        self.r10_settings_temperature_edit.setSizePolicy(sizePolicy)
+        self.r10_settings_temperature_edit.setMinimumSize(QSize(0, 31))
+        self.r10_settings_temperature_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_6.addWidget(self.r10_settings_temperature_edit)
+
+        self.r10_settings_altitude_edit = QPlainTextEdit(self.r10_settings_groupbox)
+        self.r10_settings_altitude_edit.setObjectName(u"r10_settings_altitude_edit")
+        sizePolicy.setHeightForWidth(self.r10_settings_altitude_edit.sizePolicy().hasHeightForWidth())
+        self.r10_settings_altitude_edit.setSizePolicy(sizePolicy)
+        self.r10_settings_altitude_edit.setMinimumSize(QSize(0, 31))
+        self.r10_settings_altitude_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_6.addWidget(self.r10_settings_altitude_edit)
+
+        self.r10_settings_airdensity_edit = QPlainTextEdit(self.r10_settings_groupbox)
+        self.r10_settings_airdensity_edit.setObjectName(u"r10_settings_airdensity_edit")
+        sizePolicy.setHeightForWidth(self.r10_settings_airdensity_edit.sizePolicy().hasHeightForWidth())
+        self.r10_settings_airdensity_edit.setSizePolicy(sizePolicy)
+        self.r10_settings_airdensity_edit.setMinimumSize(QSize(0, 31))
+        self.r10_settings_airdensity_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_6.addWidget(self.r10_settings_airdensity_edit)
+
+        self.r10_settings_tee_distance_edit = QPlainTextEdit(self.r10_settings_groupbox)
+        self.r10_settings_tee_distance_edit.setObjectName(u"r10_settings_tee_distance_edit")
+        sizePolicy.setHeightForWidth(self.r10_settings_tee_distance_edit.sizePolicy().hasHeightForWidth())
+        self.r10_settings_tee_distance_edit.setSizePolicy(sizePolicy)
+        self.r10_settings_tee_distance_edit.setMinimumSize(QSize(0, 31))
+        self.r10_settings_tee_distance_edit.setTabChangesFocus(True)
+
+        self.verticalLayout_6.addWidget(self.r10_settings_tee_distance_edit)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_4)
+
+
+        self.verticalLayout.addWidget(self.r10_settings_groupbox)
 
         self.groupBox = QGroupBox(SettingsForm)
         self.groupBox.setObjectName(u"groupBox")
@@ -179,6 +247,10 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_11)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.save_button = QPushButton(SettingsForm)
@@ -205,15 +277,22 @@ class Ui_SettingsForm(object):
 
     def retranslateUi(self, SettingsForm):
         SettingsForm.setWindowTitle(QCoreApplication.translate("SettingsForm", u"Settings", None))
+        self.r10_settings_groupbox_2.setTitle(QCoreApplication.translate("SettingsForm", u"GSPro", None))
 #if QT_CONFIG(tooltip)
-        self.ipaddress_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"IP Address", None))
+        self.port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"GSPro Port", None))
 #endif // QT_CONFIG(tooltip)
-        self.ipaddress_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"IP Address", None))
+        self.port_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"GSPro Port", None))
 #if QT_CONFIG(tooltip)
-        self.port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Window Title", None))
+        self.ipaddress_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"GSPro IP Address", None))
 #endif // QT_CONFIG(tooltip)
-        self.port_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Port", None))
+        self.ipaddress_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"GSPro IP Address", None))
+#if QT_CONFIG(tooltip)
+        self.gspro_window_name.setToolTip(QCoreApplication.translate("SettingsForm", u"GSPro Window Title", None))
+#endif // QT_CONFIG(tooltip)
         self.gspro_window_name.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"GSPro Window Title", None))
+#if QT_CONFIG(tooltip)
+        self.gspro_api_window_name.setToolTip(QCoreApplication.translate("SettingsForm", u"GSPro API Window Title", None))
+#endif // QT_CONFIG(tooltip)
         self.gspro_api_window_name.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"GSPro API Window Title", None))
 #if QT_CONFIG(tooltip)
         self.gspro_path_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Application Path(Opyional)", None))
@@ -228,13 +307,34 @@ class Ui_SettingsForm(object):
         self.launch_monitor_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
         self.launch_monitor_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
 
+        self.r10_settings_groupbox.setTitle(QCoreApplication.translate("SettingsForm", u"R10 BT Settings", None))
+#if QT_CONFIG(tooltip)
+        self.r10_settings_humidity_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Humidity (percent (0 - 1)", None))
+#endif // QT_CONFIG(tooltip)
+        self.r10_settings_humidity_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Humidity (percent (0 - 1)", None))
+#if QT_CONFIG(tooltip)
+        self.r10_settings_temperature_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Temperature (fahrenheit )", None))
+#endif // QT_CONFIG(tooltip)
+        self.r10_settings_temperature_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Temperature (fahrenheit )", None))
+#if QT_CONFIG(tooltip)
+        self.r10_settings_altitude_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Altitude (feet)", None))
+#endif // QT_CONFIG(tooltip)
+        self.r10_settings_altitude_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Altitude (feet)", None))
+#if QT_CONFIG(tooltip)
+        self.r10_settings_airdensity_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Air Density (kg/m^3)", None))
+#endif // QT_CONFIG(tooltip)
+        self.r10_settings_airdensity_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Air Density (kg/m^3)", None))
+#if QT_CONFIG(tooltip)
+        self.r10_settings_tee_distance_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Tee Distance to R10 (feet)", None))
+#endif // QT_CONFIG(tooltip)
+        self.r10_settings_tee_distance_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Tee Distance to R10 (feet)", None))
         self.groupBox.setTitle(QCoreApplication.translate("SettingsForm", u"Relay Server Settings", None))
 #if QT_CONFIG(tooltip)
-        self.relay_server_ip_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"IP Address", None))
+        self.relay_server_ip_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Relay Server IP Address", None))
 #endif // QT_CONFIG(tooltip)
         self.relay_server_ip_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Relay Server IP Address", None))
 #if QT_CONFIG(tooltip)
-        self.relay_server_port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Window Title", None))
+        self.relay_server_port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Relay Server Port", None))
 #endif // QT_CONFIG(tooltip)
         self.relay_server_port_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Relay Server Port", None))
         self.auto_start_all_label.setText(QCoreApplication.translate("SettingsForm", u"Auto Start All Apps", None))

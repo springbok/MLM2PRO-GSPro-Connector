@@ -55,6 +55,12 @@ class SettingsForm(QWidget, Ui_SettingsForm):
             self.settings.relay_server_ip_address = self.relay_server_ip_edit.toPlainText()
             self.settings.relay_server_port = int(self.relay_server_port_edit.toPlainText())
             self.settings.auto_start_all_apps = self.auto_start_all_apps_combo.currentText()
+            self.settings.r10_bluetooth['altitude'] = int(self.r10_settings_altitude_edit.toPlainText())
+            self.settings.r10_bluetooth['humidity'] = float(self.r10_settings_humidity_edit.toPlainText())
+            self.settings.r10_bluetooth['temperature'] = int(self.r10_settings_temperature_edit.toPlainText())
+            self.settings.r10_bluetooth['air_density'] = float(self.r10_settings_airdensity_edit.toPlainText())
+            self.settings.r10_bluetooth['tee_distance'] = int(self.r10_settings_tee_distance_edit.toPlainText())
+
             self.settings.save()
             self.saved.emit()
             QMessageBox.information(self, "Settings Updated", f"Settings have been updated.\nPlease exit and restart the Connector for the changes to take effect.")
@@ -90,7 +96,11 @@ class SettingsForm(QWidget, Ui_SettingsForm):
         self.relay_server_port_edit.setPlainText(str(self.settings.relay_server_port))
         self.auto_start_all_apps_combo.setCurrentText(self.settings.auto_start_all_apps)
         self.prev_device_id = self.settings.device_id
-
+        self.r10_settings_altitude_edit.setPlainText(str(self.settings.r10_bluetooth['altitude']))
+        self.r10_settings_humidity_edit.setPlainText(str(self.settings.r10_bluetooth['humidity']))
+        self.r10_settings_temperature_edit.setPlainText(str(self.settings.r10_bluetooth['temperature']))
+        self.r10_settings_airdensity_edit.setPlainText(str(self.settings.r10_bluetooth['air_density']))
+        self.r10_settings_tee_distance_edit.setPlainText(str(self.settings.r10_bluetooth['tee_distance']))
 
     def __file_dialog(self):
         filename, ok = QFileDialog.getOpenFileName(
