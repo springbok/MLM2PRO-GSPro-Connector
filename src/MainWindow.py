@@ -31,7 +31,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.04.00'
+    version = 'V1.04.01'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -137,7 +137,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.launch_monitor.select_device.select_device(device)
                     self.log_message(LogMessageTypes.LOG_WINDOW, LogMessageSystems.CONNECTOR, f'Selecting Device:{device.name}')
             elif self.settings.device_id == LaunchMonitor.MLM2PRO_BT or \
-                    self.settings.device_id != LaunchMonitor.R10_BT:
+                    self.settings.device_id == LaunchMonitor.R10_BT:
                 self.launch_monitor.server_start_stop()
             elif self.settings.device_id == LaunchMonitor.RELAY_SERVER:
                 self.launch_monitor.resume()
