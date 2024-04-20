@@ -1,0 +1,238 @@
+syntax = "proto3";
+
+package LaunchMonitor.Proto;
+
+message WrapperProto {
+  optional EventSharing event = 30;
+  optional LaunchMonitorService service = 38;
+}
+
+message LaunchMonitorService {
+  optional StatusRequest status_request = 1;
+  optional StatusResponse status_response = 2;
+  optional WakeUpRequest wake_up_request = 3;
+  optional WakeUpResponse wake_up_response = 4;
+  optional TiltRequest tilt_request = 5;
+  optional TiltResponse tilt_response = 6;
+  optional StartTiltCalibrationRequest start_tilt_cal_request = 7;
+  optional StartTiltCalibrationResponse start_tilt_cal_response = 8;
+  optional ResetTiltCalibrationRequest reset_tilt_cal_request = 9;
+  optional ResetTiltCalibrationResponse reset_tilt_cal_response = 10;
+  optional ShotConfigRequest shot_config_request = 11;
+  optional ShotConfigResponse shot_config_response = 12;
+}
+
+message StatusRequest {}
+message StatusResponse {
+  optional State state = 1;
+}
+message WakeUpRequest {}
+message WakeUpResponse {
+  optional ResponseStatus status = 1;
+  enum ResponseStatus {
+    SUCCESS = 0;
+    ALREADY_AWAKE = 1;
+    UNKNOWN_ERROR = 2;
+  }
+}
+message TiltRequest {}
+message TiltResponse {
+  optional Tilt tilt = 1;
+}
+message StartTiltCalibrationRequest {}
+message StartTiltCalibrationResponse {
+  optional CalibrationStatus status = 1;
+  enum CalibrationStatus {
+    STARTED = 0;
+    IN_PROGRESS = 1;
+    ERROR = 2;
+  }
+}
+message ResetTiltCalibrationRequest {
+  optional bool should_reset = 1;
+}
+message ResetTiltCalibrationResponse {
+  optional Status status = 1;
+  enum Status {
+    UNKNOWN = 0;
+    CAN_RESET = 1;
+    ALREADY_RESET = 2;
+    RESET_SUCCESSFUL = 3;
+    CANNOT_RESET = 4;
+  }
+}
+message ShotConfigRequest {
+  optional float temperature = 1;
+  optional float humidity = 2;
+  optional float altitude = 3;
+  optional float air_density = 4;
+  optional float tee_range = 5;
+}
+message ShotConfigResponse {
+  optional bool success = 1;
+}
+
+message EventSharing {
+  optional SubscribeRequest subscribe_request = 1;
+  optional SubscribeResponse subscribe_respose = 2;
+  optional AlertNotification notification = 3;
+  optional AlertSupportRequest support_request = 4;
+  optional AlertSupportResponse support_response = 5;
+}
+
+message SubscribeRequest {
+  repeated AlertMessage alerts = 1;
+}
+
+message SubscribeResponse {
+  repeated AlertStatusMessage alert_status = 1;
+
+  message AlertStatusMessage {
+    optional Status subscribe_status = 1;
+    optional AlertMessage type = 2;
+
+    enum Status {
+      SUCCESS = 0;
+      FAIL = 1;
+    }
+  }
+}
+
+message AlertSupportRequest {
+
+}
+message AlertSupportResponse {
+  repeated AlertNotification.AlertType supported_alerts = 1;
+  optional uint32 version_number = 2;
+}
+
+message AlertMessage {
+  optional AlertNotification.AlertType type = 1;
+  optional uint32 interval = 2;
+}
+
+message AlertNotification {
+  optional AlertType type = 1;
+
+  optional AlertDetails AlertNotification = 1001;
+
+  enum AlertType {
+    ACTIVITY_START = 0;
+    ACTIVITY_STOP = 1;
+    LAUNCH_MONITOR = 8;
+  }
+
+}
+
+message AlertDetails {
+  optional State state = 1;
+  optional Metrics metrics = 2;
+  optional Error error = 3;
+  optional CalibrationStatus tilt_calibration = 4;
+}
+
+message State {
+  optional StateType state = 1;
+
+  enum StateType {
+    STANDBY = 0;
+    INTERFERENCE_TEST = 1;
+    WAITING = 2;
+    RECORDING = 3;
+    PROCESSING = 4;
+    ERROR = 5;
+  }
+}
+
+message CalibrationStatus {
+  optional StatusType status = 1;
+  optional CalibrationResult result = 2;
+
+  enum StatusType {
+    UNKNOWN = 0;
+    IN_BOUNDS = 1;
+    RECALIBRATION_SUGGESTED = 2;
+    RECALIBRATION_REQUIRED = 3;
+  }
+
+  enum CalibrationResult {
+    SUCCESS = 0;
+    ERROR = 1;
+    UNIT_MOVING = 2;
+  }
+}
+
+message Error {
+  optional ErrorCode code = 1;
+  optional Severity severity = 2;
+  optional Tilt deviceTilt = 3;
+
+  enum ErrorCode {
+    UNKNOWN = 0;
+    OVERHEATING = 1;
+    RADAR_SATURATION = 2;
+    PLATFORM_TILTED = 3;
+  }
+
+  enum Severity {
+    WARNING = 0;
+    SERIOUS = 1;
+    FATAL = 2;
+  }
+}
+
+message Tilt {
+  optional float roll = 1;
+  optional float pitch = 2;
+}
+
+message Metrics {
+  optional uint32 shot_id = 1;
+  optional ShotType shot_type = 2;
+  optional BallMetrics ball_metrics = 3;
+  optional ClubMetrics club_metrics = 4;
+  optional SwingMetrics swing_metrics = 5;
+
+  enum ShotType {
+    PRACTICE = 0;
+    NORMAL = 1;
+  }
+}
+
+message BallMetrics {
+  optional float launch_angle = 1;
+  optional float launch_direction = 2;
+  optional float ball_speed = 3;
+  optional float spin_axis = 4;
+  optional float total_spin = 5;
+  optional SpinCalculationType spin_calculation_type = 6;
+  optional GolfBallType golf_ball_type = 7;
+
+  enum SpinCalculationType {
+    RATIO = 0;
+    BALL_FLIGHT = 1;
+    OTHER = 2;
+    MEASURED = 3;
+  }
+
+  enum GolfBallType {
+    UNKNOWN = 0;
+    CONVENTIONAL = 1;
+    MARKED = 2;
+  }
+}
+
+message ClubMetrics {
+  optional float club_head_speed = 1;
+  optional float club_angle_face = 2;
+  optional float club_angle_path = 3;
+  optional float attack_angle = 4;
+}
+
+message SwingMetrics {
+  optional uint32 back_swing_start_time = 1;
+  optional uint32 down_swing_start_time = 2;
+  optional uint32 impact_time = 3;
+  optional uint32 follow_through_end_time = 4;
+  optional uint32 end_recording_time = 5;
+}

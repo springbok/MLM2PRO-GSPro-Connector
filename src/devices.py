@@ -55,3 +55,9 @@ class Devices:
                 device.save()
         # Always create the template file
         Device(-1, '', '', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, 'Window Title', {}, self.app_paths.app_data_path, True).save()
+
+    def as_list(self):
+        devices = ['None']
+        for device in self.devices:
+            devices.append(device.name)
+        return devices

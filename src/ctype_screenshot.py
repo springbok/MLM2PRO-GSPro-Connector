@@ -185,6 +185,21 @@ CreateDCW = windll.gdi32.CreateDCW
 DeleteDC = windll.gdi32.DeleteDC
 sizeof_BITMAPINFOHEADER = ctypes.sizeof(BITMAPINFOHEADER)
 
+window_titles = []
+def enum_windows_proc(hwnd, lparam):
+    if ctypes.windll.user32.IsWindowVisible(hwnd):
+        length = ctypes.windll.user32.GetWindowTextLengthW(hwnd) + 1
+        buffer = ctypes.create_unicode_buffer(length)
+        ctypes.windll.user32.GetWindowTextW(hwnd, buffer, length)
+        window_titles.append(buffer.value)
+    return True
+
+def open_window_titles():
+    window_titles.clear()
+    EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.wintypes.BOOL, ctypes.wintypes.HWND, ctypes.wintypes.LPARAM)
+    ctypes.windll.user32.EnumWindows(EnumWindowsProc(enum_windows_proc), ctypes.pointer(ctypes.wintypes.INT(len(window_titles))))
+    return window_titles
+
 class ScreenMirrorWindow:
     def __init__(
         self, title: str
@@ -202,6 +217,14 @@ class ScreenMirrorWindow:
             raise WindowNotFoundException(f"Can't find window called '{title}'")
         else:
             return hwnd
+
+    @staticmethod
+    def minimize_window(title):
+        try:
+            hwnd = ScreenMirrorWindow.find_window(title)
+            ShowWindow(hwnd, SW_MINIMIZE)
+        except:
+            pass
 
     @staticmethod
     def top_window(title):

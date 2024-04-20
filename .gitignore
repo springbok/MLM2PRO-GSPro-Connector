@@ -162,3 +162,7 @@ cython_debug/
 #.idea/
 train.traineddata.new
 train.traineddata.old
+
+mlm2pro_bt_app/
+r10_bt_app/
+src/bluetooth/mlm2pro_secret.py

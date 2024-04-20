@@ -1,6 +1,5 @@
 import logging
 import os
-
 import cv2
 import numpy as np
 import pyqtgraph as pg
@@ -21,6 +20,7 @@ class ScreenshotBase(ViewBox):
     def __init__(self, *args, **kwargs):
         ViewBox.__init__(self, *args, **kwargs)
         pg.setConfigOptions(imageAxisOrder='row-major')
+        self.selected_club = None
         self.resize_window = False
         self.screenshot_new = False
         self.image_rois = {}
@@ -120,6 +120,8 @@ class ScreenshotBase(ViewBox):
 
     def ocr_image(self):
         self.balldata = BallData()
+        self.balldata.club = self.selected_club
+        self.balldata.launch_monitor = self.settings.device_id
         self.new_shot = False
         fallback_tesserocr_api = None
         if self.__class__.__name__ == 'ScreenshotExPutt':
@@ -128,6 +130,12 @@ class ScreenshotBase(ViewBox):
             train_file = 'train'
             if self.settings.device_id == LaunchMonitor.MEVOPLUS:
                 train_file = 'mevo'
+            elif self.settings.device_id == LaunchMonitor.FSKIT:
+                train_file = 'fskit'
+            elif self.settings.device_id == LaunchMonitor.TRACKMAN:
+                train_file = 'trackman'
+            elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
+                train_file = 'apex'
         logging.debug(f"Using {train_file}_traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:
@@ -192,10 +200,10 @@ class ScreenshotBase(ViewBox):
                 if self.__class__.__name__ == 'ScreenshotExPutt':
                     self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
                 else:
-                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.device_id)
+                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata)
             # Correct metrics if invalid smash factor
             if self.balldata.putt_type is None:
-                self.balldata.check_smash_factor()
+                self.balldata.check_smash_factor(self.selected_club)
             if not self.previous_balldata is None:
                 diff_count = self.balldata.eq(self.previous_balldata)
             else:

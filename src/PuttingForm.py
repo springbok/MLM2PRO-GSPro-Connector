@@ -5,14 +5,13 @@ from threading import Event
 import cv2
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QShowEvent
-from PySide6.QtWidgets import QWidget, QMessageBox, QProgressDialog, QMainWindow
+from PySide6.QtWidgets import QWidget, QMessageBox, QProgressDialog
 
-from src import MainWindow
 from src.PuttingForm_ui import Ui_PuttingForm
 from src.RoisExPuttForm import RoisExPuttForm
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
-from src.putting_settings import PuttingSettings, PuttingSystems
+from src.putting_settings import PuttingSystems
 
 
 class PuttingForm(QWidget, Ui_PuttingForm):
@@ -20,10 +19,11 @@ class PuttingForm(QWidget, Ui_PuttingForm):
     saved = Signal()
     cancel = Signal()
 
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
         self.settings = main_window.putting_settings
+        self.settings.load()
         self.rois_form = RoisExPuttForm(main_window=self.main_window)
         self.setupUi(self)
         self.__setup_ui()
@@ -67,6 +67,7 @@ class PuttingForm(QWidget, Ui_PuttingForm):
         #self.exputt_capture_card_combo.setCurrentText(str(self.settings.exputt['camera']))
         self.ball_tracking_app_params_edit.setPlainText(self.settings.webcam['params'])
         self.exputt_camera_window_title_edit.setPlainText(self.settings.exputt['window_name'])
+        self.webcam_putting_width_edit.setPlainText(str(self.settings.webcam['width']))
 
     def __save(self):
         if self.__valid():
@@ -74,6 +75,7 @@ class PuttingForm(QWidget, Ui_PuttingForm):
             self.settings.webcam['ball_color'] = self.webcam_ball_color_combo.currentText()
             self.settings.webcam['auto_start'] = self.webcam_auto_start_combo.currentText()
             self.settings.webcam['window_name'] = self.webcam_window_title_edit.toPlainText()
+            self.settings.webcam['width'] = self.webcam_putting_width_edit.toPlainText()
             self.settings.system = self.putting_system_combo.currentText()
             #self.settings.exputt['camera'] = int(self.exputt_capture_card_combo.currentText())
             self.settings.webcam['params'] = self.ball_tracking_app_params_edit.toPlainText()
@@ -86,7 +88,7 @@ class PuttingForm(QWidget, Ui_PuttingForm):
                 msg = "For any updated settings to take effect:\nQuit/Close the Webcam putting app using the 'q' key.\nClose this form.\n'Start putting again, it should open the Webcam putting app using the new settings."
             else:
                 msg = "Settings have been updated."
-            QMessageBox.information(self, "Settings Updated", msg)
+            QMessageBox.information(self, "Putting Settings Updated", msg)
 
     def __valid(self):
         valid = True

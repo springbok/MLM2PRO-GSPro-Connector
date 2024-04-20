@@ -5,3 +5,9 @@ numpy
 pillow
 tesserocr
 opencv-python
+pycryptodome
+requests
+pywin32
+cobs
+protobuf
+crcmod

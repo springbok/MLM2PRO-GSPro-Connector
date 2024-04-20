@@ -6,11 +6,12 @@ from PySide6.QtCore import QObject, Signal
 from src.ball_data import BallData, PuttType
 from src.custom_exception import PutterNotSelected
 from src.putting_settings import PuttingSettings
+from src.worker_base import WorkerBase
 
 
 class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
 
-    def  __init__(self, *args, putting_worker=None, **kwargs):
+    def __init__(self, *args, putting_worker=None, **kwargs):
         self.ball_data = None
         self.putting_worker = putting_worker
         super(BaseHTTPRequestHandler, self).__init__(*args, **kwargs)
@@ -33,6 +34,7 @@ class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
             self.ball_data.hla = float(putt_data['ballData']['LaunchDirection'])
             self.ball_data.putt_type = PuttType.WEBCAM
             self.ball_data.good_shot = True
+            self.ball_data.club = 'PT'
             message = {"result": "Success"}
             logging.debug(f'Putting Server putt received: {self.ball_data.to_json()}')
         except Exception as e:
@@ -49,18 +51,15 @@ class PuttingRequestHandler(QObject, BaseHTTPRequestHandler):
                 self.putting_worker.send_putt(self.ball_data)
 
 
-class PuttingWebcamWorker(QObject):
-    started = Signal()
-    stopped = Signal()
-    error = Signal(object or None)
-    putt = Signal(object or None)
+class WorkerDeviceWebcam(WorkerBase):
+    shot = Signal(object or None)
 
     def __init__(self, settings: PuttingSettings):
-        super(PuttingWebcamWorker, self).__init__()
+        super(WorkerDeviceWebcam, self).__init__()
         self._server = None
         self.putter = False
         self.settings = settings
-        self.name = 'PuttingWebcamWorker'
+        self.name = 'WorkerDeviceWebcam'
 
     def run(self):
         self.started.emit()
@@ -71,21 +70,15 @@ class PuttingWebcamWorker(QObject):
             handler_partial)
         self._server.serve_forever()
 
-    def stop(self):
-        self._server.shutdown()
-        self._server.socket.close()
-        self.stopped.emit()
-        logging.debug(f'{self.name} Stopped')
+    def shutdown(self):
+        super().shutdown()
+        if self._server is not None:
+            self._server.shutdown()
+            self._server.socket.close()
+            self._server = None
 
     def send_putt(self, putt):
-        self.putt.emit(putt)
+        self.shot.emit(putt)
 
     def send_error(self, error):
         self.error.emit(error)
-
-    def putter_selected(self):
-        return self.putter
-
-    def select_putter(self, selected):
-        self.putter = selected
-        logging.debug(f"webcam self.putter: {self.putter}")

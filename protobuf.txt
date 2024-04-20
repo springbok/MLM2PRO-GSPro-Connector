@@ -1,0 +1,10 @@
+Generate protobuf files:
+
+ c:\python\protoc -I=C:\python\MLM2PRO-GSPro-Connector\src\bluetooth\ --python_out=pyi_out:C:\python\MLM2PRO-GSPro-Connector\src\bluetooth\  C:\python\MLM2PRO-GSPro-Connector\src\bluetooth\r10.proto
+
+ https://github.com/protocolbuffers/protobuf/tree/main/python
+ https://pypi.org/project/protobuf/
+
+ protoc
+ https://github.com/protocolbuffers/protobuf/releases/tag/v26.1
+ https://protobuf.dev/getting-started/pythontutorial/
