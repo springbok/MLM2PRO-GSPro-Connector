@@ -43,6 +43,8 @@ class BallMetrics:
     CLUB_PATH = 'path'
     CLUB_FACE_TO_TARGET = 'face_to_target'
     CLUB = 'club'
+    ANGLE_OF_ATTACK = 'angle_of_attack'
+    SPEED_AT_IMPACT = 'speed_at_impact'
 
 
 class BallData:
@@ -58,7 +60,9 @@ class BallData:
         BallMetrics.BACK_SPIN: 'Back Spin',
         BallMetrics.SIDE_SPIN: 'Side Spin',
         BallMetrics.CLUB_PATH: 'Club Path',
-        BallMetrics.CLUB_FACE_TO_TARGET: 'Impact Angle'
+        BallMetrics.CLUB_FACE_TO_TARGET: 'Impact Angle',
+        BallMetrics.ANGLE_OF_ATTACK: 'Angle of Attack',
+        BallMetrics.SPEED_AT_IMPACT: 'Speed at Impact'
     }
     rois_properties = [BallMetrics.SPEED,
                        BallMetrics.TOTAL_SPIN,
@@ -123,7 +127,7 @@ class BallData:
                 "SideSpin": self.side_spin
             },
             "ClubData": {
-                "Speed": self.club_speed
+                "Speed": self.club_speed,
             },
             "ShotDataOptions": {
                 "ContainsBallData": True,
@@ -136,6 +140,16 @@ class BallData:
         if not self.putt_type is None and self.putt_type == PuttType.EXPUTT:
             payload['ClubData']['Path'] = self.path
             payload['ClubData']['FaceToTarget'] = self.face_to_target
+        else:
+            if self.path != 0:
+                payload['ClubData']['Path'] = self.path
+            if self.face_to_target != 0:
+                payload['ClubData']['FaceToTarget'] = self.face_to_target
+            if self.angle_of_attack != 0:
+                payload['ClubData']['AngleOfAttack'] = self.angle_of_attack
+            if self.speed_at_impact != 0:
+                payload['ClubData']['SpeedAtImpact'] = self.speed_at_impact
+
         return payload
 
     def from_gspro(self, payload):
@@ -392,6 +406,8 @@ class BallData:
             self.club_speed = round(club_data.club_head_speed * meters_per_s_to_miles_per_hour, 2)
             self.path = round(club_data.club_angle_path, 2)
             self.face_to_target = round(club_data.club_angle_face, 2)
+            self.angle_of_attack = round(club_data.attack_angle, 2)
+            self.speed_at_impact = self.club_speed
 
         self.__calc_spin()
         self.good_shot = True

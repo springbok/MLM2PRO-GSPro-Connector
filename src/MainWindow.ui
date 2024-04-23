@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1302</width>
+    <width>1349</width>
     <height>725</height>
    </rect>
   </property>
@@ -719,6 +719,21 @@
                        </property>
                       </widget>
                      </item>
+                     <item>
+                      <widget class="QLabel" name="label_9">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>Impact Speed</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
                     </layout>
                    </item>
                    <item>
@@ -831,6 +846,27 @@
                        </property>
                       </widget>
                      </item>
+                     <item>
+                      <widget class="QTextEdit" name="speed_at_impact_edit">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>230</width>
+                         <height>50</height>
+                        </size>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                      </widget>
+                     </item>
                     </layout>
                    </item>
                    <item>
@@ -907,6 +943,21 @@
                        </property>
                        <property name="text">
                         <string>Face to Target</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="SideSpin_3">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>Angle of Attack</string>
                        </property>
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
@@ -1006,6 +1057,27 @@
                      </item>
                      <item>
                       <widget class="QTextEdit" name="face_to_target_edit">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>230</width>
+                         <height>50</height>
+                        </size>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QTextEdit" name="angle_of_attack_edit">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                          <horstretch>0</horstretch>
