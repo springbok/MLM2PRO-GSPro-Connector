@@ -3,7 +3,7 @@ import struct
 from typing import Optional
 
 from PySide6.QtBluetooth import QBluetoothDeviceInfo, QBluetoothUuid, QLowEnergyCharacteristic
-from PySide6.QtCore import QUuid, QByteArray, Signal
+from PySide6.QtCore import QUuid, QByteArray
 from cobs import cobs
 from google.protobuf.message import Message
 
@@ -13,7 +13,7 @@ from src.bluetooth.bluetooth_device_service import BluetoothDeviceService
 from src.bluetooth.bluetooth_utils import BluetoothUtils
 from src.bluetooth.r10_pb2 import WrapperProto, LaunchMonitorService, WakeUpRequest, StatusRequest, TiltRequest, \
     StartTiltCalibrationRequest, EventSharing, SubscribeRequest, AlertMessage, AlertNotification, ShotConfigRequest, \
-    WakeUpResponse, StatusResponse, State, TiltResponse, Tilt, SubscribeResponse, AlertDetails, Metrics
+    WakeUpResponse, State, Tilt, SubscribeResponse, AlertDetails, Metrics
 
 
 class R10Device(BluetoothDeviceBase):
@@ -386,11 +386,6 @@ class R10Device(BluetoothDeviceBase):
     def __send_shot_config(self) -> None:
         print(f'Send Shot Config request')
         logging.debug(f'Send Shot Config request')
-        temperature = 60
-        humidity = 0.5
-        altitude = 0
-        airDensity = 1.225
-        teeRange = 2.1334958
         wrapper_proto = WrapperProto()
         launch_monitor_service = LaunchMonitorService()
         shot_config_request = ShotConfigRequest()
