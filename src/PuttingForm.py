@@ -11,7 +11,7 @@ from src.PuttingForm_ui import Ui_PuttingForm
 from src.RoisExPuttForm import RoisExPuttForm
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
-from src.putting_settings import PuttingSystems
+from src.putting_settings import PuttingSystems, PuttingSettings
 
 
 class PuttingForm(QWidget, Ui_PuttingForm):
@@ -39,6 +39,8 @@ class PuttingForm(QWidget, Ui_PuttingForm):
         self.exputt_camera_auto_start_combo.clear()
         self.webcam_ball_color_combo.clear()
         self.webcam_camera_combo.clear()
+        self.webcam_putting_focus_combo.clear()
+        self.webcam_not_putting_state_combo.clear()
         sources = []
         for i in range(8):
             sources.append(str(i))
@@ -48,6 +50,8 @@ class PuttingForm(QWidget, Ui_PuttingForm):
         self.webcam_auto_start_combo.addItems(['Yes', 'No'])
         self.exputt_camera_auto_start_combo.addItems(['Yes', 'No'])
         self.webcam_ball_color_combo.addItems(BallData.ballcolor_as_list())
+        self.webcam_putting_focus_combo.addItems(PuttingSettings.webcam_window_focus_as_list())
+        self.webcam_not_putting_state_combo.addItems(PuttingSettings.webcam_window_state_as_list())
 
 
     def showEvent(self, event: QShowEvent) -> None:
@@ -68,6 +72,8 @@ class PuttingForm(QWidget, Ui_PuttingForm):
         self.ball_tracking_app_params_edit.setPlainText(self.settings.webcam['params'])
         self.exputt_camera_window_title_edit.setPlainText(self.settings.exputt['window_name'])
         self.webcam_putting_width_edit.setPlainText(str(self.settings.webcam['width']))
+        self.webcam_putting_focus_combo.setCurrentText(self.settings.webcam['window_putting_focus'])
+        self.webcam_not_putting_state_combo.setCurrentText(self.settings.webcam['window_not_putting_state'])
 
     def __save(self):
         if self.__valid():
@@ -81,6 +87,8 @@ class PuttingForm(QWidget, Ui_PuttingForm):
             self.settings.webcam['params'] = self.ball_tracking_app_params_edit.toPlainText()
             self.settings.exputt['window_name'] = self.exputt_camera_window_title_edit.toPlainText()
             self.settings.exputt['auto_start'] = self.exputt_camera_auto_start_combo.currentText()
+            self.settings.webcam['window_putting_focus'] = self.webcam_putting_focus_combo.currentText()
+            self.settings.webcam['window_not_putting_state'] = self.webcam_not_putting_state_combo.currentText()
             self.settings.save()
             self.saved.emit()
             msg = ''

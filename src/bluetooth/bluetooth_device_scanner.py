@@ -31,6 +31,8 @@ class BluetoothDeviceScanner(QObject):
             self.status_update.emit("Scanning for device...")
             self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().LowEnergyMethod)
             # For some reason the setLowEnergyDiscoveryTimeout doesn't work
+            self.scan_timer.stop()
+            self.scan_timer = QTimer()
             self.scan_timer.setSingleShot(True)
             self.scan_timer.setInterval(BluetoothDeviceScanner.SCANNER_TIMEOUT)
             self.scan_timer.timeout.connect(self.stop_scanning)

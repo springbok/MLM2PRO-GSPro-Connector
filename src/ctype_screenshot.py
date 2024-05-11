@@ -200,6 +200,58 @@ def open_window_titles():
     ctypes.windll.user32.EnumWindows(EnumWindowsProc(enum_windows_proc), ctypes.pointer(ctypes.wintypes.INT(len(window_titles))))
     return window_titles
 
+class PuttingWindow:
+    def __init__(
+        self, title: str, gspro_title: str
+    ):
+        self.title = title
+        self.gspro_title = gspro_title
+
+    def top_and_focused(self):
+        hwnd = user32.FindWindowW(None, self.title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
+        SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
+        ShowWindow(hwnd, SW_RESTORE)
+        #BringWindowToTop(hwnd)
+        #SetForegroundWindow(hwnd)
+
+    def top_not_focused(self):
+        hwnd = user32.FindWindowW(None, self.title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
+        gspro_hwnd = user32.FindWindowW(None, self.gspro_title)
+        if not gspro_hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.gspro_title}'")
+        SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
+        BringWindowToTop(hwnd)
+        SetForegroundWindow(hwnd)
+        ShowWindow(hwnd, SW_RESTORE)
+        BringWindowToTop(gspro_hwnd)
+        SetForegroundWindow(gspro_hwnd)
+        ShowWindow(gspro_hwnd, SW_RESTORE)
+
+    def minimize(self):
+        hwnd = user32.FindWindowW(None, self.title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
+        else:
+            ShowWindow(hwnd, SW_MINIMIZE)
+
+    def hide(self):
+        hwnd = user32.FindWindowW(None, self.title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
+        else:
+            ShowWindow(hwnd, SW_HIDE)
+
+    def send_to_back(self):
+        hwnd = user32.FindWindowW(None, self.title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
+        SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
+
+
 class ScreenMirrorWindow:
     def __init__(
         self, title: str

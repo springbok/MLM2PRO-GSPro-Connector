@@ -124,10 +124,20 @@ class BallData:
                 "HLA": self.hla,
                 "VLA": self.vla,
                 "Backspin": self.back_spin,
-                "SideSpin": self.side_spin
+                "SideSpin": self.side_spin,
+                "CarryDistance": 0
             },
             "ClubData": {
                 "Speed": self.club_speed,
+                "AngleOfAttack": 0,
+                "FaceToTarget": 0,
+                "Lie": 0,
+                "Loft": 0,
+                "Path": 0,
+                "SpeedAtImpact": 0,
+                "VerticalFaceImpact": 0,
+                "HorizontalFaceImpact": 0,
+                "ClosureRate": 0
             },
             "ShotDataOptions": {
                 "ContainsBallData": True,
@@ -137,18 +147,14 @@ class BallData:
                 "IsHeartBeat": False
             }
         }
-        if not self.putt_type is None and self.putt_type == PuttType.EXPUTT:
+        if self.path != 0:
             payload['ClubData']['Path'] = self.path
+        if self.face_to_target != 0:
             payload['ClubData']['FaceToTarget'] = self.face_to_target
-        else:
-            if self.path != 0:
-                payload['ClubData']['Path'] = self.path
-            if self.face_to_target != 0:
-                payload['ClubData']['FaceToTarget'] = self.face_to_target
-            if self.angle_of_attack != 0:
-                payload['ClubData']['AngleOfAttack'] = self.angle_of_attack
-            if self.speed_at_impact != 0:
-                payload['ClubData']['SpeedAtImpact'] = self.speed_at_impact
+        if self.angle_of_attack != 0:
+            payload['ClubData']['AngleOfAttack'] = self.angle_of_attack
+        if self.speed_at_impact != 0:
+            payload['ClubData']['SpeedAtImpact'] = self.speed_at_impact
 
         return payload
 

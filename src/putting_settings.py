@@ -8,6 +8,17 @@ class PuttingSystems:
     WEBCAM = 'Webcam'
     NONE = 'None'
 
+@dataclass
+class WebcamWindowFocus:
+    PUTTING_WINDOW = 'PuttingWindow'
+    GSPRO = 'GSPRO'
+
+@dataclass
+class WebcamWindowState:
+    HIDE = 'Hide'
+    MINIMIZE = 'Minimize'
+    SEND_TO_BACK = 'SendToBack'
+    SHOW = 'Show'
 
 class PuttingSettings(SettingsBase):
 
@@ -26,7 +37,9 @@ class PuttingSettings(SettingsBase):
                     "port": 8888,
                     "auto_start": "Yes",
                     "width": 640,
-                    "params": ""
+                    "params": "",
+                    "window_putting_focus": "PuttingWindow",
+                    "window_not_putting_state": "SendToBack"
                 },
                 "exputt": {
                     "window_name": "Camera",
@@ -48,6 +61,12 @@ class PuttingSettings(SettingsBase):
         if 'width' not in self.webcam:
             self.webcam['width'] = 640
             save = True
+        if 'window_putting_focus' not in self.webcam:
+            self.webcam['window_putting_focus'] = WebcamWindowFocus.PUTTING_WINDOW
+            save = True
+        if 'window_not_putting_state' not in self.webcam:
+            self.webcam['window_not_putting_state'] = WebcamWindowState.SEND_TO_BACK
+            save = True
         if save:
             super().save()
 
@@ -56,3 +75,19 @@ class PuttingSettings(SettingsBase):
 
     def height(self):
         return self.exputt['window_rect']['bottom'] - self.exputt['window_rect']['top']
+
+    @staticmethod
+    def webcam_window_focus_as_list():
+        keys = []
+        for key in WebcamWindowFocus.__dict__:
+            if key != '__' not in key:
+                keys.append(getattr(WebcamWindowFocus, key))
+        return keys
+
+    @staticmethod
+    def webcam_window_state_as_list():
+        keys = []
+        for key in WebcamWindowState.__dict__:
+            if key != '__' not in key:
+                keys.append(getattr(WebcamWindowState, key))
+        return keys
