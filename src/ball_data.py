@@ -129,12 +129,12 @@ class BallData:
             },
             "ClubData": {
                 "Speed": self.club_speed,
-                "AngleOfAttack": 0,
-                "FaceToTarget": 0,
+                "AngleOfAttack": self.angle_of_attack,
+                "FaceToTarget": self.face_to_target,
                 "Lie": 0,
                 "Loft": 0,
-                "Path": 0,
-                "SpeedAtImpact": 0,
+                "Path": self.path,
+                "SpeedAtImpact": self.speed_at_impact,
                 "VerticalFaceImpact": 0,
                 "HorizontalFaceImpact": 0,
                 "ClosureRate": 0
@@ -147,15 +147,6 @@ class BallData:
                 "IsHeartBeat": False
             }
         }
-        if self.path != 0:
-            payload['ClubData']['Path'] = self.path
-        if self.face_to_target != 0:
-            payload['ClubData']['FaceToTarget'] = self.face_to_target
-        if self.angle_of_attack != 0:
-            payload['ClubData']['AngleOfAttack'] = self.angle_of_attack
-        if self.speed_at_impact != 0:
-            payload['ClubData']['SpeedAtImpact'] = self.speed_at_impact
-
         return payload
 
     def from_gspro(self, payload):
