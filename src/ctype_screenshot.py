@@ -185,6 +185,10 @@ CreateDCW = windll.gdi32.CreateDCW
 DeleteDC = windll.gdi32.DeleteDC
 sizeof_BITMAPINFOHEADER = ctypes.sizeof(BITMAPINFOHEADER)
 
+user32 = ctypes.WinDLL('user32', use_last_error=True)
+user32.AllowSetForegroundWindow.restype = wintypes.BOOL
+user32.AllowSetForegroundWindow.argtypes = (wintypes.DWORD,)
+
 window_titles = []
 def enum_windows_proc(hwnd, lparam):
     if ctypes.windll.user32.IsWindowVisible(hwnd):
@@ -227,6 +231,11 @@ class PuttingWindow:
         BringWindowToTop(hwnd)
         SetForegroundWindow(hwnd)
         ShowWindow(hwnd, SW_RESTORE)
+        # Get the PID of the gspro process
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(gspro_hwnd, ctypes.byref(pid))
+        # Allow the gspro process to set the foreground window
+        user32.AllowSetForegroundWindow(pid.value)
         BringWindowToTop(gspro_hwnd)
         SetForegroundWindow(gspro_hwnd)
         ShowWindow(gspro_hwnd, SW_RESTORE)

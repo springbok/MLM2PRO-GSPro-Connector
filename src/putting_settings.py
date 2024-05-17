@@ -16,7 +16,7 @@ class WebcamWindowFocus:
 @dataclass
 class WebcamWindowState:
     HIDE = 'Hide'
-    MINIMIZE = 'Minimize'
+    #MINIMIZE = 'Minimize'
     SEND_TO_BACK = 'SendToBack'
     SHOW = 'Show'
 
@@ -62,7 +62,7 @@ class PuttingSettings(SettingsBase):
             self.webcam['width'] = 640
             save = True
         if 'window_putting_focus' not in self.webcam:
-            self.webcam['window_putting_focus'] = WebcamWindowFocus.PUTTING_WINDOW
+            self.webcam['window_putting_focus'] = WebcamWindowFocus.GSPRO
             save = True
         if 'window_not_putting_state' not in self.webcam:
             self.webcam['window_not_putting_state'] = WebcamWindowState.SEND_TO_BACK

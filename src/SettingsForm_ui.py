@@ -24,9 +24,9 @@ class Ui_SettingsForm(object):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(892, 444)
-        self.horizontalLayout_5 = QHBoxLayout(SettingsForm)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        SettingsForm.resize(981, 533)
+        self.verticalLayout_10 = QVBoxLayout(SettingsForm)
+        self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.verticalLayout_8 = QVBoxLayout()
@@ -234,6 +234,38 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_5.addWidget(self.groupBox)
 
+        self.groupBox_2 = QGroupBox(SettingsForm)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        self.verticalLayout_9 = QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.auto_start_all_label_2 = QLabel(self.groupBox_2)
+        self.auto_start_all_label_2.setObjectName(u"auto_start_all_label_2")
+        self.auto_start_all_label_2.setMinimumSize(QSize(120, 0))
+        self.auto_start_all_label_2.setMaximumSize(QSize(120, 16777215))
+
+        self.horizontalLayout_12.addWidget(self.auto_start_all_label_2)
+
+        self.mevo_offline_mode_combo = QComboBox(self.groupBox_2)
+        self.mevo_offline_mode_combo.addItem("")
+        self.mevo_offline_mode_combo.addItem("")
+        self.mevo_offline_mode_combo.setObjectName(u"mevo_offline_mode_combo")
+        self.mevo_offline_mode_combo.setMinimumSize(QSize(130, 0))
+
+        self.horizontalLayout_12.addWidget(self.mevo_offline_mode_combo)
+
+
+        self.verticalLayout_9.addLayout(self.horizontalLayout_12)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+
+        self.verticalLayout_9.addLayout(self.horizontalLayout_5)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox_2)
+
         self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
@@ -321,7 +353,7 @@ class Ui_SettingsForm(object):
         self.horizontalLayout_6.addLayout(self.verticalLayout_2)
 
 
-        self.horizontalLayout_5.addLayout(self.horizontalLayout_6)
+        self.verticalLayout_10.addLayout(self.horizontalLayout_6)
 
 
         self.retranslateUi(SettingsForm)
@@ -391,6 +423,17 @@ class Ui_SettingsForm(object):
         self.relay_server_port_edit.setToolTip(QCoreApplication.translate("SettingsForm", u"Relay Server Port", None))
 #endif // QT_CONFIG(tooltip)
         self.relay_server_port_edit.setPlaceholderText(QCoreApplication.translate("SettingsForm", u"Relay Server Port", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("SettingsForm", u"MEVO+ Settings", None))
+#if QT_CONFIG(tooltip)
+        self.auto_start_all_label_2.setToolTip("")
+#endif // QT_CONFIG(tooltip)
+        self.auto_start_all_label_2.setText(QCoreApplication.translate("SettingsForm", u"Offline Mode", None))
+        self.mevo_offline_mode_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
+        self.mevo_offline_mode_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
+
+#if QT_CONFIG(tooltip)
+        self.mevo_offline_mode_combo.setToolTip("")
+#endif // QT_CONFIG(tooltip)
         self.label_7.setText(QCoreApplication.translate("SettingsForm", u"Default OCR Device ", None))
         self.default_device_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
         self.default_device_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))

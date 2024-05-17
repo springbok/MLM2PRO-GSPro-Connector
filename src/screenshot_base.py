@@ -200,7 +200,7 @@ class ScreenshotBase(ViewBox):
                 if self.__class__.__name__ == 'ScreenshotExPutt':
                     self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
                 else:
-                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata)
+                    self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.settings.mevo_plus['offline_mode'])
             # Correct metrics if invalid smash factor
             if self.balldata.putt_type is None:
                 self.balldata.check_smash_factor(self.selected_club)

@@ -235,7 +235,7 @@ class BallData:
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
 
-    def process_shot_data(self, ocr_result, roi, previous_balldata):
+    def process_shot_data(self, ocr_result, roi, previous_balldata, offline_mode):
         msg = None
         result = ''
         try:
@@ -259,6 +259,10 @@ class BallData:
                     result = -float(result[:-1])
                 else:
                     result = float(result[:-1])
+                if roi == BallMetrics.SPIN_AXIS and offline_mode == 'Yes':
+                    old_result = result
+                    result = float(result * 0.7)
+                    logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
             else:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')

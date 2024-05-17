@@ -20,6 +20,9 @@ class BluetoothDeviceScanner(QObject):
         self.scanner.errorOccurred.connect(self.__handle_scan_error)
         self.scanner.finished.connect(self.__scanning_finished)
         self.scan_timer = QTimer()
+        self.scan_timer.setSingleShot(True)
+        self.scan_timer.setInterval(BluetoothDeviceScanner.SCANNER_TIMEOUT)
+        self.scan_timer.timeout.connect(self.stop_scanning)
         self.device = None
 
     def scan(self) -> None:
@@ -31,11 +34,6 @@ class BluetoothDeviceScanner(QObject):
             self.status_update.emit("Scanning for device...")
             self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().LowEnergyMethod)
             # For some reason the setLowEnergyDiscoveryTimeout doesn't work
-            self.scan_timer.stop()
-            self.scan_timer = QTimer()
-            self.scan_timer.setSingleShot(True)
-            self.scan_timer.setInterval(BluetoothDeviceScanner.SCANNER_TIMEOUT)
-            self.scan_timer.timeout.connect(self.stop_scanning)
             self.scan_timer.start()
 
     def stop_scanning(self) -> None:

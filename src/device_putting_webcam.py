@@ -56,8 +56,8 @@ class DevicePuttingWebcam(DevicePuttingBase):
         else:
             if self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.HIDE:
                 putting_window.hide()
-            elif self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.MINIMIZE:
-                putting_window.minimize()
+            #elif self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.MINIMIZE:
+            #    putting_window.minimize()
             elif self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.SEND_TO_BACK:
                 putting_window.send_to_back()
             ScreenMirrorWindow.bring_to_front(self.main_window.settings.grspo_window_name)
