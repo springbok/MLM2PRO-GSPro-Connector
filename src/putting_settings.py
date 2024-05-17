@@ -16,7 +16,7 @@ class WebcamWindowFocus:
 @dataclass
 class WebcamWindowState:
     HIDE = 'Hide'
-    #MINIMIZE = 'Minimize'
+    MINIMIZE = 'Minimize'
     SEND_TO_BACK = 'SendToBack'
     SHOW = 'Show'
 

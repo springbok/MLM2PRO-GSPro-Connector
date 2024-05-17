@@ -1,6 +1,8 @@
 import ctypes
 from ctypes import wintypes
 from collections import namedtuple
+from threading import Event
+
 import numpy as np
 
 from src.custom_exception import WindowNotFoundException
@@ -217,8 +219,7 @@ class PuttingWindow:
             raise WindowNotFoundException(f"Can't find window called '{self.title}'")
         SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
         ShowWindow(hwnd, SW_RESTORE)
-        #BringWindowToTop(hwnd)
-        #SetForegroundWindow(hwnd)
+        SetForegroundWindow(hwnd)
 
     def top_not_focused(self):
         hwnd = user32.FindWindowW(None, self.title)
@@ -240,11 +241,25 @@ class PuttingWindow:
         SetForegroundWindow(gspro_hwnd)
         ShowWindow(gspro_hwnd, SW_RESTORE)
 
+    def top_not_focused_minimized(self):
+        hwnd = user32.FindWindowW(None, self.title)
+        if not hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.title}'")
+        gspro_hwnd = user32.FindWindowW(None, self.gspro_title)
+        if not gspro_hwnd:
+            raise WindowNotFoundException(f"Can't find window called '{self.gspro_title}'")
+        ShowWindow(hwnd, SW_RESTORE)
+        ShowWindow(gspro_hwnd, SW_RESTORE)
+        SetWindowPos(gspro_hwnd, ctypes.wintypes.HWND(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE)
+        SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE)
+        SetForegroundWindow(gspro_hwnd)
+
     def minimize(self):
         hwnd = user32.FindWindowW(None, self.title)
         if not hwnd:
             raise WindowNotFoundException(f"Can't find window called '{self.title}'")
         else:
+            SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE)
             ShowWindow(hwnd, SW_MINIMIZE)
 
     def hide(self):
@@ -252,6 +267,7 @@ class PuttingWindow:
         if not hwnd:
             raise WindowNotFoundException(f"Can't find window called '{self.title}'")
         else:
+            SetWindowPos(hwnd, ctypes.wintypes.HWND(HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE)
             ShowWindow(hwnd, SW_HIDE)
 
     def send_to_back(self):
