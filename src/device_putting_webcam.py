@@ -1,11 +1,13 @@
 import logging
 import os
+
 from PySide6.QtWidgets import QMessageBox
-from src.ctype_screenshot import ScreenMirrorWindow, PuttingWindow, SetForegroundWindow
+from src.ctype_screenshot import ScreenMirrorWindow
 from src.custom_exception import PutterNotSelected
 from src.device_putting_base import DevicePuttingBase
 from src.log_message import LogMessageTypes, LogMessageSystems
-from src.putting_settings import PuttingSettings, WebcamWindowFocus, WebcamWindowState
+from src.putting_settings import WebcamWindowFocus, WebcamWindowState
+from src.window_control import WindowControl
 from src.worker_device_webcam import WorkerDeviceWebcam
 
 
@@ -16,6 +18,8 @@ class DevicePuttingWebcam(DevicePuttingBase):
     def __init__(self, main_window):
         DevicePuttingBase.__init__(self, main_window)
         self.device_worker = WorkerDeviceWebcam(self.main_window.putting_settings)
+        self._putting_window = None
+        self._gspro_window = None
         self.setup()
 
     def setup_device_thread(self):
@@ -46,24 +50,23 @@ class DevicePuttingWebcam(DevicePuttingBase):
 
     def club_selected(self, club_data):
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
-        putting_window = PuttingWindow(self.main_window.putting_settings.webcam['window_name'],
-                                       self.main_window.settings.grspo_window_name)
+        if self._putting_window is None or self._putting_window.hwnd != ScreenMirrorWindow.find_window(self.main_window.putting_settings.webcam['window_name']):
+            self._putting_window = WindowControl(self.main_window.putting_settings.webcam['window_name'])
+        if self._gspro_window is None or self._gspro_window.hwnd != ScreenMirrorWindow.find_window(self.main_window.settings.grspo_window_name):
+            self._gspro_window = WindowControl(self.main_window.settings.grspo_window_name)
         if club_data['Player']['Club'] == "PT":
-            if self.main_window.putting_settings.webcam['window_putting_focus'] == WebcamWindowFocus.PUTTING_WINDOW:
-                putting_window.top_and_focused()
-            elif self.main_window.putting_settings.webcam['window_putting_focus'] == WebcamWindowFocus.GSPRO:
-                if self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.MINIMIZE:
-                    putting_window.top_not_focused_minimized()
-                else:
-                    putting_window.top_not_focused()
+            self._putting_window.top_most()
+            if self.main_window.putting_settings.webcam['window_putting_focus'] == WebcamWindowFocus.GSPRO:
+                self._gspro_window.set_focus_to_window()
         else:
+            self._putting_window.send_to_back()
             if self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.HIDE:
-                putting_window.hide()
+                self._putting_window.hide()
             elif self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.MINIMIZE:
-                putting_window.minimize()
+                self._putting_window.minimize()
             elif self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.SEND_TO_BACK:
-                putting_window.send_to_back()
-            ScreenMirrorWindow.bring_to_front(self.main_window.settings.grspo_window_name)
+                self._putting_window.send_to_back()
+            self._gspro_window.set_focus_to_window()
         super().club_selected(club_data)
 
 
