@@ -255,6 +255,11 @@ class R10Device(BluetoothDeviceBase):
                     if len(self.process_shots) > 0 and metrics.shot_id == self.process_shots[-1]:
                         logging.debug(f"<><><><>Received duplicate shot data {metrics.shot_id} == {self.process_shots[-1]}.  Ignoring")
                     else:
+                        if self._current_club == 'PT':
+                            msg = f'>>>> Putter selected, ignoring shot.'
+                            print(msg)
+                            logging.debug(msg)
+                            return
                         self.process_shots.append(metrics.shot_id)
                         msg = f">>>>>>> Received shot data from device: {metrics}"
                         logging.debug(msg)
