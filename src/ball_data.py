@@ -261,7 +261,7 @@ class BallData:
                     result = float(result[:-1])
                 if roi == BallMetrics.SPIN_AXIS and offline_mode == 'Yes':
                     old_result = result
-                    result = float(result * 0.5)
+                    result = float(result * 0.6)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
             else:
                 result = float(result)
