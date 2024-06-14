@@ -16,6 +16,9 @@ class BluetoothDeviceRssiScanner(QObject):
         self.scanner.deviceDiscovered.connect(self.__add_device)
         self.scanner.finished.connect(self.__scanning_finished)
         self.scan_timer = QTimer()
+        self.scan_timer.setSingleShot(True)
+        self.scan_timer.setInterval(BluetoothDeviceRssiScanner.SCANNER_TIMEOUT)
+        self.scan_timer.timeout.connect(self.stop_scanning)
         self.previous_rssi = 1
 
     def scan(self) -> None:
@@ -24,9 +27,6 @@ class BluetoothDeviceRssiScanner(QObject):
         else:
             self.scanner.start(QBluetoothDeviceDiscoveryAgent.supportedDiscoveryMethods().LowEnergyMethod)
             # For some reason the setLowEnergyDiscoveryTimeout doesn't work
-            self.scan_timer.setSingleShot(True)
-            self.scan_timer.setInterval(BluetoothDeviceRssiScanner.SCANNER_TIMEOUT)
-            self.scan_timer.timeout.connect(self.stop_scanning)
             self.scan_timer.start()
 
     def stop_scanning(self) -> None:

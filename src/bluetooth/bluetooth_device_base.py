@@ -41,8 +41,7 @@ class BluetoothDeviceBase(QObject):
         self._controller: Union[None, QLowEnergyController] = None
         self._services: list[BluetoothDeviceService] = services
         self._heartbeat_timer: QTimer = QTimer()
-        self._heartbeat_timer.setInterval(heartbeat_interval)
-        self._heartbeat_timer.timeout.connect(self._heartbeat)
+        self.heartbeat_interval = heartbeat_interval
         self._device_heartbeat_interval = device_heartbeat_interval
         self._set_next_expected_heartbeat()
         self._app_paths: AppDataPaths = AppDataPaths('mlm2pro-gspro-connect')
@@ -85,6 +84,10 @@ class BluetoothDeviceBase(QObject):
         #self._controller.rssiRead.connect(self.__rssi_read)
         self._controller.disconnectFromDevice()
         self._controller.connectToDevice()
+        self._heartbeat_timer.stop()
+        self._heartbeat_timer = QTimer()
+        self._heartbeat_timer.setInterval(self.heartbeat_interval)
+        self._heartbeat_timer.timeout.connect(self._heartbeat)
         self._heartbeat_timer.start()
 
     def _connected(self) -> None:

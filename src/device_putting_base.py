@@ -28,8 +28,9 @@ class DevicePuttingBase(DeviceBase):
         self.device_worker.shot.connect(self.main_window.gspro_connection.send_shot_worker.run)
 
     def club_selected(self, club_data):
-        self.device_worker.club_selected(club_data['Player']['Club'])
-        logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
+        if self.device_worker is not None:
+            self.device_worker.club_selected(club_data['Player']['Club'])
+            logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
 
     def device_worker_paused(self):
         msg = 'Start'

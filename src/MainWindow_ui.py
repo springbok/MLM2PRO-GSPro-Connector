@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1302, 725)
+        MainWindow.resize(1349, 725)
         icon = QIcon()
         icon.addFile(u":/ico/ico/connect.ico", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -400,6 +400,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.label_6)
 
+        self.label_9 = QLabel(self.launch_monitor_groupbox)
+        self.label_9.setObjectName(u"label_9")
+        self.label_9.setFont(font1)
+        self.label_9.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_2.addWidget(self.label_9)
+
 
         self.edit_field_layout.addLayout(self.horizontalLayout_2)
 
@@ -456,6 +463,15 @@ class Ui_MainWindow(object):
 
         self.edit_field_layout1.addWidget(self.path_edit)
 
+        self.speed_at_impact_edit = QTextEdit(self.launch_monitor_groupbox)
+        self.speed_at_impact_edit.setObjectName(u"speed_at_impact_edit")
+        sizePolicy4.setHeightForWidth(self.speed_at_impact_edit.sizePolicy().hasHeightForWidth())
+        self.speed_at_impact_edit.setSizePolicy(sizePolicy4)
+        self.speed_at_impact_edit.setMaximumSize(QSize(230, 50))
+        self.speed_at_impact_edit.setFont(font2)
+
+        self.edit_field_layout1.addWidget(self.speed_at_impact_edit)
+
 
         self.edit_field_layout.addLayout(self.edit_field_layout1)
 
@@ -496,6 +512,13 @@ class Ui_MainWindow(object):
         self.SideSpin_2.setAlignment(Qt.AlignCenter)
 
         self.horizontalLayout_5.addWidget(self.SideSpin_2)
+
+        self.SideSpin_3 = QLabel(self.launch_monitor_groupbox)
+        self.SideSpin_3.setObjectName(u"SideSpin_3")
+        self.SideSpin_3.setFont(font1)
+        self.SideSpin_3.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_5.addWidget(self.SideSpin_3)
 
 
         self.edit_field_layout.addLayout(self.horizontalLayout_5)
@@ -547,6 +570,15 @@ class Ui_MainWindow(object):
         self.face_to_target_edit.setFont(font2)
 
         self.horizontalLayout_6.addWidget(self.face_to_target_edit)
+
+        self.angle_of_attack_edit = QTextEdit(self.launch_monitor_groupbox)
+        self.angle_of_attack_edit.setObjectName(u"angle_of_attack_edit")
+        sizePolicy4.setHeightForWidth(self.angle_of_attack_edit.sizePolicy().hasHeightForWidth())
+        self.angle_of_attack_edit.setSizePolicy(sizePolicy4)
+        self.angle_of_attack_edit.setMaximumSize(QSize(230, 50))
+        self.angle_of_attack_edit.setFont(font2)
+
+        self.horizontalLayout_6.addWidget(self.angle_of_attack_edit)
 
 
         self.edit_field_layout.addLayout(self.horizontalLayout_6)
@@ -683,11 +715,13 @@ class Ui_MainWindow(object):
         self.label.setText(QCoreApplication.translate("MainWindow", u"Spin Rate", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Launch Dir (HLA)", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Path", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Impact Speed", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Launch Angle (VLA)", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Club Speed", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Back Spin", None))
         self.SideSpin.setText(QCoreApplication.translate("MainWindow", u"Side Spin", None))
         self.SideSpin_2.setText(QCoreApplication.translate("MainWindow", u"Face to Target", None))
+        self.SideSpin_3.setText(QCoreApplication.translate("MainWindow", u"Angle of Attack", None))
         self.main_tab.setTabText(self.main_tab.indexOf(self.connector_tab), QCoreApplication.translate("MainWindow", u"Connector", None))
         ___qtablewidgetitem = self.log_table.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Date", None));

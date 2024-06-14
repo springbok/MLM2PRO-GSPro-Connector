@@ -1,0 +1,18 @@
+To create the exe:
+
+1. Delete build directories, i.e. dist, build, etc. to prevent virus detection problems, see:
+https://plainenglish.io/blog/pyinstaller-exe-false-positive-trojan-virus-resolved-b33842bd3184
+
+2. Create exe:
+pyinstaller --onefile -w .\MLM2Pro-GSPro-Connector.py
+
+3. Copy .exe to test dictory & test
+
+4. Copy to releases, add additional files, compress
+
+
+Using Nuitka:
+
+python -m nuitka --onefile --show-progress --show-modules --enable-plugin=pyside6 --output-dir=nuitka-build --windows-disable-console .\MLM2Pro-GSPro-Connector.py
+
+Add  --remove-output to delete build directory after build
