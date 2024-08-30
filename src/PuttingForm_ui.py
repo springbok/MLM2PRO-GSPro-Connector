@@ -24,9 +24,9 @@ class Ui_PuttingForm(object):
         if not PuttingForm.objectName():
             PuttingForm.setObjectName(u"PuttingForm")
         PuttingForm.setWindowModality(Qt.ApplicationModal)
-        PuttingForm.resize(450, 474)
-        self.horizontalLayout = QHBoxLayout(PuttingForm)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        PuttingForm.resize(446, 597)
+        self.verticalLayout_6 = QVBoxLayout(PuttingForm)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalLayout_10 = QVBoxLayout()
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.verticalLayout_10.setSizeConstraint(QLayout.SetNoConstraint)
@@ -222,6 +222,54 @@ class Ui_PuttingForm(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_9)
 
+        self.groupBox_3 = QGroupBox(self.groupBox_2)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.verticalLayout_4 = QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.label_9 = QLabel(self.groupBox_3)
+        self.label_9.setObjectName(u"label_9")
+
+        self.horizontalLayout_13.addWidget(self.label_9)
+
+        self.webcam_putting_focus_combo = QComboBox(self.groupBox_3)
+        self.webcam_putting_focus_combo.addItem("")
+        self.webcam_putting_focus_combo.addItem("")
+        self.webcam_putting_focus_combo.setObjectName(u"webcam_putting_focus_combo")
+
+        self.horizontalLayout_13.addWidget(self.webcam_putting_focus_combo)
+
+
+        self.verticalLayout_4.addLayout(self.horizontalLayout_13)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox_3)
+
+        self.groupBox_4 = QGroupBox(self.groupBox_2)
+        self.groupBox_4.setObjectName(u"groupBox_4")
+        self.verticalLayout_5 = QVBoxLayout(self.groupBox_4)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.label_10 = QLabel(self.groupBox_4)
+        self.label_10.setObjectName(u"label_10")
+
+        self.horizontalLayout_14.addWidget(self.label_10)
+
+        self.webcam_not_putting_state_combo = QComboBox(self.groupBox_4)
+        self.webcam_not_putting_state_combo.addItem("")
+        self.webcam_not_putting_state_combo.addItem("")
+        self.webcam_not_putting_state_combo.setObjectName(u"webcam_not_putting_state_combo")
+
+        self.horizontalLayout_14.addWidget(self.webcam_not_putting_state_combo)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_14)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox_4)
+
 
         self.verticalLayout.addWidget(self.groupBox_2)
 
@@ -271,7 +319,7 @@ class Ui_PuttingForm(object):
         self.verticalLayout_10.addLayout(self.horizontalLayout_2)
 
 
-        self.horizontalLayout.addLayout(self.verticalLayout_10)
+        self.verticalLayout_6.addLayout(self.verticalLayout_10)
 
 
         self.retranslateUi(PuttingForm)
@@ -324,6 +372,16 @@ class Ui_PuttingForm(object):
         self.webcam_window_title_edit.setToolTip(QCoreApplication.translate("PuttingForm", u"Window Title", None))
 #endif // QT_CONFIG(tooltip)
         self.webcam_window_title_edit.setPlaceholderText(QCoreApplication.translate("PuttingForm", u"WindowTitle", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("PuttingForm", u"Window Behaviour - Putting", None))
+        self.label_9.setText(QCoreApplication.translate("PuttingForm", u"Set Focus To", None))
+        self.webcam_putting_focus_combo.setItemText(0, QCoreApplication.translate("PuttingForm", u"None", None))
+        self.webcam_putting_focus_combo.setItemText(1, QCoreApplication.translate("PuttingForm", u"New Item", None))
+
+        self.groupBox_4.setTitle(QCoreApplication.translate("PuttingForm", u"Window Behaviour - Not Putting", None))
+        self.label_10.setText(QCoreApplication.translate("PuttingForm", u"Putting Window", None))
+        self.webcam_not_putting_state_combo.setItemText(0, QCoreApplication.translate("PuttingForm", u"None", None))
+        self.webcam_not_putting_state_combo.setItemText(1, QCoreApplication.translate("PuttingForm", u"New Item", None))
+
 #if QT_CONFIG(tooltip)
         self.find_video_sources_button.setToolTip(QCoreApplication.translate("PuttingForm", u"Save Changes", None))
 #endif // QT_CONFIG(tooltip)

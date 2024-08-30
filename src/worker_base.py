@@ -1,3 +1,4 @@
+import logging
 from threading import Event
 from PySide6.QtCore import QObject, Signal
 
@@ -36,6 +37,7 @@ class WorkerBase(QObject):
         self.paused.emit()
 
     def resume(self):
+        logging.debug(f"{self.__class__.__name__} Resuming Worker worker_started: {self.worker_started}")
         if self.worker_started:
             self._pause.set()
             self.resumed.emit()
@@ -44,6 +46,7 @@ class WorkerBase(QObject):
         return not self._pause.is_set()
 
     def stop(self):
+        logging.debug(f"{self.__class__.__name__} Stopping Worker")
         self.worker_started = False
         self.stopped.emit()
         self.pause()

@@ -130,6 +130,11 @@ class MLM2PRODevice(BluetoothDeviceBase):
     def __process_measurement(self, data: bytearray) -> None:
         if not self._armed:
             return
+        if self._current_club == 'PT':
+            msg = f'>>>> Putter selected, ignoring shot.'
+            print(msg)
+            logging.debug(msg)
+            return
         try:
             msg = f'>>>> Measurement: {BluetoothUtils.byte_array_to_hex_string(data)}'
             print(msg)

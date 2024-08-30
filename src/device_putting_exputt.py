@@ -48,4 +48,5 @@ class DevicePuttingExPutt(DevicePuttingBase):
         QMessageBox.warning(self.main_window, "ExPutt Error", msg)
 
     def reload_putting_rois(self):
-        self.device_worker.reload_putting_rois()
+        if self.device_worker is not None:
+            self.device_worker.reload_putting_rois()

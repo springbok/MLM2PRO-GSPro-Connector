@@ -62,5 +62,5 @@ class DeviceBase(QObject):
             self.device_worker.start()
 
     def stop(self):
-        if self.device_worker is not None and self.is_running():
+        if self.device_worker is not None:
             self.device_worker.stop()

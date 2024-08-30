@@ -43,6 +43,8 @@ class BallMetrics:
     CLUB_PATH = 'path'
     CLUB_FACE_TO_TARGET = 'face_to_target'
     CLUB = 'club'
+    ANGLE_OF_ATTACK = 'angle_of_attack'
+    SPEED_AT_IMPACT = 'speed_at_impact'
 
 
 class BallData:
@@ -58,7 +60,9 @@ class BallData:
         BallMetrics.BACK_SPIN: 'Back Spin',
         BallMetrics.SIDE_SPIN: 'Side Spin',
         BallMetrics.CLUB_PATH: 'Club Path',
-        BallMetrics.CLUB_FACE_TO_TARGET: 'Impact Angle'
+        BallMetrics.CLUB_FACE_TO_TARGET: 'Impact Angle',
+        BallMetrics.ANGLE_OF_ATTACK: 'Angle of Attack',
+        BallMetrics.SPEED_AT_IMPACT: 'Speed at Impact'
     }
     rois_properties = [BallMetrics.SPEED,
                        BallMetrics.TOTAL_SPIN,
@@ -120,10 +124,20 @@ class BallData:
                 "HLA": self.hla,
                 "VLA": self.vla,
                 "Backspin": self.back_spin,
-                "SideSpin": self.side_spin
+                "SideSpin": self.side_spin,
+                "CarryDistance": 0
             },
             "ClubData": {
-                "Speed": self.club_speed
+                "Speed": self.club_speed,
+                "AngleOfAttack": self.angle_of_attack,
+                "FaceToTarget": self.face_to_target,
+                "Lie": 0,
+                "Loft": 0,
+                "Path": self.path,
+                "SpeedAtImpact": self.speed_at_impact,
+                "VerticalFaceImpact": 0,
+                "HorizontalFaceImpact": 0,
+                "ClosureRate": 0
             },
             "ShotDataOptions": {
                 "ContainsBallData": True,
@@ -133,9 +147,6 @@ class BallData:
                 "IsHeartBeat": False
             }
         }
-        if not self.putt_type is None and self.putt_type == PuttType.EXPUTT:
-            payload['ClubData']['Path'] = self.path
-            payload['ClubData']['FaceToTarget'] = self.face_to_target
         return payload
 
     def from_gspro(self, payload):
@@ -224,7 +235,7 @@ class BallData:
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
 
-    def process_shot_data(self, ocr_result, roi, previous_balldata):
+    def process_shot_data(self, ocr_result, roi, previous_balldata, offline_mode):
         msg = None
         result = ''
         try:
@@ -248,6 +259,10 @@ class BallData:
                     result = -float(result[:-1])
                 else:
                     result = float(result[:-1])
+                if roi == BallMetrics.SPIN_AXIS and offline_mode == 'Yes':
+                    old_result = result
+                    result = float(result * 0.4)
+                    logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
             else:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')
@@ -355,7 +370,7 @@ class BallData:
                     setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                     self.corrections[BallMetrics.CLUB_SPEED] = True
                     logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
-                self.__calc_spin()
+            self.__calc_spin()
 
     def __calc_spin(self):
         self.back_spin = round(
@@ -392,6 +407,8 @@ class BallData:
             self.club_speed = round(club_data.club_head_speed * meters_per_s_to_miles_per_hour, 2)
             self.path = round(club_data.club_angle_path, 2)
             self.face_to_target = round(club_data.club_angle_face, 2)
+            self.angle_of_attack = round(club_data.attack_angle, 2)
+            self.speed_at_impact = self.club_speed
 
         self.__calc_spin()
         self.good_shot = True

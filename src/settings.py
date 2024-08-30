@@ -100,6 +100,11 @@ class Settings(SettingsBase):
                 "tee_distance": 7
             }
             save = True
+        if not hasattr(self, 'mevo_plus'):
+            self.mevo_plus = {
+                "offline_mode": "Yes"
+            }
+            save = True
         if save:
             super().save()
 

@@ -42,7 +42,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self._rssi_scanner.rssi.connect(self.__update_rssi)
 
     def __club_selected(self, club_data):
-        self._device.club_selected(club_data['Player']['Club'])
+        if self._device is not None:
+            self._device.club_selected(club_data['Player']['Club'])
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
 
     def server_start_stop(self) -> None:

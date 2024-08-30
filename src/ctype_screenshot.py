@@ -185,6 +185,10 @@ CreateDCW = windll.gdi32.CreateDCW
 DeleteDC = windll.gdi32.DeleteDC
 sizeof_BITMAPINFOHEADER = ctypes.sizeof(BITMAPINFOHEADER)
 
+user32 = ctypes.WinDLL('user32', use_last_error=True)
+user32.AllowSetForegroundWindow.restype = wintypes.BOOL
+user32.AllowSetForegroundWindow.argtypes = (wintypes.DWORD,)
+
 window_titles = []
 def enum_windows_proc(hwnd, lparam):
     if ctypes.windll.user32.IsWindowVisible(hwnd):
