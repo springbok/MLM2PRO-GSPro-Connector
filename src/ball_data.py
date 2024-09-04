@@ -70,6 +70,14 @@ class BallData:
                        BallMetrics.HLA,
                        BallMetrics.VLA,
                        BallMetrics.CLUB_SPEED]
+    rois_properties_uneekor = [BallMetrics.SPEED,
+                       BallMetrics.BACK_SPIN,
+                       BallMetrics.SIDE_SPIN,
+                       BallMetrics.HLA,
+                       BallMetrics.VLA,
+                       BallMetrics.CLUB_SPEED,
+                       BallMetrics.ANGLE_OF_ATTACK,
+                       BallMetrics.CLUB_PATH]
     rois_putting_properties = [
         BallMetrics.SPEED,
         BallMetrics.HLA,
@@ -172,7 +180,7 @@ class BallData:
         try:
             # Strip non ascii chars
             ocr_result = re.sub(r'[^\x00-\x7f]', r'', ocr_result)
-            logging.debug(f'remove non ASCII {roi}: {ocr_result}')
+            logging.debug(f'remove non ASCII {roi}: {ocr_result.strip()}')
             cleaned_result = re.findall(r"[LR]?(?:\d*\.*\d)", ocr_result)
             logging.debug(f'cleaned_result {roi}: {cleaned_result}')
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
@@ -241,7 +249,7 @@ class BallData:
         try:
             # Strip non ascii chars and commas
             ocr_result = re.sub(r',', r'', re.sub(r'[^\x00-\x7f]', r'', ocr_result))
-            logging.debug(f'remove non ASCII {roi}: {ocr_result}')
+            logging.debug(f'remove non ASCII {roi}: {ocr_result.strip()}')
             cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)[LR]?", ocr_result)
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
@@ -263,6 +271,16 @@ class BallData:
                     old_result = result
                     result = float(result * 0.4)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
+            elif self.launch_monitor == LaunchMonitor.UNEEKOR:
+                if roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA:                  
+                    result = result.upper()
+                    if result.endswith('L'):
+                        result = -float(result[:-1])
+                    else:
+                        result = float(result[:-1])
+                else :
+                    result = float(result)
+
             else:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')
@@ -373,11 +391,18 @@ class BallData:
             self.__calc_spin()
 
     def __calc_spin(self):
-        self.back_spin = round(
-            self.total_spin * math.cos(math.radians(self.spin_axis)))
-        if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE:
-            self.side_spin = round(
-                self.total_spin * math.sin(math.radians(self.spin_axis)))
+        if self.launch_monitor == LaunchMonitor.UNEEKOR :
+            self.total_spin = int(round(math.sqrt(math.pow(self.back_spin,2) + math.pow(self.side_spin,2)),0))
+            if self.back_spin != 0:
+                self.spin_axis = round(math.degrees(math.atan(self.side_spin/self.back_spin)),1)
+            else: # fail safe
+                self.spin_axis = 0
+        else :
+            self.back_spin = round(
+                self.total_spin * math.cos(math.radians(self.spin_axis)))
+            if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE:
+                self.side_spin = round(
+                    self.total_spin * math.sin(math.radians(self.spin_axis)))
 
     def from_mlm2pro_bt(self, data: bytearray) -> None:
         self.new_shot = True

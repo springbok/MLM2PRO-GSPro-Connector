@@ -61,11 +61,15 @@ class ScreenshotBase(ViewBox):
             self.__self_reset_rois()
 
     def rois_properties(self):
-        rois_properties = BallData.rois_properties
         logging.debug(f"self.__class__.__name__: {self.__class__.__name__}")
         if self.__class__.__name__ == 'ScreenshotExPutt':
             logging.debug(f'ScreenshotExPutt')
             rois_properties = BallData.rois_putting_properties
+        elif self.settings.device_id == LaunchMonitor.UNEEKOR:
+            rois_properties = BallData.rois_properties_uneekor 
+        else:
+            rois_properties = BallData.rois_properties
+        
         return rois_properties
 
     def __create_rois(self):
@@ -136,7 +140,9 @@ class ScreenshotBase(ViewBox):
                 train_file = 'trackman'
             elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
                 train_file = 'apex'
-        logging.debug(f"Using {train_file}_traineddata for OCR")
+            elif self.settings.device_id == LaunchMonitor.UNEEKOR:
+                train_file = 'uneekor'
+        logging.debug(f"Using {train_file}.traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:
             pil_img = Image.fromarray(self.screenshot_image).convert('RGB')
@@ -188,7 +194,7 @@ class ScreenshotBase(ViewBox):
                 tesserocr_api.SetImage(img)
                 ocr_result = tesserocr_api.GetUTF8Text()
                 conf = tesserocr_api.MeanTextConf()
-                logging.debug(f'ocr {roi} - confidence: {conf} result: {ocr_result}')
+                logging.debug(f'ocr {roi} - confidence: {conf} result: {ocr_result.strip()}')
                 if conf <= 0:
                     logging.debug(f'ocr {roi} confidence <= 0 retrying with RAW_LINE')
                     if fallback_tesserocr_api is None:

@@ -14,9 +14,9 @@ import tesserocr
 class Screenshot(ScreenshotBase):
 
     def __init__(self, settings: Settings, *args, **kwargs):
-        ScreenshotBase.__init__(self, *args, **kwargs)
         self.settings = settings
         self.device = None
+        ScreenshotBase.__init__(self, *args, **kwargs)
 
     def capture_screenshot(self, device: Device, rois_setup=False):
         # Check if window minimized, for some reason it has a different hwnd when minimized

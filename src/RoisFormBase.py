@@ -6,6 +6,7 @@ from src.RoisForm_ui import Ui_RoisForm
 from src.VerifyRoiForm import VerifyRoiForm
 from src.ball_data import BallData
 from src.log_message import LogMessageTypes, LogMessageSystems
+from src.settings import LaunchMonitor
 
 
 class RoisFormBase(QMainWindow, Ui_RoisForm):
@@ -23,9 +24,13 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.current_button = None
 
     def __rois_properties(self):
-        rois_properties = BallData.rois_properties
         if self.__class__.__name__ == 'RoisExPuttForm':
             rois_properties = BallData.rois_putting_properties
+        elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR :
+            rois_properties = BallData.rois_properties_uneekor
+        else :
+            rois_properties = BallData.rois_properties
+
         return rois_properties
 
     def setup_ui(self):

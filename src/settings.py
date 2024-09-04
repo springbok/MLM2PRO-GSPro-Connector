@@ -13,7 +13,7 @@ class LaunchMonitor:
     TRACKMAN = "Trackman"
     TRUGOLF_APOGEE = "TruGolf Apogee"
     RELAY_SERVER = "Relay Server"
-
+    UNEEKOR = "Uneekor VIEW"
 
 class Settings(SettingsBase):
     version = "2"
