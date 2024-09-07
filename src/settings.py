@@ -13,7 +13,8 @@ class LaunchMonitor:
     TRACKMAN = "Trackman"
     TRUGOLF_APOGEE = "TruGolf Apogee"
     RELAY_SERVER = "Relay Server"
-    UNEEKOR = "Uneekor VIEW"
+    UNEEKOR = "Uneekor Eye Mini/Lite"
+    SKYTRAKPLUS = "Skytrak+"
 
 class Settings(SettingsBase):
     version = "2"

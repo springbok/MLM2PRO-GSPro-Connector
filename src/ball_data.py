@@ -42,6 +42,7 @@ class BallMetrics:
     SIDE_SPIN = 'side_spin'
     CLUB_PATH = 'path'
     CLUB_FACE_TO_TARGET = 'face_to_target'
+    CLUB_FACE_TO_PATH = 'face_to_path'
     CLUB = 'club'
     ANGLE_OF_ATTACK = 'angle_of_attack'
     SPEED_AT_IMPACT = 'speed_at_impact'
@@ -61,6 +62,7 @@ class BallData:
         BallMetrics.SIDE_SPIN: 'Side Spin',
         BallMetrics.CLUB_PATH: 'Club Path',
         BallMetrics.CLUB_FACE_TO_TARGET: 'Impact Angle',
+        BallMetrics.CLUB_FACE_TO_PATH: 'Face to Path',
         BallMetrics.ANGLE_OF_ATTACK: 'Angle of Attack',
         BallMetrics.SPEED_AT_IMPACT: 'Speed at Impact'
     }
@@ -69,15 +71,38 @@ class BallData:
                        BallMetrics.SPIN_AXIS,
                        BallMetrics.HLA,
                        BallMetrics.VLA,
-                       BallMetrics.CLUB_SPEED]
-    rois_properties_uneekor = [BallMetrics.SPEED,
+                       BallMetrics.CLUB_SPEED
+                       ]
+    rois_uneekor_properties = [BallMetrics.SPEED,
                        BallMetrics.BACK_SPIN,
                        BallMetrics.SIDE_SPIN,
                        BallMetrics.HLA,
                        BallMetrics.VLA,
                        BallMetrics.CLUB_SPEED,
                        BallMetrics.ANGLE_OF_ATTACK,
-                       BallMetrics.CLUB_PATH]
+                       BallMetrics.CLUB_PATH
+                       ]
+    rois_mevoplus_properties = [BallMetrics.SPEED,
+                       BallMetrics.TOTAL_SPIN,
+                       BallMetrics.SPIN_AXIS,
+                       BallMetrics.HLA,
+                       BallMetrics.VLA,
+                       BallMetrics.CLUB_SPEED,
+                       BallMetrics.ANGLE_OF_ATTACK,
+                       BallMetrics.CLUB_PATH,
+                       BallMetrics.CLUB_FACE_TO_TARGET,
+                       BallMetrics.CLUB_FACE_TO_PATH
+                       ]
+    rois_skytrak_properties = [BallMetrics.SPEED,
+                       BallMetrics.TOTAL_SPIN,
+                       BallMetrics.SPIN_AXIS,
+                       BallMetrics.HLA,
+                       BallMetrics.VLA,
+                       BallMetrics.CLUB_SPEED,
+                       BallMetrics.CLUB_PATH,
+                       BallMetrics.CLUB_FACE_TO_TARGET,
+                       BallMetrics.CLUB_FACE_TO_PATH
+                       ]
     rois_putting_properties = [
         BallMetrics.SPEED,
         BallMetrics.HLA,
@@ -85,8 +110,10 @@ class BallData:
         BallMetrics.CLUB_FACE_TO_TARGET
     ]
     must_not_be_zero = [BallMetrics.SPEED,
-                        BallMetrics.TOTAL_SPIN,
-                        BallMetrics.CLUB_SPEED]
+                        BallMetrics.CLUB_SPEED,
+                        BallMetrics.TOTAL_SPIN]
+    must_not_be_zero_uneekor = [BallMetrics.SPEED,
+                        BallMetrics.TOTAL_SPIN]
     must_not_be_zero_putt = [BallMetrics.SPEED]
 
     MLM2_MISREAD_SHOT = '0000000000000000000000000000000000000000'
@@ -144,7 +171,7 @@ class BallData:
                 "Path": self.path,
                 "SpeedAtImpact": self.speed_at_impact,
                 "VerticalFaceImpact": 0,
-                "HorizontalFaceImpact": 0,
+                "HorizontalFaceImpact": self.face_to_path,
                 "ClosureRate": 0
             },
             "ShotDataOptions": {
@@ -261,7 +288,7 @@ class BallData:
                 cleaned_result = '0'
             # Remove any leading '.' sometimes a - is read as a '.'
             result = cleaned_result.lstrip('.')
-            if self.launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS):
+            if self.launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH):
                 result = result.upper()
                 if result.endswith('L'):
                     result = -float(result[:-1])
@@ -272,7 +299,7 @@ class BallData:
                     result = float(result * 0.4)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
             elif self.launch_monitor == LaunchMonitor.UNEEKOR:
-                if roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA:                  
+                if len(result)>1 and (roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA):                  
                     result = result.upper()
                     if result.endswith('L'):
                         result = -float(result[:-1])
@@ -280,13 +307,21 @@ class BallData:
                         result = float(result[:-1])
                 else :
                     result = float(result)
-
+            elif self.launch_monitor == LaunchMonitor.SKYTRAKPLUS and roi == BallMetrics.HLA :
+                result = float(result)
+                if result < -40 or result > 40 : # assume a misread, or the word "Center"
+                    self.corrections[roi] = True
+                    result = 0
             else:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')
             # Check values are not 0
-            if roi in BallData.must_not_be_zero and result == float(0):
-                raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
+            if self.launch_monitor == LaunchMonitor.UNEEKOR :
+                if roi in BallData.must_not_be_zero_uneekor and result == float(0):
+                    raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
+            else :
+                if roi in BallData.must_not_be_zero and result == float(0):
+                    raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             if roi == BallMetrics.VLA and (result <= 0 or result >= 90):
                 raise ValueError(f"Value for {BallData.properties[roi]} is <= 0 or >= 90")
             if roi == BallMetrics.TOTAL_SPIN and result <= 100:
@@ -388,7 +423,7 @@ class BallData:
                     setattr(self, BallMetrics.CLUB_SPEED, corrected_value)
                     self.corrections[BallMetrics.CLUB_SPEED] = True
                     logging.debug(f"Invalid smash factor value: {smash_factor} < 0.6, corrected  {BallData.properties[BallMetrics.CLUB_SPEED]} value: {corrected_value}")
-            self.__calc_spin()
+        self.__calc_spin()
 
     def __calc_spin(self):
         if self.launch_monitor == LaunchMonitor.UNEEKOR :

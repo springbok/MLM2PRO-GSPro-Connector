@@ -93,6 +93,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'apex'
         elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR:
             train_file = 'uneekor'
+        elif self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
+            train_file = 'skytrak'
         self.main_window.ocr_training_file_label.setText(f"OCR File: {train_file}")
         self.main_window.ocr_training_file_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
