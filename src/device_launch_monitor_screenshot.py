@@ -107,7 +107,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             msg = 'Waiting GSPro'
             color = 'red'
             pause = False
-        self.device_worker.ignore_shots_after_restart()
+        # self.device_worker.ignore_shots_after_restart()
         self.main_window.connector_status.setText(msg)
         self.main_window.connector_status.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
         self.main_window.restart_button.setEnabled(restart)
