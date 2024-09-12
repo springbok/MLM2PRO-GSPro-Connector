@@ -36,7 +36,7 @@ class ScreenshotExPutt(ScreenshotBase):
         window_size = self.mirror_window.size()
         if self.resize_window or window_size['h'] != settings.height() or window_size['w'] != settings.width():
             logging.debug('Resize screen mirror window')
-            self.previous_screenshot_image = None
+            # self.previous_screenshot_image = None
             if settings.width() <= 0 or settings.height() <= 0:
                 # Obtain current window rect
                 settings.exputt['window_rect'] = {
@@ -66,15 +66,15 @@ class ScreenshotExPutt(ScreenshotBase):
         # Check if new shot
         self.new_shot = False
         self.screenshot_new = False
-        mse = 1
+        mse = 400
         if not self.previous_screenshot_image is None:
             mse = self.mse(self.previous_screenshot_image, self.screenshot_image)
         # If mse > 20000 it could be caused by exputt loses it's calibration
-        if mse > 0.05 and mse < 20000:
+        if mse >= 400 and mse < 20000:
             self.screenshot_new = True
             self.previous_screenshot_image = self.screenshot_image
             self.image()
-            logging.debug(f'Screenshot different mse: {mse}')
+            logging.debug(f'Exputt screenshot different mse: {mse}')
         # To reset roi values pass in device without rois
         if rois_setup or len(settings.exputt['rois']) <= 0:
             self.update_rois(settings.exputt['rois'])
