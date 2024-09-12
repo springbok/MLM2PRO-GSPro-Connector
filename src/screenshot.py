@@ -69,10 +69,10 @@ class Screenshot(ScreenshotBase):
         # Check if new shot
         self.new_shot = False
         self.screenshot_new = False
-        mse = 400
+        mse = 100
         if not self.previous_screenshot_image is None:
             mse = self.mse(self.previous_screenshot_image, self.screenshot_image)
-        if mse >= 400:
+        if mse >= 100:
             self.screenshot_new = True
             self.previous_screenshot_image = self.screenshot_image
             self.image()
