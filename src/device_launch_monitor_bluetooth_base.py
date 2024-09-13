@@ -125,6 +125,8 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
         self.__not_connected_status()
 
     def __update_rssi(self, rssi) -> None:
+        logging.debug(f"inside __update_rssi: {rssi}")
+
         self.main_window.launch_monitor_rssi_label.setText(f"RSSI: {rssi}")
         if rssi > -60:
             color = 'green'

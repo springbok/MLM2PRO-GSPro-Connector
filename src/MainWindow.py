@@ -306,8 +306,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i=1
         for metric in BallData.properties:
             item = self.shot_history_table.item(self.shot_history_table.currentRow(), i)
-            result = self.shot_history_table.item(self.shot_history_table.currentRow(), i).text()
-            if metric != BallMetrics.CLUB:
+            if metric != BallMetrics.CLUB and metric != BallMetrics.CLUB_FACE_TO_PATH:
                 self.edit_fields[metric].setPlainText(item.text())
                 self.edit_fields[metric].setAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
                 palette = self.edit_fields[metric].palette()

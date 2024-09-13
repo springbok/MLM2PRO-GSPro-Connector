@@ -91,6 +91,10 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'trackman'
         elif self.main_window.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
             train_file = 'apex'
+        elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR:
+            train_file = 'uneekor'
+        elif self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
+            train_file = 'skytrak'
         self.main_window.ocr_training_file_label.setText(f"OCR File: {train_file}")
         self.main_window.ocr_training_file_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 
@@ -103,7 +107,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             msg = 'Waiting GSPro'
             color = 'red'
             pause = False
-        self.device_worker.ignore_shots_after_restart()
+        # self.device_worker.ignore_shots_after_restart()
         self.main_window.connector_status.setText(msg)
         self.main_window.connector_status.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
         self.main_window.restart_button.setEnabled(restart)

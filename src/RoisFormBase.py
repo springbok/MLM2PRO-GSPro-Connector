@@ -4,8 +4,9 @@ from PySide6.QtWidgets import QMainWindow, QMessageBox
 
 from src.RoisForm_ui import Ui_RoisForm
 from src.VerifyRoiForm import VerifyRoiForm
-from src.ball_data import BallData
+from src.ball_data import BallData, BallMetrics
 from src.log_message import LogMessageTypes, LogMessageSystems
+from src.settings import LaunchMonitor
 
 
 class RoisFormBase(QMainWindow, Ui_RoisForm):
@@ -23,9 +24,40 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.current_button = None
 
     def __rois_properties(self):
-        rois_properties = BallData.rois_properties
         if self.__class__.__name__ == 'RoisExPuttForm':
             rois_properties = BallData.rois_putting_properties
+            BallData.properties[BallMetrics.HLA] = "Launch Dir"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Putter path"
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = "Impact Angle"
+        elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR :
+            rois_properties = BallData.rois_uneekor_properties
+            BallData.properties[BallMetrics.VLA] = "Launch Angle"
+            BallData.properties[BallMetrics.HLA] = "Side Angle"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Club path"
+            BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = "Attack Angle"
+        elif self.main_window.settings.device_id ==  LaunchMonitor.MEVOPLUS :
+            rois_properties = BallData.rois_mevoplus_properties
+            BallData.properties[BallMetrics.VLA] = "Launch V"
+            BallData.properties[BallMetrics.HLA] = "Launch H"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Club path"
+            BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = 'AOA'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = 'Face to target'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_PATH] = 'Face to path'
+        elif self.main_window.settings.device_id ==  LaunchMonitor.SKYTRAKPLUS :
+            rois_properties = BallData.rois_skytrak_properties
+            BallData.properties[BallMetrics.VLA] = "Launch Angle"
+            BallData.properties[BallMetrics.HLA] = "Side Angle"
+            BallData.properties[BallMetrics.CLUB_PATH] = 'Club path'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = 'Face to target'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_PATH] = 'Face to path'
+        else :
+            rois_properties = BallData.rois_properties
+            BallData.properties[BallMetrics.HLA] = "Launch Direction (HLA)"
+            BallData.properties[BallMetrics.VLA] = "Launch Angle (VLA)"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Club path"
+            BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = "Angle of Attack"
+            BallData.properties[BallMetrics.CLUB_FACE_TO_PATH] = 'Impact Angle'
+
         return rois_properties
 
     def setup_ui(self):

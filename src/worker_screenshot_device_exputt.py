@@ -32,7 +32,6 @@ class WorkerScreenshotDeviceExPutt(WorkerScreenshotBase):
                 continue
             if not self._shutdown.is_set():
                 try:
-                    logging.debug('Putter selected processing putt')
                     self.do_screenshot(self.exputt_screenshot, self.putting_settings, self.putting_rois_reload)
                     self.putting_rois_reload = False
                 except Exception as e:

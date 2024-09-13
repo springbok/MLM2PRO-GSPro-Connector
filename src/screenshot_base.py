@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import tesserocr
 from PIL import Image, ImageOps
 from pyqtgraph import ViewBox
-from src.ball_data import BallData
+from src.ball_data import BallData, BallMetrics
 from src.labeled_roi import LabeledROI
 from src.settings import LaunchMonitor
 
@@ -61,11 +61,42 @@ class ScreenshotBase(ViewBox):
             self.__self_reset_rois()
 
     def rois_properties(self):
-        rois_properties = BallData.rois_properties
         logging.debug(f"self.__class__.__name__: {self.__class__.__name__}")
         if self.__class__.__name__ == 'ScreenshotExPutt':
             logging.debug(f'ScreenshotExPutt')
             rois_properties = BallData.rois_putting_properties
+            BallData.properties[BallMetrics.HLA] = "Launch Dir"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Putter path"
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = "Impact Angle"
+        elif self.settings.device_id == LaunchMonitor.UNEEKOR :
+            rois_properties = BallData.rois_uneekor_properties
+            BallData.properties[BallMetrics.VLA] = "Launch Angle"
+            BallData.properties[BallMetrics.HLA] = "Side Angle"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Club path"
+            BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = "Attack Angle"
+        elif self.settings.device_id ==  LaunchMonitor.MEVOPLUS :
+            rois_properties = BallData.rois_mevoplus_properties
+            BallData.properties[BallMetrics.VLA] = "Launch V"
+            BallData.properties[BallMetrics.HLA] = "Launch H"
+            BallData.properties[BallMetrics.CLUB_PATH] = "Club path"
+            BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = 'AOA'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = 'Face to target'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_PATH] = 'Face to path'
+        elif self.settings.device_id ==  LaunchMonitor.SKYTRAKPLUS :
+            rois_properties = BallData.rois_skytrak_properties
+            BallData.properties[BallMetrics.VLA] = "Launch Angle"
+            BallData.properties[BallMetrics.HLA] = "Side Angle"
+            BallData.properties[BallMetrics.CLUB_PATH] = 'Club path'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = 'Face to target'
+            BallData.properties[BallMetrics.CLUB_FACE_TO_PATH] = 'Face to path'
+        else : # defaults
+            rois_properties = BallData.rois_properties
+            BallData.properties[BallMetrics.HLA] = "Launch Direction (HLA)"
+            BallData.properties[BallMetrics.VLA] = "Launch Angle (VLA)"
+            BallData.properties[BallMetrics.CLUB_PATH] = 'Club path'
+            BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = "Angle of Attack"
+            BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = 'Impact Angle'
+        
         return rois_properties
 
     def __create_rois(self):
@@ -136,7 +167,12 @@ class ScreenshotBase(ViewBox):
                 train_file = 'trackman'
             elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
                 train_file = 'apex'
-        logging.debug(f"Using {train_file}_traineddata for OCR")
+            elif self.settings.device_id == LaunchMonitor.UNEEKOR:
+                train_file = 'uneekor'
+            elif self.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
+                train_file = 'skytrak'
+
+        logging.debug(f"Using {train_file}.traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
         try:
             pil_img = Image.fromarray(self.screenshot_image).convert('RGB')
@@ -188,7 +224,7 @@ class ScreenshotBase(ViewBox):
                 tesserocr_api.SetImage(img)
                 ocr_result = tesserocr_api.GetUTF8Text()
                 conf = tesserocr_api.MeanTextConf()
-                logging.debug(f'ocr {roi} - confidence: {conf} result: {ocr_result}')
+                logging.debug(f'ocr {roi} - confidence: {conf} result: {ocr_result.strip()}')
                 if conf <= 0:
                     logging.debug(f'ocr {roi} confidence <= 0 retrying with RAW_LINE')
                     if fallback_tesserocr_api is None:
