@@ -15,6 +15,7 @@ class LaunchMonitor:
     RELAY_SERVER = "Relay Server"
     UNEEKOR = "Uneekor Eye Mini/Lite"
     SKYTRAKPLUS = "Skytrak+"
+    XSWINGPRO = "XSwingPro"
 
 class Settings(SettingsBase):
     version = "2"

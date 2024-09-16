@@ -298,7 +298,7 @@ class BallData:
                     old_result = result
                     result = float(result * 0.4)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
-            elif self.launch_monitor == LaunchMonitor.UNEEKOR:
+            elif self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.XSWINGPRO:
                 if len(result)>1 and (roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA):                  
                     result = result.upper()
                     if result.endswith('L'):

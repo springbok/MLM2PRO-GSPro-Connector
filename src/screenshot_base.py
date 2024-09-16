@@ -171,6 +171,8 @@ class ScreenshotBase(ViewBox):
                 train_file = 'uneekor'
             elif self.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
                 train_file = 'skytrak'
+            elif self.settings.device_id == LaunchMonitor.XSWINGPRO:
+                train_file = 'xswingpro'
 
         logging.debug(f"Using {train_file}.traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')
