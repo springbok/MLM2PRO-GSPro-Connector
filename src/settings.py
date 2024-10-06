@@ -16,6 +16,7 @@ class LaunchMonitor:
     UNEEKOR = "Uneekor Eye Mini/Lite"
     SKYTRAKPLUS = "Skytrak+"
     XSWINGPRO = "XSwingPro"
+    SQUARE = "Square"
 
 class Settings(SettingsBase):
     version = "2"

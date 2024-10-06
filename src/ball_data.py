@@ -277,7 +277,7 @@ class BallData:
             # Strip non ascii chars and commas
             ocr_result = re.sub(r',', r'', re.sub(r'[^\x00-\x7f]', r'', ocr_result))
             logging.debug(f'remove non ASCII {roi}: {ocr_result.strip()}')
-            cleaned_result = re.findall(r"[-+]?(?:\d*\.*\d+)[LR]?", ocr_result)
+            cleaned_result = re.findall(r"[LR]?[-+]?(?:\d*\.*\d+)[LR]?", ocr_result)
             if isinstance(cleaned_result, list or tuple) and len(cleaned_result) > 0:
                 cleaned_result = cleaned_result[0]
             logging.debug(f'cleaned result {roi}: {cleaned_result}')
@@ -306,6 +306,15 @@ class BallData:
                     else:
                         result = float(result[:-1])
                 else :
+                    result = float(result)
+            elif self.launch_monitor == LaunchMonitor.SQUARE:
+                if len(result) > 1 and (roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.HLA):
+                    result = result.upper()
+                    if result.startswith('L'):
+                        result = -float(result[1:])
+                    elif result.startswith('R'):
+                        result = float(result[1:])
+                else:
                     result = float(result)
             elif self.launch_monitor == LaunchMonitor.SKYTRAKPLUS and roi == BallMetrics.HLA :
                 result = float(result)
