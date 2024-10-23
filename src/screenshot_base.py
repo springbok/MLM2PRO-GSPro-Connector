@@ -175,6 +175,8 @@ class ScreenshotBase(ViewBox):
                 train_file = 'xswingpro'
             elif self.settings.device_id == LaunchMonitor.SQUARE:
                 train_file = 'square'
+            elif self.settings.device_id == LaunchMonitor.SC4:
+                train_file = 'voicecaddiesc4'
 
         logging.debug(f"Using {train_file}.traineddata for OCR")
         tesserocr_api = tesserocr.PyTessBaseAPI(psm=tesserocr.PSM.SINGLE_WORD, lang=train_file, path='.\\')

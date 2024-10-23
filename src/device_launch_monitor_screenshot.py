@@ -99,6 +99,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'xswingpro'
         elif self.main_window.settings.device_id == LaunchMonitor.SQUARE:
             train_file = 'square'
+        elif self.main_window.settings.device_id == LaunchMonitor.SC4:
+            train_file = 'voicecaddiesc4'
         self.main_window.ocr_training_file_label.setText(f"OCR File: {train_file}")
         self.main_window.ocr_training_file_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
 

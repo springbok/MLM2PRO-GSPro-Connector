@@ -17,6 +17,7 @@ class LaunchMonitor:
     SKYTRAKPLUS = "Skytrak+"
     XSWINGPRO = "XSwingPro"
     SQUARE = "Square"
+    SC4 = "Voice Caddie SC4"
 
 class Settings(SettingsBase):
     version = "2"
