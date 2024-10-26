@@ -288,7 +288,7 @@ class BallData:
                 cleaned_result = '0'
             # Remove any leading '.' sometimes a - is read as a '.'
             result = cleaned_result.lstrip('.')
-            if self.launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH):
+            if self.launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.VLA or roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH):
                 result = result.upper()
                 if result.endswith('L'):
                     result = -float(result[:-1])
@@ -298,6 +298,9 @@ class BallData:
                     old_result = result
                     result = float(result * 0.4)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
+                elif roi == BallMetrics.VLA:
+                    if result == 0.5: # this value of VLA is observed when MEVO+ failed to register a chip shot properly
+                        raise ValueError("Detected problematic VLA = 0.5 for MEVO+. Ignoring the shot")
             elif self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.XSWINGPRO:
                 if len(result)>1 and (roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA):                  
                     result = result.upper()
