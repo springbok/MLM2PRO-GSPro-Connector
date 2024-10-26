@@ -32,7 +32,7 @@ class LogTableCols:
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     version = 'V1.04.13'
-    app_name = '3LM2PRO-GSPro-Connector'
+    app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
     bad_shot_color = '#ff3800'
