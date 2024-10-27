@@ -80,6 +80,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.main_window.connector_status.setStyleSheet(f"QLabel {{ background-color : {color}; color : white; }}")
         self.main_window.restart_button.setEnabled(restart)
         self.main_window.pause_button.setEnabled(False)
+        self.device_worker.ignore_shots_after_restart()
 
     def __display_training_file(self):
         train_file = 'train'
