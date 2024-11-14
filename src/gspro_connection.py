@@ -1,6 +1,6 @@
 import logging
 import os
-import subprocess
+
 from PySide6.QtCore import QThread, Signal, QObject
 from PySide6.QtWidgets import QMessageBox
 from src.ctype_screenshot import ScreenMirrorWindow
@@ -10,6 +10,7 @@ from src.worker_gspro_start import WorkerGSProStart
 from src.worker_gspro import WorkerGspro
 from src.log_message import LogMessageSystems, LogMessageTypes
 from src.worker_thread import WorkerThread
+from PySide6.QtCore import QProcess
 
 
 class GSProConnection(QObject):
@@ -204,8 +205,7 @@ class GSProConnection(QObject):
                 try:
                     if not gspro_running:
                         logging.debug(f'Starting GSPro app: {settings.gspro_path}')
-                        DETACHED_PROCESS = 0x00000008
-                        subprocess.Popen([settings.gspro_path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(settings.gspro_path), shell=False)
+                        QProcess.startDetached(settings.gspro_path, '', os.path.dirname(settings.gspro_path))
                     if auto_start:
                         logging.debug(f'{self.__class__.__name__} Starting WorkerGSProStart')
                         self.gspro_start_thread = QThread()

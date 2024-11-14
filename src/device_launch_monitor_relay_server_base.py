@@ -2,6 +2,8 @@ import json
 import logging
 import os
 import subprocess
+
+from PySide6.QtCore import QProcess
 from PySide6.QtWidgets import QMessageBox
 from src.ball_data import BallData
 from src.ctype_screenshot import ScreenMirrorWindow
@@ -70,8 +72,7 @@ class DeviceLaunchMonitorRelayServerBase(DeviceBase):
                 path = f"{os.getcwd()}{self.launch_monitor_app}"
                 print(f'path: {path}')
                 logging.debug(f'Starting connector app: {path}')
-                DETACHED_PROCESS = 0x00000008
-                subprocess.Popen([path], creationflags=DETACHED_PROCESS, cwd=os.path.dirname(path), shell=self.shell_app)
+                QProcess.startDetached(path)
                 for i in range(10):
                     Event().wait(250/1000)
                     if self.__find_connector_app():
