@@ -270,7 +270,7 @@ class BallData:
                 self.errors[roi] = msg
                 setattr(self, roi, BallData.invalid_value)
 
-    def process_shot_data(self, ocr_result, roi, previous_balldata, offline_mode):
+    def process_shot_data(self, ocr_result, roi, previous_balldata, selected_club, offline_mode):
         msg = None
         result = ''
         try:
@@ -310,6 +310,17 @@ class BallData:
                         result = float(result[:-1])
                 else :
                     result = float(result)
+            elif self.launch_monitor == LaunchMonitor.SC4:
+                result = float(result)
+                if result <= 0 and (roi == BallMetrics.TOTAL_SPIN or roi == BallMetrics.VLA) and selected_club in ['PW', 'SW', 'GW', 'LW']:
+                    if roi == BallMetrics.TOTAL_SPIN:
+                        result = 5000
+                        logging.debug(
+                            f"{self.launch_monitor} value read for {BallData.properties[roi]} is 0, changing value to: {result}")
+                    elif roi == BallMetrics.VLA:
+                        result = 36
+                        logging.debug(
+                            f"{self.launch_monitor} value read for {BallData.properties[roi]} is 0, changing value to: {result}")
             elif self.launch_monitor == LaunchMonitor.SQUARE:
                 if len(result) > 1 and (roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.HLA):
                     result = result.upper()

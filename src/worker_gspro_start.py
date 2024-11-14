@@ -30,14 +30,12 @@ class WorkerGSProStart(WorkerBase):
             Event().wait(interval)
             if not button_found:
                 button_found = clickButton(self.settings.gspro_config_window_name, self.settings.gspro_play_button_label)
-                count = 0
-            else:
-                try:
-                    ScreenMirrorWindow(self.settings.gspro_api_window_name)
-                    running = True
-                    self.gspro_started.emit()
-                except Exception as e:
-                    if count >= 180:
-                        timeout = True
-                        self.error.emit(e)
+            try:
+                ScreenMirrorWindow(self.settings.gspro_api_window_name)
+                running = True
+                self.gspro_started.emit()
+            except Exception as e:
+                if count >= 180:
+                    timeout = True
+                    self.error.emit(e)
         self.finished.emit()
