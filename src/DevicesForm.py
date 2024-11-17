@@ -19,7 +19,6 @@ class DevicesForm(QWidget, Ui_DevicesForm):
         super().__init__()
         self.setupUi(self)
         self.app_paths = app_paths
-        self.devices = Devices(app_paths)
         self.close_button.clicked.connect(self.__close)
         self.new_button.clicked.connect(self.__new_device)
         self.save_button.clicked.connect(self.__save_device)
@@ -32,15 +31,20 @@ class DevicesForm(QWidget, Ui_DevicesForm):
         self.devices_table.setColumnWidth(DevicesForm.name_col, 100)
         self.devices_table.setColumnWidth(DevicesForm.window_title_col, 200)
         self.devices_table.setColumnWidth(DevicesForm.path_col, 500)
-        self.devices_table.selectionModel().selectionChanged.connect(self.__selection_changed)
-        self.current_row_edit.setVisible(False)
-        self.current_row_edit.setText('1')
-        # Load data into the table
-        self.__load_device_table()
-        self.devices_table.selectRow(0)
 
     def __close(self):
         self.close()
+
+    def showEvent(self, event):
+        # Load data into the table
+        self.devices_table.selectionModel().selectionChanged.disconnect()
+        self.devices = Devices(self.app_paths)
+        self.devices_table.setRowCount(0)
+        self.__load_device_table()
+        self.devices_table.selectRow(0)
+        self.devices_table.selectionModel().selectionChanged.connect(self.__selection_changed)
+        self.current_row_edit.setVisible(False)
+        self.current_row_edit.setText('1')
 
     def __open_windows_title(self):
         titles = open_window_titles()

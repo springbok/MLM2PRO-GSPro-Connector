@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from dataclasses import dataclass
 
 
@@ -25,7 +26,8 @@ class Device:
         template = ''
         if self.template:
             template = '.template'
-        return f'device_{self.name}.json{template}'
+        new_name = re.sub(r'[^\w\-_\. ]', '', self.name)
+        return f'device_{new_name}.json{template}'
 
     def file_path(self):
         return f'{self.path}\\{self.file_name()}'
