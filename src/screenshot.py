@@ -69,10 +69,15 @@ class Screenshot(ScreenshotBase):
         # Check if new shot
         self.new_shot = False
         self.screenshot_new = False
-        mse = 100
+        if self.settings.device_id == LaunchMonitor.UNEEKOR:
+            mse_min = 400
+        else: 
+            mse_min = 100
+        mse = mse_min
+
         if not self.previous_screenshot_image is None:
             mse = self.mse(self.previous_screenshot_image, self.screenshot_image)
-        if mse >= 100:
+        if mse >= mse_min or self.first:
             self.screenshot_new = True
             self.previous_screenshot_image = self.screenshot_image
             self.image()
