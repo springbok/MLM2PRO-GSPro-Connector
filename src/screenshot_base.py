@@ -243,9 +243,17 @@ class ScreenshotBase(ViewBox):
                     self.balldata.process_putt_data(ocr_result, roi, self.previous_balldata)
                 else:
                     self.balldata.process_shot_data(ocr_result, roi, self.previous_balldata, self.selected_club, self.settings.mevo_plus['offline_mode'])
+
             # Correct metrics if invalid smash factor
             if self.balldata.putt_type is None:
                 self.balldata.check_smash_factor(self.selected_club)
+
+            # Ignore first shot at startup
+            if self.first:
+                logging.debug('First shot, ignoring')
+                self.first = False
+                self.previous_balldata = self.balldata.__copy__()
+
             if not self.previous_balldata is None:
                 diff_count = self.balldata.eq(self.previous_balldata)
             else:
@@ -279,12 +287,6 @@ class ScreenshotBase(ViewBox):
                         self.previous_balldata = self.balldata.__copy__()
             else:
                 logging.debug('Not a new shot')
-            # Ignore first shot at startup
-            if self.first:
-                logging.debug('First shot, ignoring')
-                self.first = False
-                self.balldata.new_shot = False
-                self.new_shot = False
         finally:
             tesserocr_api.End()
 

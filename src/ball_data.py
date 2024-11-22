@@ -389,7 +389,7 @@ class BallData:
             if (roi != BallMetrics.BACK_SPIN and
                     ((roi != BallMetrics.SIDE_SPIN and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE) or
                      self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE)  and result != previous_result):
-                logging.debug(f'previous_metric: {previous_result} result: {result}')
+                logging.debug('ROI {: <15}   was:{: >6}   is:{: >6}'.format(roi, previous_result, result))
                 diff_count = diff_count + 1
         # Check if all values are 0, some users use practice instead of range and there is a screen flicker
         # that causes an invalid shot with all invalid values so all values are still 0. Check if all values
