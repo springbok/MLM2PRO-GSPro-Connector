@@ -66,11 +66,13 @@ class ScreenshotExPutt(ScreenshotBase):
         # Check if new shot
         self.new_shot = False
         self.screenshot_new = False
-        mse = 400
+        mse_min = 400
+        mse = mse_min
+
         if not self.previous_screenshot_image is None:
             mse = self.mse(self.previous_screenshot_image, self.screenshot_image)
-        # If mse > 20000 it could be caused by exputt loses it's calibration
-        if mse >= 400 and mse < 20000:
+
+        if mse >= mse_min:
             self.screenshot_new = True
             self.previous_screenshot_image = self.screenshot_image
             self.image()
