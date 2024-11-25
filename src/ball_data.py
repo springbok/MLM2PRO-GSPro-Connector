@@ -113,7 +113,7 @@ class BallData:
                         BallMetrics.CLUB_SPEED,
                         BallMetrics.TOTAL_SPIN]
     must_not_be_zero_uneekor = [BallMetrics.SPEED,
-                        BallMetrics.TOTAL_SPIN]
+                        BallMetrics.BACK_SPIN]
     must_not_be_zero_putt = [BallMetrics.SPEED]
 
     MLM2_MISREAD_SHOT = '0000000000000000000000000000000000000000'
@@ -288,17 +288,30 @@ class BallData:
                 cleaned_result = '0'
             # Remove any leading '.' sometimes a - is read as a '.'
             result = cleaned_result.lstrip('.')
-            if self.launch_monitor == LaunchMonitor.MEVOPLUS and (roi == BallMetrics.VLA or roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH):
-                result = result.upper()
-                if result.endswith('L'):
-                    result = -float(result[:-1])
-                else:
-                    result = float(result[:-1])
+            if self.launch_monitor == LaunchMonitor.MEVOPLUS:
+                if (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or 
+                    roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH or roi == BallMetrics.ANGLE_OF_ATTACK):
+                    result = result.upper()
+                    try:
+                        if result.endswith('L'):
+                            result = -float(result[:-1])
+                        else:
+                            result = float(result[:-1])
+                    except ValueError:
+                        # unable to convert to float
+                        if (roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH
+                            or roi == BallMetrics.ANGLE_OF_ATTACK):
+                            logging.debug(f'Ignoring problem with optional ROI "{BallMetrics.properties[roi]}"')
+                        else:
+                            raise ValueError(f'Problem converting {BallMetrics.properties[roi]}, value was "{result}"')
+                else :
+                    result = float(result)
+
                 if roi == BallMetrics.SPIN_AXIS and offline_mode == 'Yes':
                     old_result = result
                     result = float(result * 0.4)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
-                elif roi == BallMetrics.VLA:
+                if roi == BallMetrics.VLA:
                     if result == 0.5: # this value of VLA is observed when MEVO+ failed to register a chip shot properly
                         raise ValueError("Detected problematic VLA = 0.5 for MEVO+. Ignoring the shot")
             elif self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.XSWINGPRO:
