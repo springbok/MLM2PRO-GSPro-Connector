@@ -302,6 +302,7 @@ class BallData:
                         if (roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH
                             or roi == BallMetrics.ANGLE_OF_ATTACK):
                             logging.debug(f'Ignoring problem with optional ROI "{BallMetrics.properties[roi]}"')
+                            result = 0
                         else:
                             raise ValueError(f'Problem converting {BallMetrics.properties[roi]}, value was "{result}"')
                 else :
