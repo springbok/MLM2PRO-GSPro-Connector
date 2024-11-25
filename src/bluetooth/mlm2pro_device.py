@@ -252,6 +252,7 @@ class MLM2PRODevice(BluetoothDeviceBase):
                 logging.debug(f'Heartbeat not received for {MLM2PRODevice.MLM2PRO_HEARTBEAT_INTERVAL} seconds, resubscribing...')
                 self._set_next_expected_heartbeat()
             self._primary_service.write_characteristic(MLM2PRODevice.HEARTBEAT_CHARACTERISTIC_UUID, bytearray([0x01]))
+            self.__token_expiry_date_state(self._settings.web_api['token_expiry'])
 
     def __send_initial_params(self, data: bytearray) -> None:
         byte_array = data[2:]
