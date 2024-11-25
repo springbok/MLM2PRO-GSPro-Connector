@@ -20,7 +20,7 @@ class Devices:
         self.devices = []
         i = 1
         for file in glob.glob(f'{self.app_paths.app_data_path}\\device_*.json'):
-            res = re.findall("device_(\w+).json", file)
+            res = re.findall(r"device_(\w+).json", file)
             logging.debug(f'Loading device config file: {res[0]}')
             device = Device(i, res[0], '', {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}, '', {}, self.app_paths.app_data_path, False)
             device.load()

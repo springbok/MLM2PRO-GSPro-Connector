@@ -44,7 +44,7 @@ class WorkerGSProMessages(WorkerBase):
 
     def __process_message(self, message):
         messages = {}
-        json_messages = re.split('(\{.*?\})(?= *\{)', message.decode("utf-8"))
+        json_messages = re.split(r'(\{.*?})(?= *\{)', message.decode("utf-8"))
         for json_message in json_messages:
             if len(json_message) > 0:
                 logging.debug(f'__process_message json_message: {json_message}')

@@ -6,17 +6,6 @@ from pyqtgraph import RectROI
 
 
 class LabeledROI(RectROI):
-    """
-    Normal ROI with a label attached.
-
-
-    ============== =============================================================
-    **Arguments**
-    label          String for the label
-    \**args        All extra keyword arguments are passed to ROI()
-    ============== =============================================================
-
-    """
 
     def __init__(self, *args, label=None, **kwargs):
         RectROI.__init__(self, *args, **kwargs)
@@ -30,7 +19,6 @@ class LabeledROI(RectROI):
             self.label = None
 
     def paint(self, p, opt, widget):
-        """ p es un objeto QPainter """
         super().paint(p, opt, widget)
         if self.label is not None:
             self.label.setPos(QPointF(self.boundingRect().center().x() - (self.label.boundingRect().width() / 2), self.state['size'][1]))
