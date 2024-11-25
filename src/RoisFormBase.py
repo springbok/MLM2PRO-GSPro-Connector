@@ -77,6 +77,12 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
     def __close(self):
         self.close()
 
+    def save(self):
+        pass
+
+    def reset(self):
+        pass
+
     def closeEvent(self, event):
         self.closed.emit()
         super().closeEvent(event)

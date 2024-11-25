@@ -21,7 +21,7 @@ class DevicePuttingExPutt(DevicePuttingBase):
         self.device_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
 
     def __bad_shot(self, balldata):
-        self.main_window.__add_shot_history_row(balldata)
+        self.main_window.shot_sent(balldata)
 
     def start_app(self):
         if self.main_window.putting_settings.exputt['auto_start'] == 'Yes':

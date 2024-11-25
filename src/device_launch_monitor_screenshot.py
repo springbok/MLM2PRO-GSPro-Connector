@@ -32,7 +32,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         self.device_worker.too_many_ghost_shots.connect(self.__too_many_ghost_shots)
 
     def __bad_shot(self, balldata):
-        self.main_window.__add_shot_history_row(balldata)
+        self.main_window.shot_sent(balldata)
 
     def __setup_signals(self):
         self.select_device.selected.connect(self.__device_selected)

@@ -1,0 +1,10 @@
+QtDesigner
+C:\python\mlm2pro-gspro-connect-gui\venv\Lib\site-packages\qt6_applications\Qt\bin\designer.exe
+$ProjectFileDir$\src
+
+PyUIC
+C:\python\mlm2pro-gspro-connect-gui\venv\Scripts\pyside6-uic.exe
+$FileName$ -o $FileNameWithoutExtension$_ui.py
+$ProjectFileDir$\src
+
+
