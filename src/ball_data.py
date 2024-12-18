@@ -289,22 +289,13 @@ class BallData:
             # Remove any leading '.' sometimes a - is read as a '.'
             result = cleaned_result.lstrip('.')
             if self.launch_monitor == LaunchMonitor.MEVOPLUS:
-                if (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or 
+                if len(result) > 1 and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or 
                     roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH or roi == BallMetrics.ANGLE_OF_ATTACK):
                     result = result.upper()
-                    try:
-                        if result.endswith('L'):
-                            result = -float(result[:-1])
-                        else:
-                            result = float(result[:-1])
-                    except ValueError:
-                        # unable to convert to float
-                        if (roi == BallMetrics.CLUB_PATH or roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH
-                            or roi == BallMetrics.ANGLE_OF_ATTACK):
-                            logging.debug(f'Ignoring problem with optional ROI "{BallMetrics.properties[roi]}"')
-                            result = 0
-                        else:
-                            raise ValueError(f'Problem converting {BallMetrics.properties[roi]}, value was "{result}"')
+                    if result.endswith('L'):
+                        result = -float(result[:-1])
+                    else :
+                        result = float(result[:-1])
                 else :
                     result = float(result)
 
