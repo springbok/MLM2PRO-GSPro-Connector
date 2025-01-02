@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 import sys
@@ -107,13 +108,16 @@ class AppDataPaths:
         path = os.path.join(self.app_data_path, full_name)
         return path
 
-    def get_log_file_path(self, name=None, create=False):
+    def get_log_file_path(self, name=None, create=False, history=False):
         if name:
             name = name
         elif self.name:
             name = self.name
         else:
             name = self.DEFAULT_LOG_FILE_NAME
+        if history:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            name = f"{name}_{timestamp}"
         path = os.path.join(self.logs_path, name + '.log')
         return path
 

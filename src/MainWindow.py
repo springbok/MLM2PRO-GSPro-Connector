@@ -58,8 +58,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__auto_start()
 
     def __setup_logging(self):
+        settings = Settings(self.app_paths)
         level = logging.DEBUG
-        path = self.app_paths.get_log_file_path()
+        path = self.app_paths.get_log_file_path(name=None, create=True, history=settings.keep_log_history == 'Yes')
         if os.path.isfile(path):
             os.unlink(path)
         logging.basicConfig(
