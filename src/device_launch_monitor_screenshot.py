@@ -83,6 +83,18 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
         if self.device_worker is not None:
             self.device_worker.ignore_shots_after_restart()
 
+    def update_mevo_mode(self):
+        print('update_mevo_mode')
+        if self.main_window.settings.device_id == LaunchMonitor.MEVOPLUS:
+            print(f"Offline Mode: {self.main_window.settings.mevo_plus['offline_mode']}")
+            self.main_window.mode_label.setText(f"Offline Mode: {self.main_window.settings.mevo_plus['offline_mode']}")
+            self.main_window.mode_label.setStyleSheet(
+                f"QLabel {{ background-color : blue; color : white; }}")
+        else:
+            self.main_window.mode_label.setText('')
+            self.main_window.mode_label.setStyleSheet(
+                f"QLabel {{ background-color : white; color : white; }}")
+
     def __display_training_file(self):
         train_file = 'train'
         if self.main_window.settings.device_id == LaunchMonitor.MEVOPLUS:
@@ -105,6 +117,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'voicecaddiesc4'
         self.main_window.ocr_training_file_label.setText(f"OCR File: {train_file}")
         self.main_window.ocr_training_file_label.setStyleSheet(f"QLabel {{ background-color : blue; color : white; }}")
+        self.update_mevo_mode()
 
     def device_worker_resumed(self):
         msg = 'Running'

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1349, 725)
+        MainWindow.resize(1349, 804)
         icon = QIcon()
         icon.addFile(u":/ico/ico/connect.ico", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -93,7 +93,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.gspro_connect_button = QPushButton(self.groupBox)
         self.gspro_connect_button.setObjectName(u"gspro_connect_button")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gspro_connect_button.sizePolicy().hasHeightForWidth())
@@ -104,7 +104,7 @@ class Ui_MainWindow(object):
 
         self.gspro_status_label = QLabel(self.groupBox)
         self.gspro_status_label.setObjectName(u"gspro_status_label")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.gspro_status_label.sizePolicy().hasHeightForWidth())
@@ -130,7 +130,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.club_selection)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
 
@@ -178,7 +178,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.putting_server_status_label)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
@@ -202,7 +202,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.select_device_button = QPushButton(self.device_control_widget)
         self.select_device_button.setObjectName(u"select_device_button")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.select_device_button.sizePolicy().hasHeightForWidth())
@@ -223,7 +223,7 @@ class Ui_MainWindow(object):
 
         self.selected_mirror_app = QLabel(self.device_control_widget)
         self.selected_mirror_app.setObjectName(u"selected_mirror_app")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.selected_mirror_app.sizePolicy().hasHeightForWidth())
@@ -251,6 +251,14 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addWidget(self.ocr_training_file_label)
 
+        self.mode_label = QLabel(self.device_control_widget)
+        self.mode_label.setObjectName(u"mode_label")
+        self.mode_label.setFont(font1)
+        self.mode_label.setAlignment(Qt.AlignCenter)
+        self.mode_label.setMargin(5)
+
+        self.verticalLayout_8.addWidget(self.mode_label)
+
         self.pause_button = QPushButton(self.device_control_widget)
         self.pause_button.setObjectName(u"pause_button")
 
@@ -260,10 +268,6 @@ class Ui_MainWindow(object):
         self.restart_button.setObjectName(u"restart_button")
 
         self.verticalLayout_8.addWidget(self.restart_button)
-
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_8.addItem(self.verticalSpacer_4)
 
 
         self.horizontalLayout_12.addWidget(self.device_control_widget)
@@ -415,7 +419,7 @@ class Ui_MainWindow(object):
         self.edit_field_layout1.setSizeConstraint(QLayout.SetFixedSize)
         self.speed_edit = QTextEdit(self.launch_monitor_groupbox)
         self.speed_edit.setObjectName(u"speed_edit")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.speed_edit.sizePolicy().hasHeightForWidth())
@@ -701,6 +705,7 @@ class Ui_MainWindow(object):
         self.selected_mirror_app.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.connector_status.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.ocr_training_file_label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        self.mode_label.setText(QCoreApplication.translate("MainWindow", u"Mode", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.restart_button.setText(QCoreApplication.translate("MainWindow", u"Restart", None))
         self.start_server_button.setText(QCoreApplication.translate("MainWindow", u"Start", None))

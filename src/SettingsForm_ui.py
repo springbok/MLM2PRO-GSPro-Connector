@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'SettingsForm.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,9 +24,9 @@ class Ui_SettingsForm(object):
         if not SettingsForm.objectName():
             SettingsForm.setObjectName(u"SettingsForm")
         SettingsForm.setWindowModality(Qt.ApplicationModal)
-        SettingsForm.resize(981, 533)
-        self.verticalLayout_10 = QVBoxLayout(SettingsForm)
-        self.verticalLayout_10.setObjectName(u"verticalLayout_10")
+        SettingsForm.resize(981, 510)
+        self.horizontalLayout_7 = QHBoxLayout(SettingsForm)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.verticalLayout_8 = QVBoxLayout()
@@ -37,7 +37,7 @@ class Ui_SettingsForm(object):
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.ipaddress_edit = QPlainTextEdit(self.r10_settings_groupbox_2)
         self.ipaddress_edit.setObjectName(u"ipaddress_edit")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ipaddress_edit.sizePolicy().hasHeightForWidth())
@@ -61,7 +61,7 @@ class Ui_SettingsForm(object):
         self.port_edit = QPlainTextEdit(self.r10_settings_groupbox_2)
         self.port_edit.setObjectName(u"port_edit")
         self.port_edit.setEnabled(True)
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.port_edit.sizePolicy().hasHeightForWidth())
@@ -104,7 +104,7 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_8.addWidget(self.r10_settings_groupbox_2)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_8.addItem(self.verticalSpacer_2)
 
@@ -266,7 +266,7 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_5.addWidget(self.groupBox_2)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_5.addItem(self.verticalSpacer_3)
 
@@ -326,13 +326,33 @@ class Ui_SettingsForm(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_11)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.horizontalLayout_15 = QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.log_history_label = QLabel(SettingsForm)
+        self.log_history_label.setObjectName(u"log_history_label")
+        self.log_history_label.setMinimumSize(QSize(120, 0))
+        self.log_history_label.setMaximumSize(QSize(120, 16777215))
+
+        self.horizontalLayout_15.addWidget(self.log_history_label)
+
+        self.log_history_combo = QComboBox(SettingsForm)
+        self.log_history_combo.addItem("")
+        self.log_history_combo.addItem("")
+        self.log_history_combo.setObjectName(u"log_history_combo")
+        self.log_history_combo.setMinimumSize(QSize(130, 0))
+
+        self.horizontalLayout_15.addWidget(self.log_history_combo)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_15)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -353,7 +373,7 @@ class Ui_SettingsForm(object):
         self.horizontalLayout_6.addLayout(self.verticalLayout_2)
 
 
-        self.verticalLayout_10.addLayout(self.horizontalLayout_6)
+        self.horizontalLayout_7.addLayout(self.horizontalLayout_6)
 
 
         self.retranslateUi(SettingsForm)
@@ -441,6 +461,10 @@ class Ui_SettingsForm(object):
         self.auto_start_all_label.setText(QCoreApplication.translate("SettingsForm", u"Auto Start All Apps", None))
         self.auto_start_all_apps_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
         self.auto_start_all_apps_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
+
+        self.log_history_label.setText(QCoreApplication.translate("SettingsForm", u"Keep Log history", None))
+        self.log_history_combo.setItemText(0, QCoreApplication.translate("SettingsForm", u"None", None))
+        self.log_history_combo.setItemText(1, QCoreApplication.translate("SettingsForm", u"New Item", None))
 
 #if QT_CONFIG(tooltip)
         self.save_button.setToolTip(QCoreApplication.translate("SettingsForm", u"New Device", None))

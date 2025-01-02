@@ -44,7 +44,8 @@ class Settings(SettingsBase):
                 "zoom_images": "No",
                 "relay_server_ip_address": "127.0.0.1",
                 "relay_server_port": 9234,
-                'auto_start_all_apps': 'No'
+                'auto_start_all_apps': 'No',
+                'keep_log_history': 'No'
             }
         )
         # Removed this from the settings file, specifies the
@@ -65,6 +66,9 @@ class Settings(SettingsBase):
             save = True
         if not hasattr(self, 'zoom_images'):
             self.zoom_images = "No"
+            save = True
+        if not hasattr(self, 'keep_log_history'):
+            self.keep_log_history = "No"
             save = True
         if not hasattr(self, 'colour_threshold'):
             self.colour_threshold = 180
@@ -106,7 +110,7 @@ class Settings(SettingsBase):
             save = True
         if not hasattr(self, 'mevo_plus'):
             self.mevo_plus = {
-                "offline_mode": "Yes"
+                "offline_mode": "No"
             }
             save = True
         if save:

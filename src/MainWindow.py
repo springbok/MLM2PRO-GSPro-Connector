@@ -31,7 +31,7 @@ class LogTableCols:
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    version = 'V1.04.16'
+    version = 'V1.04.17'
     app_name = 'MLM2PRO-GSPro-Connector'
     good_shot_color = '#62ff00'
     good_putt_color = '#fbff00'
@@ -53,6 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.putting_settings = PuttingSettings(self.app_paths)
         self.putting_settings_form = PuttingForm(main_window=self)
         self.putting = Putting(main_window=self)
+        self.setWindowTitle(f"{MainWindow.app_name} {MainWindow.version}")
         self.__setup_ui()
         self.__auto_start()
 
@@ -159,6 +160,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.device_control_widget.show()
                 self.server_control_widget.hide()
                 self.actionDevices.setEnabled(True)
+                self.launch_monitor.update_mevo_mode()
             else:
                 self.device_control_widget.hide()
                 self.server_control_widget.show()

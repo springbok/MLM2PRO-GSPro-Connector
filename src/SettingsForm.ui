@@ -10,13 +10,13 @@
     <x>0</x>
     <y>0</y>
     <width>981</width>
-    <height>533</height>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_10">
+  <layout class="QHBoxLayout" name="horizontalLayout_7">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
@@ -665,6 +665,49 @@
          </item>
          <item>
           <widget class="QComboBox" name="auto_start_all_apps_combo">
+           <property name="minimumSize">
+            <size>
+             <width>130</width>
+             <height>0</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>New Item</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_15">
+         <item>
+          <widget class="QLabel" name="log_history_label">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Keep Log history</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="log_history_combo">
            <property name="minimumSize">
             <size>
              <width>130</width>
