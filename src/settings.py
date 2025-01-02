@@ -18,6 +18,7 @@ class LaunchMonitor:
     XSWINGPRO = "XSwingPro"
     SQUARE = "Square"
     SC4 = "Voice Caddie SC4"
+    R50 = "Garmin R50"
 
 class Settings(SettingsBase):
     version = "2"

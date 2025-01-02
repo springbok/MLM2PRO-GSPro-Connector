@@ -109,6 +109,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'uneekor'
         elif self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
             train_file = 'skytrak'
+        elif self.main_window.settings.device_id == LaunchMonitor.R50:
+            train_file = 'r50'
         elif self.main_window.settings.device_id == LaunchMonitor.XSWINGPRO:
             train_file = 'xswingpro'
         elif self.main_window.settings.device_id == LaunchMonitor.SQUARE:
