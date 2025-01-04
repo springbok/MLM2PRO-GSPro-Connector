@@ -11,7 +11,7 @@ class LabeledROI(RectROI):
         RectROI.__init__(self, *args, **kwargs)
         if label is not None:
             self.label = QGraphicsTextItem(label, self)
-            self.label.setDefaultTextColor(QtGui.QColor('blue'))
+            self.label.setDefaultTextColor(QtGui.QColor('red'))
             font = QFont("Times", pointSize=15, weight=QFont.Medium, italic=False)
             self.label.setFont(font)
             self.label.setPos(QPointF(self.boundingRect().center().x() - (self.label.boundingRect().width() / 2), self.state['size'][1]))

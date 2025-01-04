@@ -82,7 +82,7 @@ class ScreenshotBase(ViewBox):
             BallData.properties[BallMetrics.ANGLE_OF_ATTACK] = 'AOA'
             BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = 'Face to target'
             BallData.properties[BallMetrics.CLUB_FACE_TO_PATH] = 'Face to path'
-        elif self.main_window.settings.device_id ==  LaunchMonitor.R50:
+        elif self.settings.device_id ==  LaunchMonitor.R50:
             rois_properties = BallData.rois_r50_properties
             BallData.properties[BallMetrics.HLA] = "Launch Direction"
             BallData.properties[BallMetrics.VLA] = "Launch Angle"

@@ -8,6 +8,7 @@ class LaunchMonitor:
     MLM2PRO = "Rapsodo MLM2PRO"
     MLM2PRO_BT = 'Rapsodo MLM2PRO BT'
     R10_BT = "Garmin R10 BT"
+    R50 = "Garmin R50"
     FSKIT = "Fullswing Kit"
     MEVOPLUS = "MEVO+"
     TRACKMAN = "Trackman"
@@ -18,7 +19,6 @@ class LaunchMonitor:
     XSWINGPRO = "XSwingPro"
     SQUARE = "Square"
     SC4 = "Voice Caddie SC4"
-    R50 = "Garmin R50"
 
 class Settings(SettingsBase):
     version = "2"

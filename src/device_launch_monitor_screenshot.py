@@ -84,9 +84,7 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             self.device_worker.ignore_shots_after_restart()
 
     def update_mevo_mode(self):
-        print('update_mevo_mode')
         if self.main_window.settings.device_id == LaunchMonitor.MEVOPLUS:
-            print(f"Offline Mode: {self.main_window.settings.mevo_plus['offline_mode']}")
             self.main_window.mode_label.setText(f"Offline Mode: {self.main_window.settings.mevo_plus['offline_mode']}")
             self.main_window.mode_label.setStyleSheet(
                 f"QLabel {{ background-color : blue; color : white; }}")
