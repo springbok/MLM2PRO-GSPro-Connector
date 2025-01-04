@@ -93,6 +93,17 @@ class BallData:
                        BallMetrics.CLUB_FACE_TO_TARGET,
                        BallMetrics.CLUB_FACE_TO_PATH
                        ]
+    rois_r50_properties = [BallMetrics.SPEED,
+                       BallMetrics.TOTAL_SPIN,
+                       BallMetrics.SPIN_AXIS,
+                       BallMetrics.HLA,
+                       BallMetrics.VLA,
+                       BallMetrics.CLUB_SPEED,
+                       BallMetrics.ANGLE_OF_ATTACK,
+                       BallMetrics.CLUB_PATH,
+                       BallMetrics.CLUB_FACE_TO_TARGET,
+                       BallMetrics.CLUB_FACE_TO_PATH
+                       ]
     rois_skytrak_properties = [BallMetrics.SPEED,
                        BallMetrics.TOTAL_SPIN,
                        BallMetrics.SPIN_AXIS,
@@ -113,6 +124,8 @@ class BallData:
                         BallMetrics.CLUB_SPEED,
                         BallMetrics.TOTAL_SPIN]
     must_not_be_zero_uneekor = [BallMetrics.SPEED,
+                        BallMetrics.BACK_SPIN]
+    must_not_be_zero_r50 = [BallMetrics.SPEED,
                         BallMetrics.BACK_SPIN]
     must_not_be_zero_putt = [BallMetrics.SPEED]
 
@@ -298,14 +311,13 @@ class BallData:
                         result = float(result[:-1])
                 else :
                     result = float(result)
-
                 if roi == BallMetrics.SPIN_AXIS and offline_mode == 'Yes':
                     old_result = result
                     result = float(result * 0.4)
                     logging.debug(f"{self.launch_monitor} is in offline mode, adjusting {BallData.properties[roi]} from: {old_result} to: {result}")
                 if roi == BallMetrics.VLA:
                     if result == 0.5: # this value of VLA is observed when MEVO+ failed to register a chip shot properly
-                        raise ValueError("Detected problematic VLA = 0.5 for MEVO+. Ignoring the shot")
+                        raise ValueError(f"Detected problematic VLA = 0.5 for {self.launch_monitor}. Ignoring the shot")
             elif self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.XSWINGPRO:
                 if len(result)>1 and (roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA):                  
                     result = result.upper()
@@ -344,8 +356,11 @@ class BallData:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')
             # Check values are not 0
-            if self.launch_monitor == LaunchMonitor.UNEEKOR :
+            if self.launch_monitor == LaunchMonitor.UNEEKOR:
                 if roi in BallData.must_not_be_zero_uneekor and result == float(0):
+                    raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
+            elif self.launch_monitor == LaunchMonitor.R50:
+                if roi in BallData.must_not_be_zero_r50 and result == float(0):
                     raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             else :
                 if roi in BallData.must_not_be_zero and result == float(0):
