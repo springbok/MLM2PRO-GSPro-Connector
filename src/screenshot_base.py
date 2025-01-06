@@ -171,7 +171,7 @@ class ScreenshotBase(ViewBox):
                 train_file = 'mevo'
             elif self.settings.device_id == LaunchMonitor.FSKIT:
                 train_file = 'fskit'
-            elif self.settings.device_id == LaunchMonitor.r50:
+            elif self.settings.device_id == LaunchMonitor.R50:
                 train_file = 'r50'
             elif self.settings.device_id == LaunchMonitor.TRACKMAN:
                 train_file = 'trackman'
