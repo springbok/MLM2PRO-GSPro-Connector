@@ -318,6 +318,16 @@ class BallData:
                 if roi == BallMetrics.VLA:
                     if result == 0.5: # this value of VLA is observed when MEVO+ failed to register a chip shot properly
                         raise ValueError(f"Detected problematic VLA = 0.5 for {self.launch_monitor}. Ignoring the shot")
+            if self.launch_monitor == LaunchMonitor.R50:
+                if len(result) > 1 and (roi == BallMetrics.HLA or roi == BallMetrics.SPIN_AXIS or roi == BallMetrics.CLUB_PATH or
+                    roi == BallMetrics.CLUB_FACE_TO_TARGET or roi == BallMetrics.CLUB_FACE_TO_PATH or roi == BallMetrics.ANGLE_OF_ATTACK):
+                    result = result.upper()
+                    if result.endswith('L'):
+                        result = -float(result[:-1])
+                    else :
+                        result = float(result[:-1])
+                else :
+                    result = float(result)
             elif self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.XSWINGPRO:
                 if len(result)>1 and (roi == BallMetrics.SIDE_SPIN or roi == BallMetrics.CLUB_PATH or roi == BallMetrics.HLA):                  
                     result = result.upper()
