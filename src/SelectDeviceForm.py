@@ -109,6 +109,9 @@ class SelectDeviceForm(QWidget, Ui_SelectDeviceForm):
                 try:
                     os.startfile(device.window_path)
                     Event().wait(3)
+                    if not self.__find_screen_mirror_app(device):
+                        # Wait another 15 seconds if app still not running
+                        Event().wait(15)
                 except Exception as e:
                     self.__log_message(LogMessageTypes.LOG_FILE, f"Could not start app at {device.window_path} exception: {format(e)}")
         if not self.__find_screen_mirror_app(device):
