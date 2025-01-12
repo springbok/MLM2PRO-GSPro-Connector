@@ -1,4 +1,5 @@
 import ctypes
+import logging
 from ctypes import wintypes
 from collections import namedtuple
 import numpy as np
@@ -416,9 +417,14 @@ class ScreenshotOfWindow:
             buffer_len,
         ) = self.get_rect_coords()
 
+        if w == 0 or h == 0:
+            logging.debug("Window dimensions are zero, cannot capture screenshot.")
+            raise ValueError("Window dimensions are zero, cannot capture screenshot.")
+
         if not values_are_the_same:
             self.bmp = CreateCompatibleBitmap(self.hwndDC, w, h)
             SelectObject(self.saveDC, self.bmp)
+
         if self.client:
             PrintWindow(self.hwnd, self.saveDC, 3)
         else:
@@ -431,6 +437,7 @@ class ScreenshotOfWindow:
         windll.gdi32.GetDIBits(
             self.saveDC, self.bmp, 0, h, self.imagex, self.bmi, DIB_RGB_COLORS
         )
+
         (
             self.old_left,
             self.old_right,
@@ -439,11 +446,16 @@ class ScreenshotOfWindow:
             self.old_width,
             self.old_height,
         ) = (left, right, top, bottom, w, h)
+
+        # Prepare the image byte data
         imagex = bytearray(h * w * 3)
         imagex[0::3], imagex[1::3], imagex[2::3] = self.imagex[2::4], self.imagex[1::4], self.imagex[0::4]
 
-        return (
-            np.frombuffer(bytes(imagex), dtype=np.uint8)
-            .reshape((h, w, 3))[..., ::-1]
-            .copy()
-        )
+        # Convert to numpy array and check for empty array
+        screenshot_array = np.frombuffer(bytes(imagex), dtype=np.uint8).reshape((h, w, 3))[..., ::-1].copy()
+
+        if screenshot_array.size == 0:
+            logging.debug("Captured screenshot is empty, array size is zero.")
+            raise ValueError("Captured screenshot is empty, array size is zero.")
+
+        return screenshot_array
