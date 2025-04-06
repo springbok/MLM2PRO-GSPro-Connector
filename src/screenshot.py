@@ -70,7 +70,7 @@ class Screenshot(ScreenshotBase):
         self.new_shot = False
         self.screenshot_new = False
         if self.settings.device_id == LaunchMonitor.UNEEKOR:
-            mse_min = 400
+            mse_min = 300
         else: 
             mse_min = 100
         mse = mse_min
