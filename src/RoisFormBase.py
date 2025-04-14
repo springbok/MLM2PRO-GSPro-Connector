@@ -95,9 +95,9 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.__log_message(LogMessageTypes.STATUS_BAR,
                            f'Waiting for {delay_seconds} seconds delay (SkyTrak+)...')
         time.sleep(delay_seconds)
-    self.roi_image.ocr_image()
-    self.verify_roi.balldata = self.roi_image.balldata
-    self.verify_roi.show()
+        self.roi_image.ocr_image()
+        self.verify_roi.balldata = self.roi_image.balldata
+        self.verify_roi.show()
 
         
 
