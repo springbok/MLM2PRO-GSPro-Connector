@@ -89,12 +89,12 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.zoomout_button.clicked.connect(partial(self.__zoom,in_or_out='out'))
 
     def __verify(self):
-    if self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
-        import time
-        delay_seconds = self.delay_spinbox.value()
-        self.__log_message(LogMessageTypes.STATUS_BAR,
+        if self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
+            import time
+            delay_seconds = self.delay_spinbox.value()
+            self.__log_message(LogMessageTypes.STATUS_BAR,
                            f'Waiting for {delay_seconds} seconds delay (SkyTrak+)...')
-        time.sleep(delay_seconds)
+            time.sleep(delay_seconds)
         self.roi_image.ocr_image()
         self.verify_roi.balldata = self.roi_image.balldata
         self.verify_roi.show()
