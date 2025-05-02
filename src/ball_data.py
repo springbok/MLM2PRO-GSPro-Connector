@@ -366,7 +366,7 @@ class BallData:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')
             # Check values are not 0
-            if self.launch_monitor == LaunchMonitor.UNEEKOR:
+            if self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.UNEEKOR_IPAD:
                 if roi in BallData.must_not_be_zero_uneekor and result == float(0):
                     raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             elif self.launch_monitor == LaunchMonitor.R50:
@@ -479,7 +479,7 @@ class BallData:
         self.__calc_spin()
 
     def __calc_spin(self):
-        if self.launch_monitor == LaunchMonitor.UNEEKOR :
+        if self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.UNEEKOR_IPAD:
             self.total_spin = int(round(math.sqrt(math.pow(self.back_spin,2) + math.pow(self.side_spin,2)),0))
             if self.back_spin != 0:
                 self.spin_axis = round(math.degrees(math.atan(self.side_spin/self.back_spin)),1)
