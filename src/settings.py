@@ -15,6 +15,7 @@ class LaunchMonitor:
     TRUGOLF_APOGEE = "TruGolf Apogee"
     RELAY_SERVER = "Relay Server"
     UNEEKOR = "Uneekor Eye Mini/Lite"
+    UNEEKOR_IPAD = "Uneekor Eye Mini/iPad"
     SKYTRAKPLUS = "Skytrak+"
     XSWINGPRO = "XSwingPro"
     SQUARE = "Square"

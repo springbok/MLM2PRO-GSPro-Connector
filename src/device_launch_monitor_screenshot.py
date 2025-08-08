@@ -105,6 +105,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'apex'
         elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR:
             train_file = 'uneekor'
+        elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR_IPAD:
+            train_file = 'uneekor_ipad'
         elif self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
             train_file = 'skytrak'
         elif self.main_window.settings.device_id == LaunchMonitor.R50:

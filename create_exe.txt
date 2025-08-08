@@ -13,6 +13,6 @@ pyinstaller --onefile -w .\MLM2Pro-GSPro-Connector.py
 
 Using Nuitka:
 
-python -m nuitka --onefile --show-progress --show-modules --enable-plugin=pyside6 --output-dir=nuitka-build --windows-disable-console .\MLM2Pro-GSPro-Connector.py
+python -m nuitka --onefile --show-progress --show-modules --enable-plugin=pyside6 --output-dir=nuitka-build --windows-console-mode=disable .\MLM2Pro-GSPro-Connector.py
 
 Add  --remove-output to delete build directory after build

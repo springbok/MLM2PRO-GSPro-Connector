@@ -29,7 +29,7 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
             BallData.properties[BallMetrics.HLA] = "Launch Dir"
             BallData.properties[BallMetrics.CLUB_PATH] = "Putter path"
             BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = "Impact Angle"
-        elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR :
+        elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR or self.main_window.settings.device_id == LaunchMonitor.UNEEKOR_IPAD :
             rois_properties = BallData.rois_uneekor_properties
             BallData.properties[BallMetrics.VLA] = "Launch Angle"
             BallData.properties[BallMetrics.HLA] = "Side Angle"
