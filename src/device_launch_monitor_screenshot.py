@@ -103,6 +103,8 @@ class DeviceLaunchMonitorScreenshot(DeviceBase):
             train_file = 'trackman'
         elif self.main_window.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
             train_file = 'apex'
+        elif self.main_window.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE_AID:
+            train_file = 'apex_aid'
         elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR:
             train_file = 'uneekor'
         elif self.main_window.settings.device_id == LaunchMonitor.UNEEKOR_IPAD:

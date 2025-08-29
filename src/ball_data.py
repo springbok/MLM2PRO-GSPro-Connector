@@ -393,6 +393,12 @@ class BallData:
             if roi == BallMetrics.SPIN_AXIS and self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE:
                 logging.debug(f'Setting side spin for TruGolf Apogee using the spin axis ROI value: {math.floor(result*10)/10}')
                 setattr(self, BallMetrics.SIDE_SPIN, math.floor(result*10)/10)
+            elif roi == BallMetrics.SPIN_AXIS and self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE_AID:
+                side_spin = math.floor(result * 10) / 10
+                reversed_side_spin = -(side_spin)
+                logging.debug(
+                    f'Reversing side spin for TruGolf Apogee AID using the spin axis ROI value: {side_spin} converted to: {reversed_side_spin}')
+                setattr(self, BallMetrics.SIDE_SPIN, reversed_side_spin)
             else:
                 setattr(self, roi, math.floor(result*10)/10)
             logging.debug(f'Cleaned and corrected value: {result}')
@@ -418,7 +424,7 @@ class BallData:
             previous_result = getattr(other, roi)
             if (roi != BallMetrics.BACK_SPIN and
                     ((roi != BallMetrics.SIDE_SPIN and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE) or
-                     self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE)  and result != previous_result):
+                     self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE or self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE_AID)  and result != previous_result):
                 logging.debug('ROI {: <15}   was:{: >6}   is:{: >6}'.format(roi, previous_result, result))
                 diff_count = diff_count + 1
         # Check if all values are 0, some users use practice instead of range and there is a screen flicker
@@ -488,7 +494,7 @@ class BallData:
         else :
             self.back_spin = round(
                 self.total_spin * math.cos(math.radians(self.spin_axis)))
-            if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE:
+            if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE_AID:
                 self.side_spin = round(
                     self.total_spin * math.sin(math.radians(self.spin_axis)))
 
