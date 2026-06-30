@@ -366,7 +366,7 @@ class BallData:
                 result = float(result)
             logging.debug(f'result {roi}: {result}')
             # Check values are not 0
-            if self.launch_monitor == LaunchMonitor.UNEEKOR:
+            if self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.UNEEKOR_IPAD:
                 if roi in BallData.must_not_be_zero_uneekor and result == float(0):
                     raise ValueError(f"Value for '{BallData.properties[roi]}' is 0")
             elif self.launch_monitor == LaunchMonitor.R50:
@@ -393,6 +393,12 @@ class BallData:
             if roi == BallMetrics.SPIN_AXIS and self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE:
                 logging.debug(f'Setting side spin for TruGolf Apogee using the spin axis ROI value: {math.floor(result*10)/10}')
                 setattr(self, BallMetrics.SIDE_SPIN, math.floor(result*10)/10)
+            elif roi == BallMetrics.SPIN_AXIS and self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE_AID:
+                side_spin = math.floor(result * 10) / 10
+                reversed_side_spin = -(side_spin)
+                logging.debug(
+                    f'Reversing side spin for TruGolf Apogee AID using the spin axis ROI value: {side_spin} converted to: {reversed_side_spin}')
+                setattr(self, BallMetrics.SIDE_SPIN, reversed_side_spin)
             else:
                 setattr(self, roi, math.floor(result*10)/10)
             logging.debug(f'Cleaned and corrected value: {result}')
@@ -418,7 +424,7 @@ class BallData:
             previous_result = getattr(other, roi)
             if (roi != BallMetrics.BACK_SPIN and
                     ((roi != BallMetrics.SIDE_SPIN and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE) or
-                     self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE)  and result != previous_result):
+                     self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE or self.launch_monitor == LaunchMonitor.TRUGOLF_APOGEE_AID)  and result != previous_result):
                 logging.debug('ROI {: <15}   was:{: >6}   is:{: >6}'.format(roi, previous_result, result))
                 diff_count = diff_count + 1
         # Check if all values are 0, some users use practice instead of range and there is a screen flicker
@@ -479,7 +485,7 @@ class BallData:
         self.__calc_spin()
 
     def __calc_spin(self):
-        if self.launch_monitor == LaunchMonitor.UNEEKOR :
+        if self.launch_monitor == LaunchMonitor.UNEEKOR or self.launch_monitor == LaunchMonitor.UNEEKOR_IPAD:
             self.total_spin = int(round(math.sqrt(math.pow(self.back_spin,2) + math.pow(self.side_spin,2)),0))
             if self.back_spin != 0:
                 self.spin_axis = round(math.degrees(math.atan(self.side_spin/self.back_spin)),1)
@@ -488,7 +494,7 @@ class BallData:
         else :
             self.back_spin = round(
                 self.total_spin * math.cos(math.radians(self.spin_axis)))
-            if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE:
+            if self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE and self.launch_monitor != LaunchMonitor.TRUGOLF_APOGEE_AID:
                 self.side_spin = round(
                     self.total_spin * math.sin(math.radians(self.spin_axis)))
 

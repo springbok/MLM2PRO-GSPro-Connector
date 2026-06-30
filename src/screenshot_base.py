@@ -68,7 +68,7 @@ class ScreenshotBase(ViewBox):
             BallData.properties[BallMetrics.HLA] = "Launch Dir"
             BallData.properties[BallMetrics.CLUB_PATH] = "Putter path"
             BallData.properties[BallMetrics.CLUB_FACE_TO_TARGET] = "Impact Angle"
-        elif self.settings.device_id == LaunchMonitor.UNEEKOR :
+        elif self.settings.device_id == LaunchMonitor.UNEEKOR or self.settings.device_id == LaunchMonitor.UNEEKOR_IPAD :
             rois_properties = BallData.rois_uneekor_properties
             BallData.properties[BallMetrics.VLA] = "Launch Angle"
             BallData.properties[BallMetrics.HLA] = "Side Angle"
@@ -177,8 +177,12 @@ class ScreenshotBase(ViewBox):
                 train_file = 'trackman'
             elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
                 train_file = 'apex'
+            elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE_AID:
+                train_file = 'apex_aid'
             elif self.settings.device_id == LaunchMonitor.UNEEKOR:
                 train_file = 'uneekor'
+            elif self.settings.device_id == LaunchMonitor.UNEEKOR_IPAD:
+                train_file = 'uneekor_ipad'
             elif self.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
                 train_file = 'skytrak'
             elif self.settings.device_id == LaunchMonitor.XSWINGPRO:
