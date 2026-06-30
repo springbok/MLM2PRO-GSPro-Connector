@@ -14,6 +14,7 @@ from src.log_message import LogMessageTypes, LogMessageSystems
 class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     RSSI_SCAN_INTERVAL = 5000
+    RSSI_SCAN_ENABLED = False
 
     def __init__(self, main_window, device_names: list[str]):
         DeviceBase.__init__(self, main_window)
@@ -111,7 +112,12 @@ class DeviceLaunchMonitorBluetoothBase(DeviceBase):
 
     def __device_connected(self, status) -> None:
         self.__update_ui(status, 'green', None, 'green', 'Stop', True)
-        self._rssi_timer.start()
+        # Avoid repeated Bluetooth discovery while connected.
+        # Some Windows 11 Bluetooth stacks appear to react badly to the
+        # periodic RSSI scan, so keep the initial RSSI value only unless this
+        # is explicitly re-enabled.
+        if DeviceLaunchMonitorBluetoothBase.RSSI_SCAN_ENABLED:
+            self._rssi_timer.start()
 
     def __device_status_update(self, status_message, device_name) -> None:
         self.__update_ui(status_message, 'orange', device_name, 'red', 'Stop', False)

@@ -63,10 +63,12 @@ class WorkerBase(QObject):
         pass
 
     def club_selected(self, club):
+        logging.debug(f"{self.__class__.__name__} worker_base class Club selected: {club}")
         self.club = club
 
     def selected_club(self):
         return self.club
 
     def putter_selected(self):
+        logging.debug(f"{self.__class__.__name__} worker_base class putter_selected self.selected_club(): {self.selected_club()}")
         return self.selected_club() == 'PT'
