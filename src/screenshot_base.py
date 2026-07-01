@@ -177,6 +177,8 @@ class ScreenshotBase(ViewBox):
                 train_file = 'trackman'
             elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE:
                 train_file = 'apex'
+            elif self.settings.device_id == LaunchMonitor.TRUGOLF_APOGEE_AID:
+                train_file = 'apex_aid'
             elif self.settings.device_id == LaunchMonitor.UNEEKOR:
                 train_file = 'uneekor'
             elif self.settings.device_id == LaunchMonitor.UNEEKOR_IPAD:

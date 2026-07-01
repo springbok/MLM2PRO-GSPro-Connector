@@ -50,6 +50,7 @@ class DevicePuttingWebcam(DevicePuttingBase):
 
     def club_selected(self, club_data):
         logging.debug(f"{self.__class__.__name__} Club selected: {club_data['Player']['Club']}")
+        super().club_selected(club_data)
         if self._putting_window is None or self._putting_window.hwnd != ScreenMirrorWindow.find_window(self.main_window.putting_settings.webcam['window_name']):
             self._putting_window = WindowControl(self.main_window.putting_settings.webcam['window_name'])
         if self._gspro_window is None or self._gspro_window.hwnd != ScreenMirrorWindow.find_window(self.main_window.settings.grspo_window_name):
@@ -67,7 +68,6 @@ class DevicePuttingWebcam(DevicePuttingBase):
             elif self.main_window.putting_settings.webcam['window_not_putting_state'] == WebcamWindowState.SEND_TO_BACK:
                 self._putting_window.send_to_back()
             self._gspro_window.set_focus_to_window()
-        super().club_selected(club_data)
 
 
 
