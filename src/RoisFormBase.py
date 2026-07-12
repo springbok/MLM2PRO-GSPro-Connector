@@ -22,6 +22,17 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.verify_roi = VerifyRoiForm(self.__rois_properties())
         self.device = None
         self.current_button = None
+        from PySide6.QtWidgets import QDoubleSpinBox, QLabel, QHBoxLayout
+        self.delay_layout = QHBoxLayout()
+        self.delay_label = QLabel("ROI Capture Delay (seconds):", self.centralwidget)
+        self.delay_spinbox = QDoubleSpinBox(self.centralwidget)
+        self.delay_spinbox.setRange(0.0, 10.0)
+        self.delay_spinbox.setSingleStep(0.5)
+        self.delay_spinbox.setValue(2.0)
+        self.delay_layout.addWidget(self.delay_label)
+        self.delay_layout.addWidget(self.delay_spinbox)
+        self.gridLayout_2.addLayout(self.delay_layout, 2, 0, 1, 1)
+
 
     def __rois_properties(self):
         if self.__class__.__name__ == 'RoisExPuttForm':
@@ -78,9 +89,17 @@ class RoisFormBase(QMainWindow, Ui_RoisForm):
         self.zoomout_button.clicked.connect(partial(self.__zoom,in_or_out='out'))
 
     def __verify(self):
+        if self.main_window.settings.device_id == LaunchMonitor.SKYTRAKPLUS:
+            import time
+            delay_seconds = self.delay_spinbox.value()
+            self.__log_message(LogMessageTypes.STATUS_BAR,
+                           f'Waiting for {delay_seconds} seconds delay (SkyTrak+)...')
+            time.sleep(delay_seconds)
         self.roi_image.ocr_image()
         self.verify_roi.balldata = self.roi_image.balldata
         self.verify_roi.show()
+
+        
 
     def __close(self):
         self.close()
