@@ -1,5 +1,5 @@
 import logging
-import subprocess
+import os
 from threading import Event
 
 import cv2
@@ -153,7 +153,7 @@ class PuttingForm(QWidget, Ui_PuttingForm):
         try:
             ScreenMirrorWindow.find_window(self.settings.exputt['window_name'])
         except:
-            subprocess.run('start microsoft.windows.camera:', shell=True)
+            os.startfile('microsoft.windows.camera:')
         Event().wait(1)
         self.rois_form.show()
 
