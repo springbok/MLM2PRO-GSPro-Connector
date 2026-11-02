@@ -1,4 +1,4 @@
-import subprocess
+import os
 from PySide6.QtWidgets import QMessageBox
 from threading import Event
 from src.ctype_screenshot import ScreenMirrorWindow
@@ -30,7 +30,7 @@ class DevicePuttingExPutt(DevicePuttingBase):
                                              f'Starting ExPutt')
                 ScreenMirrorWindow.find_window(self.main_window.putting_settings.exputt['window_name'])
             except Exception:
-                subprocess.run('start microsoft.windows.camera:', shell=True)
+                os.startfile('microsoft.windows.camera:')
                 Event().wait(3)
 
     def __too_many_ghost_shots(self):
